@@ -6,8 +6,18 @@ services:
     region: oregon
     branch: main
     rootDir: backend
+    # Mirrors NexGen Lab's proven, working build command sequence:
+    # npm install first, then prisma generate, then prisma db push with
+    # --accept-data-loss (confirmed working across tonight's real deploys).
+    # The one deliberate difference: --schema=./schema.prisma is explicit
+    # here because this repo keeps schema.prisma directly in backend/,
+    # not in a backend/prisma/ subfolder the way NexGen Lab's layout does —
+    # Prisma's default lookup wouldn't find it otherwise.
     buildCommand: npm install && npx prisma generate --schema=./schema.prisma && npx prisma db push --schema=./schema.prisma --accept-data-loss
-    startCommand: npm start
+    # Matches NexGen Lab's actual confirmed start command exactly (seen
+    # directly in its real deploy logs: "Running 'node server.js'"), not
+    # the npm-start indirection.
+    startCommand: node server.js
     envVars:
       - key: DATABASE_URL
         fromDatabase:
