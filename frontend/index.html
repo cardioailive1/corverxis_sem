@@ -37,7 +37,11 @@
 <body>
 <div id="app"></div>
 <script>
-const API = 'http://localhost:4001';   // SEM+OSC backend — separate from NexGen Lab's backend entirely
+// Same-origin by default — works correctly whether this is served locally
+// alongside the backend on :4001, or deployed to Render where frontend and
+// backend share one origin. Only override if genuinely running the
+// frontend from a different origin than the backend.
+const API = window.location.origin;   // SEM+OSC backend — separate from NexGen Lab's backend entirely
 const state = { module: 'usecases', useCases: null, scenarios: [], demos: [], trainingRuns: [], compilerJobs: [], selectedUseCase: null, error: null, busy: false };
 
 function dc(tag, props, ...children) {

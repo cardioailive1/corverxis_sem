@@ -81,9 +81,12 @@ beyond local testing — the current `authenticate` middleware is a
 development placeholder that accepts every request as a fixed dev user.
 
 **Frontend:**
-Open `frontend/index.html` directly, or serve it — it talks to
-`http://localhost:4001` by default (see the `API` constant near the top of
-the `<script>` block).
+Served automatically by the backend at `http://localhost:4001/` once it's
+running (`npm start` in `backend/`) — no separate step needed. The frontend
+talks to whatever origin it's served from (`window.location.origin`), so
+this works correctly both locally and once deployed to Render, where
+frontend and backend share one origin. Don't open `frontend/index.html`
+directly via `file://` — the API calls need a real HTTP origin to resolve.
 
 **Training:**
 ```

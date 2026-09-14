@@ -16,6 +16,13 @@ app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
 app.use(express.json({ limit: '5mb' }));
 
+// ── Serve the frontend from this same server — matches NexGen Lab's
+// proven pattern (one Express service serving both the API and the
+// static UI), rather than requiring a second separate deployment. ────────
+const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
+app.use(express.static(FRONTEND_DIR));
+
+
 const GENERATED_DIR = path.join(__dirname, 'generated');
 if (!fs.existsSync(GENERATED_DIR)) fs.mkdirSync(GENERATED_DIR, { recursive: true });
 
