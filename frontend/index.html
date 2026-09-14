@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SEM+OSC</title>
+<style>
+  :root { --bg:#0a0a0f; --panel:#12121a; --border:#26262f; --text:#e4e4e7; --text2:#a1a1aa; --text3:#71717a; --cyan:#00CFFF; --green:#4ade80; --red:#f87171; --yellow:#fbbf24; --mono:'JetBrains Mono',monospace; }
+  * { box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--mono); margin:0; }
+  #app { display:flex; min-height:100vh; }
+  nav { width:220px; border-right:1px solid var(--border); padding:16px; flex-shrink:0; }
+  nav .logo-img { width:100%; border-radius:6px; margin-bottom:6px; display:block; }
+  nav .logo { font-size:11px; font-weight:700; color:var(--cyan); margin-bottom:20px; letter-spacing:.08em; }
+  nav .nav-item { padding:8px 10px; border-radius:6px; cursor:pointer; font-size:11px; color:var(--text2); margin-bottom:2px; }
+  nav .nav-item.active { background:rgba(0,207,255,.08); color:var(--cyan); }
+  main { flex:1; padding:24px; max-width:1100px; }
+  .card { border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:16px; background:var(--panel); }
+  .card-label { font-size:10px; color:var(--text3); letter-spacing:.05em; margin-bottom:10px; }
+  .mod-header { font-size:9px; color:var(--text3); letter-spacing:.08em; }
+  .mod-title { font-size:16px; font-weight:700; margin:2px 0 16px 0; }
+  select, input, textarea { width:100%; padding:6px 10px; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:4px; font-family:var(--mono); font-size:11px; outline:none; }
+  .btn { padding:6px 14px; border-radius:5px; border:1px solid var(--border); background:var(--panel); color:var(--text2); font-family:var(--mono); font-size:10px; cursor:pointer; }
+  .btn-cyan { background:rgba(0,207,255,.1); border-color:var(--cyan); color:var(--cyan); }
+  .btn-full { width:100%; }
+  .badge { font-size:8px; padding:2px 8px; border-radius:10px; }
+  .badge-sem { background:rgba(251,191,36,.12); color:var(--yellow); }
+  .badge-compiler { background:rgba(0,207,255,.12); color:var(--cyan); }
+  .stage-row { display:flex; gap:6px; margin:10px 0; flex-wrap:wrap; }
+  .stage-pill { padding:3px 10px; border-radius:10px; font-size:8px; border:1px solid var(--border); color:var(--text3); }
+  .stage-pill.done { background:rgba(74,222,128,.12); color:var(--green); border-color:var(--green); }
+  .stage-pill.active { background:rgba(0,207,255,.12); color:var(--cyan); border-color:var(--cyan); }
+  .stage-pill.failed { background:rgba(248,113,113,.12); color:var(--red); border-color:var(--red); }
+  .field { margin-bottom:10px; }
+  .field label { display:block; font-size:9px; color:var(--text3); margin-bottom:4px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const API = 'http://localhost:4001';   // SEM+OSC backend — separate from NexGen Lab's backend entirely
+const state = { module: 'usecases', useCases: null, scenarios: [], demos: [], trainingRuns: [], compilerJobs: [], selectedUseCase: null, error: null, busy: false };
+
+function dc(tag, props, ...children) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (k === 'className') el.className = v;
+    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (v !== undefined && v !== null && v !== false) el.setAttribute(k, v);
+  }
+  for (const c of children.flat()) {
+    if (c === undefined || c === null || c === false) continue;
+    el.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  }
+  return el;
+}
+function card(...children) { return dc('div', { className: 'card' }, ...children); }
+function btn(label, cls, onClick, disabled) {
+  const b = dc('button', { className: 'btn ' + (cls || ''), onClick, disabled: !!disabled }, label);
+  return b;
+}
+function field(labelText, inputEl) {
+  return dc('div', { className: 'field' }, dc('label', {}, labelText), inputEl);
+}
+function modHeader(kicker, title) {
+  return dc('div', {}, dc('div', { className: 'mod-header' }, kicker), dc('div', { className: 'mod-title' }, title));
+}
+
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(API + path, opts);
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  const nav = dc('nav', {},
+    dc('img', { className: 'logo-img', src: 'assets/corverxis_logo.jpg', alt: 'Corverxis Technologies' }),
+    dc('div', { className: 'logo' }, 'SEM+OSC'),
+    ...[
+      ['usecases', 'Use Cases'],
+      ['scenarios', 'Scenarios (SEM)'],
+      ['demonstrations', 'Demonstrations'],
+      ['training', 'Training Runs'],
+      ['compiler', 'Compiler Jobs'],
+      ['checkpoints', 'Checkpoints'],
+    ].map(([id, label]) => dc('div', {
+      className: 'nav-item' + (state.module === id ? ' active' : ''),
+      onClick: () => { state.module = id; render(); },
+    }, label))
+  );
+  const main = dc('main', {});
+  const renderers = {
+    usecases: renderUseCases, scenarios: renderScenarios, demonstrations: renderDemonstrations,
+    training: renderTraining, compiler: renderCompiler, checkpoints: renderCheckpoints,
+  };
+  main.append((renderers[state.module] || renderUseCases)());
+  app.append(nav, main);
+}
+
+// ── Use Cases ────────────────────────────────────────────────────────────
+function renderUseCases() {
+  if (state.useCases === null) { state.useCases = []; loadUseCases(); }
+  const container = dc('div', {});
+  container.append(modHeader('SEM+OSC', 'Use Cases'));
+  const semCases = state.useCases.filter(u => u.kind === 'sem_only');
+  const compilerCases = state.useCases.filter(u => u.kind === 'compiler');
+
+  container.append(card(
+    dc('div', { className: 'card-label' }, 'SEM-ONLY — STANDALONE DIAGNOSTIC USE CASES'),
+    ...semCases.map(u => dc('div', { style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px' },
+      dc('div', {}, dc('span', { className: 'badge badge-sem' }, 'SEM'), ' ', dc('b', {}, u.name)),
+      dc('div', { style: 'color:var(--text3);font-size:10px;margin-top:4px' }, u.description)))
+  ));
+  container.append(card(
+    dc('div', { className: 'card-label' }, 'COMPILER USE CASES — DEMONSTRATION → REUSABLE SKILL'),
+    ...compilerCases.map(u => dc('div', { style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px' },
+      dc('div', {}, dc('span', { className: 'badge badge-compiler' }, 'COMPILER'), ' ', dc('b', {}, u.name)),
+      dc('div', { style: 'color:var(--text3);font-size:10px;margin-top:4px' }, u.description),
+      dc('div', { style: 'color:var(--text3);font-size:9px;margin-top:4px' }, 'Targets: ' + (u.output_targets || []).join(', '))))
+  ));
+  return container;
+}
+async function loadUseCases() { try { state.useCases = await api('GET', '/api/use-cases'); render(); } catch (e) { console.error(e); } }
+
+// ── Scenarios ────────────────────────────────────────────────────────────
+function renderScenarios() {
+  if (!state.useCases) { state.useCases = []; loadUseCases(); }
+  const container = dc('div', {});
+  container.append(modHeader('SEM TRAINING DATA', 'Scenarios'));
+  const semCases = (state.useCases || []).filter(u => u.kind === 'sem_only');
+
+  container.append(card(
+    dc('div', { className: 'card-label' }, 'GENERATE SCENARIOS'),
+    field('USE CASE', (() => {
+      const el = dc('select', { id: 'fld-scenario-usecase' });
+      semCases.forEach(u => el.append(dc('option', { value: u.id }, u.name)));
+      return el;
+    })()),
+    field('COUNT', dc('input', { type: 'number', id: 'fld-scenario-count', value: '10' })),
+    btn(state.busy ? '⟳ Generating…' : '⚡ Generate', 'btn-cyan btn-full', generateScenarios, state.busy)
+  ));
+
+  container.append(card(
+    dc('div', { className: 'card-label' }, `RECENT SCENARIOS (${state.scenarios.length})`),
+    state.scenarios.length === 0
+      ? dc('div', { style: 'color:var(--text3);font-size:10px' }, 'None yet.')
+      : dc('div', {}, ...state.scenarios.slice(0, 20).map(s => dc('div', { style: 'padding:8px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:9px' },
+          dc('div', {}, 'true: ', dc('b', {}, JSON.stringify(s.hidden_intervention))),
+          dc('div', { style: 'color:var(--text3)' }, 'observed: ', JSON.stringify(s.observations)))))
+  ));
+  return container;
+}
+async function generateScenarios() {
+  const use_case_id = document.getElementById('fld-scenario-usecase')?.value;
+  const count = parseInt(document.getElementById('fld-scenario-count')?.value || '10');
+  if (!use_case_id) return;
+  state.busy = true; render();
+  try {
+    const created = await api('POST', '/api/scenarios/generate', { use_case_id, count });
+    state.scenarios = [...created, ...state.scenarios];
+  } catch (e) { state.error = e.message; alert(e.message); }
+  state.busy = false; render();
+}
+
+// ── Demonstrations ───────────────────────────────────────────────────────
+function renderDemonstrations() {
+  if (!state.useCases) { state.useCases = []; loadUseCases(); }
+  const container = dc('div', {});
+  container.append(modHeader('COMPILER INPUT', 'Demonstrations'));
+  const compilerCases = (state.useCases || []).filter(u => u.kind === 'compiler');
+
+  container.append(card(
+    dc('div', { className: 'card-label' }, 'UPLOAD DEMONSTRATION'),
+    field('USE CASE', (() => {
+      const el = dc('select', { id: 'fld-demo-usecase' });
+      compilerCases.forEach(u => el.append(dc('option', { value: u.id }, u.name)));
+      return el;
+    })()),
+    field('MODALITY', (() => {
+      const el = dc('select', { id: 'fld-demo-modality' });
+      ['video', 'screen_recording', 'motion_capture', 'log'].forEach(m => el.append(dc('option', { value: m }, m)));
+      return el;
+    })()),
+    field('FILE', dc('input', { type: 'file', id: 'fld-demo-file' })),
+    btn(state.busy ? '⟳ Uploading…' : '⬆ Upload', 'btn-cyan btn-full', uploadDemonstration, state.busy)
+  ));
+  container.append(card(
+    dc('div', { className: 'card-label' }, `DEMONSTRATIONS (${state.demos.length})`),
+    ...state.demos.map(d => dc('div', { style: 'padding:8px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:10px' },
+      `${d.original_name} · ${d.modality}`))
+  ));
+  return container;
+}
+async function uploadDemonstration() {
+  const file = document.getElementById('fld-demo-file')?.files?.[0];
+  const use_case_id = document.getElementById('fld-demo-usecase')?.value;
+  const modality = document.getElementById('fld-demo-modality')?.value;
+  if (!file || !use_case_id) return;
+  state.busy = true; render();
+  try {
+    const formData = new FormData();
+    formData.append('file', file); formData.append('use_case_id', use_case_id); formData.append('modality', modality);
+    const resp = await fetch(API + '/api/demonstrations/upload', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error);
+    state.demos = [data, ...state.demos];
+  } catch (e) { alert(e.message); }
+  state.busy = false; render();
+}
+
+// ── Training Runs ────────────────────────────────────────────────────────
+function renderTraining() {
+  if (!state.useCases) { state.useCases = []; loadUseCases(); }
+  const container = dc('div', {});
+  container.append(modHeader('SEM MODEL TRAINING', 'Training Runs'));
+  container.append(card(
+    dc('div', { className: 'card-label' }, 'START A TRAINING RUN'),
+    btn(state.busy ? '⟳ Starting…' : '▶ Start Run (all sem_only use cases)', 'btn-cyan btn-full', startTrainingRun, state.busy)
+  ));
+  container.append(card(
+    dc('div', { className: 'card-label' }, 'RUNS'),
+    state.trainingRuns.length === 0 ? dc('div', { style: 'color:var(--text3);font-size:10px' }, 'None yet.') :
+    dc('div', {}, ...state.trainingRuns.map(t => dc('div', { style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;font-size:10px' },
+      dc('div', {}, `${t.status} — ${t.completed_scenarios}/${t.total_scenarios} scenarios`),
+      t.mean_reward != null && dc('div', { style: 'color:var(--text3)' }, `mean reward: ${t.mean_reward.toFixed(3)}`))))
+  ));
+  return container;
+}
+async function startTrainingRun() {
+  state.busy = true; render();
+  try {
+    const run = await api('POST', '/api/training-runs', { use_case_ids: [] });
+    state.trainingRuns = [run, ...state.trainingRuns];
+    pollTrainingRun(run.id);
+  } catch (e) { alert(e.message); }
+  state.busy = false; render();
+}
+async function pollTrainingRun(id) {
+  while (true) {
+    const run = await api('GET', '/api/training-runs/' + id).catch(() => null);
+    if (!run) return;
+    state.trainingRuns = state.trainingRuns.map(t => t.id === id ? run : t);
+    render();
+    if (run.status === 'completed' || run.status === 'failed') return;
+    await new Promise(r => setTimeout(r, 2000));
+  }
+}
+
+// ── Compiler Jobs ─────────────────────────────────────────────────────────
+function renderCompiler() {
+  if (!state.useCases) { state.useCases = []; loadUseCases(); }
+  const container = dc('div', {});
+  container.append(modHeader('SKILL COMPILATION', 'Compiler Jobs'));
+  const STAGES = ['ingestion', 'extraction', 'verification', 'abstraction', 'compilation', 'completed'];
+  container.append(card(
+    dc('div', { className: 'card-label' }, 'JOBS'),
+    state.compilerJobs.length === 0 ? dc('div', { style: 'color:var(--text3);font-size:10px' }, 'None yet — start one from the Demonstrations tab by compiling an uploaded demonstration.') :
+    dc('div', {}, ...state.compilerJobs.map(j => dc('div', { style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px' },
+      dc('div', { className: 'stage-row' }, ...STAGES.map(s => dc('span', {
+        className: 'stage-pill ' + (j.stage === 'failed' && s === 'ingestion' ? 'failed' : STAGES.indexOf(j.stage) > STAGES.indexOf(s) || j.stage === 'completed' ? 'done' : j.stage === s ? 'active' : '')
+      }, s))),
+      dc('div', { style: 'font-size:9px;color:var(--text3)' }, `target: ${j.target_output}`))))
+  ));
+  return container;
+}
+
+// ── Checkpoints ───────────────────────────────────────────────────────────
+function renderCheckpoints() {
+  const container = dc('div', {});
+  container.append(modHeader('SEM MODEL REGISTRY', 'Checkpoints'));
+  container.append(card(
+    dc('div', { className: 'card-label' }, 'CHECKPOINTS'),
+    dc('div', { style: 'color:var(--text3);font-size:10px' }, 'No checkpoints yet — a checkpoint is created once a training run produces a model worth registering.')
+  ));
+  return container;
+}
+
+render();
+</script>
+</body>
+</html>

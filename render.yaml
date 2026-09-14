@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: sem-osc-backend
+    runtime: node
+    plan: starter
+    region: oregon
+    branch: main
+    rootDir: backend
+    buildCommand: npm install && npx prisma generate --schema=./schema.prisma && npx prisma db push --schema=./schema.prisma --accept-data-loss
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sem-osc-db
+          property: connectionString
+      # ANTHROPIC_API_KEY is not yet consumed by server.js — the Skill
+      # Compiler's extraction stage (processCompilerJob) is currently a
+      # placeholder, not a real call to SEM or Claude. Add this once that
+      # stage is wired to something that actually needs it.
+      # - key: ANTHROPIC_API_KEY
+      #   sync: false
+
+databases:
+  - name: sem-osc-db
+    plan: starter
+    region: oregon

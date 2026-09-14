@@ -1,0 +1,142 @@
+// SEM Lab — schema.prisma
+// A standalone data model. Shares nothing with NexGen Lab's schema.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Use case registry ─────────────────────────────────────────────────────
+// Every use case is either SEM-only (a standalone diagnostic question with
+// no downstream execution) or a Compiler use case (a demonstration that
+// needs to become a reusable, executable skill). Seeded from the 12 real
+// use cases identified during scoping.
+model UseCase {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  kind          String                        // "sem_only" | "compiler"
+  description   String
+  simulatorSpec String?                        // sem_only: how to generate/verify scenarios for this domain
+  outputTargets String[]                        // compiler only: ["robot","agent","checklist"] — which targets this use case compiles to
+  createdAt     DateTime @default(now())
+
+  scenarios     Scenario[]
+  demonstrations Demonstration[]
+  compilerJobs  CompilerJob[]
+}
+
+// ── SEM training data — synthetic scenarios ───────────────────────────────
+// Matches the TRACE-style mechanism: sample a hidden intervention, inject
+// it into a simulator, generate the resulting observations. The
+// intervention is the oracle label — SEM never sees it directly; it only
+// sees the observations and must propose a structure that the verifier
+// then checks against the hidden intervention.
+model Scenario {
+  id                String   @id @default(cuid())
+  useCaseId         String
+  useCase           UseCase  @relation(fields: [useCaseId], references: [id])
+  hiddenIntervention Json                        // the ground truth — never shown to SEM directly
+  observations      Json                          // what SEM actually sees: the generated observation sequence
+  source            String   @default("synthetic") // "synthetic" | "real" — real scenarios (e.g. an actual past incident) are rarer and more valuable
+  createdAt         DateTime @default(now())
+
+  trainingRuns      ScenarioResult[]
+}
+
+// ── Compiler training/input data — demonstrations ─────────────────────────
+model Demonstration {
+  id            String   @id @default(cuid())
+  useCaseId     String
+  useCase       UseCase  @relation(fields: [useCaseId], references: [id])
+  modality      String                        // "video" | "screen_recording" | "motion_capture" | "log"
+  storageKey    String
+  persistent    Boolean  @default(false)
+  originalName  String
+  contentHash   String                          // exact-duplicate detection, same principle as NexGen's vision data
+  uploadedById  String?
+  createdAt     DateTime @default(now())
+
+  compilerJobs  CompilerJob[]
+}
+
+// ── SEM model registry ─────────────────────────────────────────────────────
+model SemCheckpoint {
+  id            String   @id @default(cuid())
+  version       String                        // e.g. "sem-v0.3"
+  baseModel     String                          // the underlying model this checkpoint is built on
+  storageKey    String
+  trainingRunId String?
+  trainingRun   TrainingRun? @relation(fields: [trainingRunId], references: [id])
+  meanReward    Float?                          // aggregate verification-pass rate at time of checkpoint
+  isActive      Boolean  @default(false)          // which checkpoint the Compiler's extraction stage currently calls
+  createdAt     DateTime @default(now())
+}
+
+// ── SEM training runs — the RL loop, tracked as a background job ──────────
+model TrainingRun {
+  id             String   @id @default(cuid())
+  useCaseIds     String[]                        // which use cases' scenarios this run trains on — [] means all
+  status         String   @default("queued")      // queued | running | completed | failed
+  totalScenarios Int      @default(0)
+  completedScenarios Int  @default(0)
+  meanReward     Float?
+  config         Json                              // hyperparameters, base model, etc.
+  createdById    String?
+  createdAt      DateTime @default(now())
+  completedAt    DateTime?
+
+  results        ScenarioResult[]
+  checkpoints    SemCheckpoint[]
+}
+
+// One row per scenario per training run — the actual propose/verify/reward record
+model ScenarioResult {
+  id             String   @id @default(cuid())
+  trainingRunId  String
+  trainingRun    TrainingRun @relation(fields: [trainingRunId], references: [id])
+  scenarioId     String
+  scenario       Scenario @relation(fields: [scenarioId], references: [id])
+  proposedStructure Json                            // what SEM proposed (preconditions/effects/invariants)
+  reward         Float                              // verification result — did the proposal match the hidden intervention under perturbation?
+  createdAt      DateTime @default(now())
+}
+
+// ── Skill Compiler pipeline — one job per demonstration being compiled ────
+// Tracks the 6-stage pipeline explicitly, stage by stage, so a stalled or
+// failed compilation is diagnosable rather than an opaque black box.
+model CompilerJob {
+  id              String   @id @default(cuid())
+  useCaseId       String
+  useCase         UseCase  @relation(fields: [useCaseId], references: [id])
+  demonstrationId String
+  demonstration   Demonstration @relation(fields: [demonstrationId], references: [id])
+  targetOutput    String                            // "robot" | "agent" | "checklist"
+  stage           String   @default("ingestion")     // ingestion | extraction | verification | abstraction | compilation | refinement | completed | failed
+  observationSeq  Json?                              // Stage 1 output
+  causalStructure Json?                              // Stage 2 output (from SEM)
+  verifiedStructure Json?                            // Stage 3 output, after perturbation testing
+  abstractedProcedure Json?                          // Stage 4 output
+  compiledOutput  Json?                              // Stage 5 output — the actual final artifact
+  confidenceNotes String?                            // anything flagged as uncertain, needing human confirmation
+  errorMessage    String?
+  createdById     String?
+  createdAt       DateTime @default(now())
+  completedAt     DateTime?
+
+  refinements     Refinement[]
+}
+
+// ── Stage 6 — refinement from a second demonstration or real execution feedback ──
+model Refinement {
+  id             String   @id @default(cuid())
+  compilerJobId  String
+  compilerJob    CompilerJob @relation(fields: [compilerJobId], references: [id])
+  source         String                              // "second_demonstration" | "execution_failure"
+  detail         Json                                 // what was learned / what failed and where
+  createdAt      DateTime @default(now())
+}

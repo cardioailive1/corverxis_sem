@@ -1,0 +1,22 @@
+{
+  "name": "sem-osc-backend",
+  "version": "0.1.0",
+  "description": "SEM+OSC — Structural Extraction Model + One-Shot Compiler. Standalone backend, separate from NexGen Lab.",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "db:generate": "prisma generate --schema=./schema.prisma",
+    "db:push": "prisma db push --schema=./schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.16.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "prisma": "^5.16.0"
+  }
+}
