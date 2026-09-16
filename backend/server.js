@@ -37,18 +37,23 @@ function authenticate(req, res, next) {
 const USE_CASES = [
   // SEM-only — standalone diagnostic questions, no downstream execution
   { slug: 'medical-diagnostics', name: 'Medical Diagnostics', kind: 'sem_only',
-    description: 'Determine the actual root cause behind a patient\'s symptoms or an unusual test result, verified against known disease-progression models rather than a first guess.' },
+    description: 'Determine the actual root cause behind a patient\'s symptoms or an unusual test result, verified against known disease-progression models rather than a first guess.',
+    simulatorSpec: 'medical_diagnostics_simulator.py' },
   { slug: 'industrial-fault-diagnosis', name: 'Industrial Fault Diagnosis', kind: 'sem_only',
     description: 'Why a machine failed or a production batch came out defective, from sensor logs, checked against a simulator instead of trusted on first pass.',
     simulatorSpec: 'industrial_fault_simulator.py' },
   { slug: 'security-incident-investigation', name: 'Security Incident Investigation', kind: 'sem_only',
-    description: 'Reconstruct the true attack chain behind a breach from logs, rather than a plausible-sounding but unverified story.' },
+    description: 'Reconstruct the true attack chain behind a breach from logs, rather than a plausible-sounding but unverified story.',
+    simulatorSpec: 'security_incident_simulator.py' },
   { slug: 'financial-fraud-investigation', name: 'Financial Fraud/Anomaly Investigation', kind: 'sem_only',
-    description: 'The actual cause behind an unusual transaction pattern, not just a flagged correlation.' },
+    description: 'The actual cause behind an unusual transaction pattern, not just a flagged correlation.',
+    simulatorSpec: 'financial_fraud_simulator.py' },
   { slug: 'scientific-discovery', name: 'Scientific Discovery', kind: 'sem_only',
-    description: 'Propose the real causal mechanism behind an experimental result, verified against further simulated or real experiments.' },
+    description: 'Propose the real causal mechanism behind an experimental result, verified against further simulated or real experiments.',
+    simulatorSpec: 'scientific_discovery_simulator.py' },
   { slug: 'production-incident-rootcause', name: 'Production Incident Root-Causing', kind: 'sem_only',
-    description: 'What actually broke and why, for a software outage, checked against replay/simulation rather than a first hypothesis.' },
+    description: 'What actually broke and why, for a software outage, checked against replay/simulation rather than a first hypothesis.',
+    simulatorSpec: 'production_incident_simulator.py' },
 
   // Compiler use cases — one demonstration becomes a reusable, executable skill
   { slug: 'industrial-maintenance', name: 'Industrial Maintenance/Repair', kind: 'compiler',
@@ -118,6 +123,11 @@ const toScenario = s => ({
 // registry is what actually runs in production.
 const JS_SIMULATORS = {
   'industrial-fault-diagnosis': require('./simulators/industrialFaultSimulator.js'),
+  'medical-diagnostics': require('./simulators/medicalDiagnosticsSimulator.js'),
+  'security-incident-investigation': require('./simulators/securityIncidentSimulator.js'),
+  'financial-fraud-investigation': require('./simulators/financialFraudSimulator.js'),
+  'scientific-discovery': require('./simulators/scientificDiscoverySimulator.js'),
+  'production-incident-rootcause': require('./simulators/productionIncidentSimulator.js'),
 };
 
 app.post('/api/scenarios/generate', authenticate, async (req, res) => {
