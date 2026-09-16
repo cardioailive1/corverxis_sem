@@ -255,6 +255,7 @@ async function loadScenarios() { try { state.scenarios = await api('GET', '/api/
 function renderDemonstrations() {
   if (!state.useCases) { state.useCases = []; loadUseCases(); }
   if (!state._demosPolling) { state._demosPolling = true; startPolling(loadDemonstrations, 5000); }
+  if (!state._demosLoadedJobs) { state._demosLoadedJobs = true; loadCompilerJobs(); }
 
   const container = dc('div', {});
   container.append(modHeader('COMPILER INPUT', 'Demonstrations'));
@@ -298,13 +299,24 @@ function renderDemonstrations() {
       const useCase = compilerCases.find(u => u.id === d.use_case_id);
       const showingCompileForm = state._compileFormFor === d.id;
       const isReal = d.modality === 'log';
-      return dc('div', { style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px' },
+      // A demonstration whose file is confirmed gone (from a prior failed
+      // compile) is flagged directly here — retrying Compile on it will
+      // always fail the same way, so this needs to be obvious before
+      // someone burns another attempt on it, not just visible buried in
+      // a job's error message on a different tab.
+      const fileGone = (state.compilerJobs || []).some(j =>
+        j.demonstration_id === d.id && j.stage === 'failed' && (j.error_message || '').includes('no longer available')
+      );
+      return dc('div', { style: 'padding:10px;border:1px solid ' + (fileGone ? 'var(--red)' : 'var(--border)') + ';border-radius:6px;margin-bottom:8px' },
         dc('div', { style: 'display:flex;justify-content:space-between;align-items:center' },
           dc('div', { style: 'font-size:10px' },
             d.original_name + ' · ' + d.modality + ' ',
             dc('span', { className: 'badge ' + (isReal ? 'badge-sem' : ''), style: isReal ? '' : 'background:rgba(113,113,122,.15);color:var(--text3)' }, isReal ? 'REAL' : 'PLACEHOLDER')
           ),
           btn('Compile', 'btn-cyan', () => { state._compileFormFor = showingCompileForm ? null : d.id; render(); })
+        ),
+        fileGone && dc('div', { style: 'margin-top:8px;font-size:9px;color:var(--red)' },
+          '⚠ This file is no longer available on the server — Compile will fail again. Upload a fresh copy above to get a new, working demonstration instead of retrying this one.'
         ),
         showingCompileForm && useCase && dc('div', { style: 'margin-top:10px;padding-top:10px;border-top:1px solid var(--border)' },
           field('OUTPUT TARGET', (() => {
