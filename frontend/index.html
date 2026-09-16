@@ -262,6 +262,14 @@ function renderDemonstrations() {
 
   container.append(card(
     dc('div', { className: 'card-label' }, 'UPLOAD DEMONSTRATION'),
+    dc('div', { style: 'font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:12px;line-height:1.6;padding:8px;border:1px solid var(--border);border-radius:6px' },
+      dc('b', { style: 'color:var(--yellow)' }, 'Only "log" modality has a real, working pipeline right now.'),
+      ' video / screen_recording / motion_capture demonstrations still complete with a placeholder note — parsing raw video isn\'t built yet. A log demonstration is a JSON file: an array of ',
+      dc('code', { style: 'color:var(--cyan)' }, '{"action": "...", "target": "...", "value": "..."}'),
+      ' steps. ',
+      dc('span', { style: 'color:var(--cyan);cursor:pointer;text-decoration:underline', onClick: downloadSampleLogFile }, 'Download a sample log file'),
+      ' to try it.'
+    ),
     field('USE CASE', (() => {
       const el = dc('select', { id: 'fld-demo-usecase' });
       compilerCases.forEach(u => el.append(dc('option', { value: u.id }, u.name)));
@@ -269,7 +277,8 @@ function renderDemonstrations() {
     })()),
     field('MODALITY', (() => {
       const el = dc('select', { id: 'fld-demo-modality' });
-      ['video', 'screen_recording', 'motion_capture', 'log'].forEach(m => el.append(dc('option', { value: m }, m)));
+      [['log', 'log — real pipeline'], ['screen_recording', 'screen_recording — placeholder'], ['video', 'video — placeholder'], ['motion_capture', 'motion_capture — placeholder']]
+        .forEach(([value, label]) => el.append(dc('option', { value }, label)));
       return el;
     })()),
     field('FILE', dc('input', { type: 'file', id: 'fld-demo-file' })),
@@ -288,9 +297,13 @@ function renderDemonstrations() {
     dc('div', {}, ...filtered.map(d => {
       const useCase = compilerCases.find(u => u.id === d.use_case_id);
       const showingCompileForm = state._compileFormFor === d.id;
+      const isReal = d.modality === 'log';
       return dc('div', { style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px' },
         dc('div', { style: 'display:flex;justify-content:space-between;align-items:center' },
-          dc('div', { style: 'font-size:10px' }, d.original_name + ' · ' + d.modality),
+          dc('div', { style: 'font-size:10px' },
+            d.original_name + ' · ' + d.modality + ' ',
+            dc('span', { className: 'badge ' + (isReal ? 'badge-sem' : ''), style: isReal ? '' : 'background:rgba(113,113,122,.15);color:var(--text3)' }, isReal ? 'REAL' : 'PLACEHOLDER')
+          ),
           btn('Compile', 'btn-cyan', () => { state._compileFormFor = showingCompileForm ? null : d.id; render(); })
         ),
         showingCompileForm && useCase && dc('div', { style: 'margin-top:10px;padding-top:10px;border-top:1px solid var(--border)' },
@@ -305,6 +318,20 @@ function renderDemonstrations() {
     }))
   ));
   return container;
+}
+function downloadSampleLogFile() {
+  const sample = [
+    { action: 'click', target: 'login_button' },
+    { action: 'type', target: 'username_field', value: 'jsmith' },
+    { action: 'type', target: 'password_field', value: 'hunter2' },
+    { action: 'click', target: 'submit_button' },
+  ];
+  const blob = new Blob([JSON.stringify(sample, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'sample-demonstration-log.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 async function uploadDemonstration() {
   const file = document.getElementById('fld-demo-file')?.files?.[0];
@@ -446,7 +473,8 @@ function renderCompiler() {
   container.append(modHeader('SKILL COMPILATION', 'Compiler Jobs'));
   container.append(card(
     dc('div', { className: 'card-label' }, dc('span', { className: 'live-dot' }), 'JOBS'),
-    state.compilerJobs.length === 0 ? dc('div', { style: 'color:var(--text3);font-size:10px' }, 'None yet — start one from the Demonstrations tab.') :
+    state.compilerJobs.length === 0 ? dc('div', { style: 'color:var(--text3);font-size:10px;line-height:1.6' },
+      'None yet. Go to the Demonstrations tab, upload a "log" modality file (there\'s a sample download button there), then click "Compile" on it — only "log" demonstrations have a real, working pipeline right now.') :
     dc('div', {}, ...state.compilerJobs.map(j => {
       const expanded = state._expandedJob === j.id;
       return dc('div', {
