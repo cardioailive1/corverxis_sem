@@ -4,16 +4,17 @@
 <meta charset="utf-8">
 <title>SEM+OSC</title>
 <style>
-  :root { --bg:#0a0a0f; --panel:#12121a; --border:#26262f; --text:#e4e4e7; --text2:#a1a1aa; --text3:#71717a; --cyan:#00CFFF; --green:#4ade80; --red:#f87171; --yellow:#fbbf24; --mono:'JetBrains Mono',monospace; }
+  :root { --bg:#021830; --panel:#072544; --panel2:#0d2f52; --border:#16466e; --text:#ffffff; --text2:#5c8aa8; --text3:#3d6484; --cyan:#05d2fc; --green:#4ade80; --red:#f87171; --yellow:#fbbf24; --mono:'JetBrains Mono',monospace; }
   * { box-sizing:border-box; }
   body { background:var(--bg); color:var(--text); font-family:var(--mono); margin:0; }
   #app { display:flex; min-height:100vh; }
   nav { width:220px; border-right:1px solid var(--border); padding:16px; flex-shrink:0; }
   nav .logo-img { width:100%; border-radius:6px; margin-bottom:6px; display:block; }
   nav .logo { font-size:11px; font-weight:700; color:var(--cyan); margin-bottom:20px; letter-spacing:.08em; }
-  nav .nav-item { padding:8px 10px; border-radius:6px; cursor:pointer; font-size:11px; color:var(--text2); margin-bottom:2px; }
+  nav .nav-item { padding:8px 10px; border-radius:6px; cursor:pointer; font-size:11px; color:var(--text2); margin-bottom:2px; display:flex; justify-content:space-between; }
   nav .nav-item.active { background:rgba(0,207,255,.08); color:var(--cyan); }
-  main { flex:1; padding:24px; max-width:1100px; }
+  nav .nav-item .badge-count { font-size:9px; color:var(--text3); }
+  main { flex:1; padding:24px; max-width:1200px; }
   .card { border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:16px; background:var(--panel); }
   .card-label { font-size:10px; color:var(--text3); letter-spacing:.05em; margin-bottom:10px; }
   .mod-header { font-size:9px; color:var(--text3); letter-spacing:.08em; }
@@ -28,21 +29,32 @@
   .stage-row { display:flex; gap:6px; margin:10px 0; flex-wrap:wrap; }
   .stage-pill { padding:3px 10px; border-radius:10px; font-size:8px; border:1px solid var(--border); color:var(--text3); }
   .stage-pill.done { background:rgba(74,222,128,.12); color:var(--green); border-color:var(--green); }
-  .stage-pill.active { background:rgba(0,207,255,.12); color:var(--cyan); border-color:var(--cyan); }
+  .stage-pill.active { background:rgba(0,207,255,.12); color:var(--cyan); border-color:var(--cyan); animation:pulse 1.5s infinite; }
   .stage-pill.failed { background:rgba(248,113,113,.12); color:var(--red); border-color:var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
   .field { margin-bottom:10px; }
   .field label { display:block; font-size:9px; color:var(--text3); margin-bottom:4px; }
+  .row-clickable { cursor:pointer; transition:background .1s; }
+  .row-clickable:hover { background:var(--panel2); }
+  .progress-track { width:100%; height:6px; background:var(--bg); border-radius:3px; overflow:hidden; margin:8px 0; }
+  .progress-fill { height:100%; background:var(--cyan); transition:width .3s; }
+  .detail-json { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px; font-size:9px; color:var(--text2); white-space:pre-wrap; word-break:break-all; max-height:240px; overflow-y:auto; }
+  .live-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--green); margin-right:6px; animation:pulse 1.2s infinite; }
+  .chip { display:inline-block; padding:3px 9px; border-radius:10px; font-size:9px; border:1px solid var(--border); color:var(--text3); cursor:pointer; margin:0 6px 6px 0; }
+  .chip.active { background:rgba(0,207,255,.12); color:var(--cyan); border-color:var(--cyan); }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-// Same-origin by default — works correctly whether this is served locally
-// alongside the backend on :4001, or deployed to Render where frontend and
-// backend share one origin. Only override if genuinely running the
-// frontend from a different origin than the backend.
-const API = window.location.origin;   // SEM+OSC backend — separate from NexGen Lab's backend entirely
-const state = { module: 'usecases', useCases: null, scenarios: [], demos: [], trainingRuns: [], compilerJobs: [], selectedUseCase: null, error: null, busy: false };
+const API = window.location.origin;
+const state = {
+  module: 'usecases', useCases: null, scenarios: [], demos: [], trainingRuns: [], compilerJobs: [], checkpoints: null,
+  selectedUseCase: null, error: null, busy: false,
+  _scenarioFilter: '', _demoFilter: '', _expandedScenario: null, _expandedJob: null,
+  _compileFormFor: null, _runDetail: null, _runDetailResults: null,
+};
+let _pollHandle = null;
 
 function dc(tag, props, ...children) {
   const el = document.createElement(tag);
@@ -59,14 +71,35 @@ function dc(tag, props, ...children) {
 }
 function card(...children) { return dc('div', { className: 'card' }, ...children); }
 function btn(label, cls, onClick, disabled) {
-  const b = dc('button', { className: 'btn ' + (cls || ''), onClick, disabled: !!disabled }, label);
-  return b;
+  return dc('button', { className: 'btn ' + (cls || ''), onClick, disabled: !!disabled }, label);
 }
 function field(labelText, inputEl) {
   return dc('div', { className: 'field' }, dc('label', {}, labelText), inputEl);
 }
 function modHeader(kicker, title) {
   return dc('div', {}, dc('div', { className: 'mod-header' }, kicker), dc('div', { className: 'mod-title' }, title));
+}
+
+// ── Small, dependency-free SVG bar chart — no CDN, no external library ────
+function svgBarChart(values, labels, opts) {
+  opts = opts || {};
+  const w = opts.width || 480, h = opts.height || 140, pad = 24;
+  const max = Math.max(1, ...values);
+  const barW = (w - pad * 2) / values.length * 0.7;
+  const gap = (w - pad * 2) / values.length;
+  let bars = '';
+  values.forEach((v, i) => {
+    const barH = (v / max) * (h - pad * 2);
+    const x = pad + i * gap + (gap - barW) / 2;
+    const y = h - pad - barH;
+    bars += '<rect x="' + x + '" y="' + y + '" width="' + barW + '" height="' + barH + '" fill="#05d2fc" opacity="0.85" rx="2"/>';
+    bars += '<text x="' + (x + barW / 2) + '" y="' + (h - pad + 12) + '" font-size="8" fill="#3d6484" text-anchor="middle" font-family="monospace">' + (labels[i] || '') + '</text>';
+    bars += '<text x="' + (x + barW / 2) + '" y="' + (y - 4) + '" font-size="8" fill="#5c8aa8" text-anchor="middle" font-family="monospace">' + v + '</text>';
+  });
+  const svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '">' + bars + '</svg>';
+  const wrap = dc('div', {});
+  wrap.innerHTML = svg;
+  return wrap;
 }
 
 async function api(method, path, body) {
@@ -78,6 +111,11 @@ async function api(method, path, body) {
   return data;
 }
 
+// ── Polling — one active poll at a time, tied to the current module, so
+// navigating away stops it rather than silently polling a tab you left. ────
+function stopPolling() { if (_pollHandle) { clearInterval(_pollHandle); _pollHandle = null; } }
+function startPolling(fn, ms) { stopPolling(); _pollHandle = setInterval(fn, ms); }
+
 function render() {
   const app = document.getElementById('app');
   app.innerHTML = '';
@@ -85,16 +123,16 @@ function render() {
     dc('img', { className: 'logo-img', src: 'assets/corverxis_logo.jpg', alt: 'Corverxis Technologies' }),
     dc('div', { className: 'logo' }, 'SEM+OSC'),
     ...[
-      ['usecases', 'Use Cases'],
-      ['scenarios', 'Scenarios (SEM)'],
-      ['demonstrations', 'Demonstrations'],
-      ['training', 'Training Runs'],
-      ['compiler', 'Compiler Jobs'],
-      ['checkpoints', 'Checkpoints'],
-    ].map(([id, label]) => dc('div', {
+      ['usecases', 'Use Cases', null],
+      ['scenarios', 'Scenarios (SEM)', state.scenarios.length],
+      ['demonstrations', 'Demonstrations', state.demos.length],
+      ['training', 'Training Runs', state.trainingRuns.length],
+      ['compiler', 'Compiler Jobs', state.compilerJobs.length],
+      ['checkpoints', 'Checkpoints', state.checkpoints ? state.checkpoints.length : null],
+    ].map(([id, label, count]) => dc('div', {
       className: 'nav-item' + (state.module === id ? ' active' : ''),
-      onClick: () => { state.module = id; render(); },
-    }, label))
+      onClick: () => { state.module = id; stopPolling(); render(); },
+    }, dc('span', {}, label), count != null ? dc('span', { className: 'badge-count' }, String(count)) : ''))
   );
   const main = dc('main', {});
   const renderers = {
@@ -105,34 +143,55 @@ function render() {
   app.append(nav, main);
 }
 
-// ── Use Cases ────────────────────────────────────────────────────────────
+// ── Use Cases — with live, cross-referenced counts and search ─────────────
 function renderUseCases() {
   if (state.useCases === null) { state.useCases = []; loadUseCases(); }
+  if (!state._ucLoadedRest) { state._ucLoadedRest = true; loadScenarios(); loadDemonstrations(); loadCompilerJobs(); }
+  if (state._ucSearch === undefined) state._ucSearch = '';
+
   const container = dc('div', {});
   container.append(modHeader('SEM+OSC', 'Use Cases'));
-  const semCases = state.useCases.filter(u => u.kind === 'sem_only');
-  const compilerCases = state.useCases.filter(u => u.kind === 'compiler');
 
-  container.append(card(
-    dc('div', { className: 'card-label' }, 'SEM-ONLY — STANDALONE DIAGNOSTIC USE CASES'),
-    ...semCases.map(u => dc('div', { style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px' },
-      dc('div', {}, dc('span', { className: 'badge badge-sem' }, 'SEM'), ' ', dc('b', {}, u.name)),
-      dc('div', { style: 'color:var(--text3);font-size:10px;margin-top:4px' }, u.description)))
-  ));
-  container.append(card(
-    dc('div', { className: 'card-label' }, 'COMPILER USE CASES — DEMONSTRATION → REUSABLE SKILL'),
-    ...compilerCases.map(u => dc('div', { style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px' },
-      dc('div', {}, dc('span', { className: 'badge badge-compiler' }, 'COMPILER'), ' ', dc('b', {}, u.name)),
+  const search = field('SEARCH', dc('input', {
+    value: state._ucSearch, placeholder: 'Filter by name…',
+    oninput: e => { state._ucSearch = e.target.value; render(); },
+  }));
+
+  const matches = u => u.name.toLowerCase().includes(state._ucSearch.toLowerCase()) || u.description.toLowerCase().includes(state._ucSearch.toLowerCase());
+  const semCases = state.useCases.filter(u => u.kind === 'sem_only' && matches(u));
+  const compilerCases = state.useCases.filter(u => u.kind === 'compiler' && matches(u));
+
+  const renderCase = u => {
+    const expanded = state.selectedUseCase === u.id;
+    const scenarioCount = state.scenarios.filter(s => s.use_case_id === u.id).length;
+    const demoCount = state.demos.filter(d => d.use_case_id === u.id).length;
+    const jobCount = state.compilerJobs.filter(j => j.use_case_id === u.id).length;
+    return dc('div', {
+      className: 'row-clickable', style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px',
+      onClick: () => { state.selectedUseCase = expanded ? null : u.id; render(); },
+    },
+      dc('div', {}, dc('span', { className: 'badge ' + (u.kind === 'sem_only' ? 'badge-sem' : 'badge-compiler') }, u.kind === 'sem_only' ? 'SEM' : 'COMPILER'), ' ', dc('b', {}, u.name)),
       dc('div', { style: 'color:var(--text3);font-size:10px;margin-top:4px' }, u.description),
-      dc('div', { style: 'color:var(--text3);font-size:9px;margin-top:4px' }, 'Targets: ' + (u.output_targets || []).join(', '))))
-  ));
+      expanded && dc('div', { style: 'margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:9px;color:var(--text2)' },
+        u.kind === 'sem_only'
+          ? dc('div', {}, scenarioCount + ' scenario(s) generated')
+          : dc('div', {}, demoCount + ' demonstration(s) uploaded · ' + jobCount + ' compiler job(s) created'),
+        u.kind === 'compiler' && dc('div', { style: 'margin-top:4px;color:var(--text3)' }, 'Output targets: ' + u.output_targets.join(', '))
+      )
+    );
+  };
+
+  container.append(card(dc('div', { className: 'card-label' }, 'SEM-ONLY — STANDALONE DIAGNOSTIC USE CASES'), search, ...semCases.map(renderCase)));
+  container.append(card(dc('div', { className: 'card-label' }, 'COMPILER USE CASES — DEMONSTRATION → REUSABLE SKILL'), ...compilerCases.map(renderCase)));
   return container;
 }
 async function loadUseCases() { try { state.useCases = await api('GET', '/api/use-cases'); render(); } catch (e) { console.error(e); } }
 
-// ── Scenarios ────────────────────────────────────────────────────────────
+// ── Scenarios — filter, chart, expandable detail, live refresh ────────────
 function renderScenarios() {
   if (!state.useCases) { state.useCases = []; loadUseCases(); }
+  if (!state._scenariosPolling) { state._scenariosPolling = true; startPolling(loadScenarios, 5000); }
+
   const container = dc('div', {});
   container.append(modHeader('SEM TRAINING DATA', 'Scenarios'));
   const semCases = (state.useCases || []).filter(u => u.kind === 'sem_only');
@@ -148,13 +207,34 @@ function renderScenarios() {
     btn(state.busy ? '⟳ Generating…' : '⚡ Generate', 'btn-cyan btn-full', generateScenarios, state.busy)
   ));
 
+  const filtered = state._scenarioFilter ? state.scenarios.filter(s => s.use_case_id === state._scenarioFilter) : state.scenarios;
+
+  if (semCases.length > 0) {
+    const counts = semCases.map(u => state.scenarios.filter(s => s.use_case_id === u.id).length);
+    container.append(card(
+      dc('div', { className: 'card-label' }, 'SCENARIOS PER USE CASE'),
+      svgBarChart(counts, semCases.map(u => u.name.split(' ')[0]))
+    ));
+  }
+
   container.append(card(
-    dc('div', { className: 'card-label' }, `RECENT SCENARIOS (${state.scenarios.length})`),
-    state.scenarios.length === 0
-      ? dc('div', { style: 'color:var(--text3);font-size:10px' }, 'None yet.')
-      : dc('div', {}, ...state.scenarios.slice(0, 20).map(s => dc('div', { style: 'padding:8px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:9px' },
-          dc('div', {}, 'true: ', dc('b', {}, JSON.stringify(s.hidden_intervention))),
-          dc('div', { style: 'color:var(--text3)' }, 'observed: ', JSON.stringify(s.observations)))))
+    dc('div', { className: 'card-label' }, dc('span', { className: 'live-dot' }), 'SCENARIOS (' + filtered.length + ')'),
+    dc('div', { style: 'margin-bottom:10px' },
+      dc('span', { className: 'chip' + (state._scenarioFilter === '' ? ' active' : ''), onClick: () => { state._scenarioFilter = ''; render(); } }, 'All'),
+      ...semCases.map(u => dc('span', { className: 'chip' + (state._scenarioFilter === u.id ? ' active' : ''), onClick: () => { state._scenarioFilter = u.id; render(); } }, u.name))
+    ),
+    filtered.length === 0 ? dc('div', { style: 'color:var(--text3);font-size:10px' }, 'None yet.') :
+    dc('div', {}, ...filtered.slice(0, 30).map((s, i) => {
+      const expanded = state._expandedScenario === s.id;
+      return dc('div', {
+        className: 'row-clickable', style: 'padding:8px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:9px',
+        onClick: () => { state._expandedScenario = expanded ? null : s.id; render(); },
+      },
+        dc('div', {}, 'true: ', dc('b', {}, JSON.stringify(s.hidden_intervention))),
+        dc('div', { style: 'color:var(--text3)' }, 'observed: ', JSON.stringify(s.observations)),
+        expanded && dc('div', { className: 'detail-json', style: 'margin-top:8px' }, JSON.stringify(s, null, 2))
+      );
+    }))
   ));
   return container;
 }
@@ -166,13 +246,16 @@ async function generateScenarios() {
   try {
     const created = await api('POST', '/api/scenarios/generate', { use_case_id, count });
     state.scenarios = [...created, ...state.scenarios];
-  } catch (e) { state.error = e.message; alert(e.message); }
+  } catch (e) { alert(e.message); }
   state.busy = false; render();
 }
+async function loadScenarios() { try { state.scenarios = await api('GET', '/api/scenarios'); render(); } catch (e) { console.error(e); } }
 
-// ── Demonstrations ───────────────────────────────────────────────────────
+// ── Demonstrations — filter, and the real fix: a working Compile action ───
 function renderDemonstrations() {
   if (!state.useCases) { state.useCases = []; loadUseCases(); }
+  if (!state._demosPolling) { state._demosPolling = true; startPolling(loadDemonstrations, 5000); }
+
   const container = dc('div', {});
   container.append(modHeader('COMPILER INPUT', 'Demonstrations'));
   const compilerCases = (state.useCases || []).filter(u => u.kind === 'compiler');
@@ -192,10 +275,34 @@ function renderDemonstrations() {
     field('FILE', dc('input', { type: 'file', id: 'fld-demo-file' })),
     btn(state.busy ? '⟳ Uploading…' : '⬆ Upload', 'btn-cyan btn-full', uploadDemonstration, state.busy)
   ));
+
+  const filtered = state._demoFilter ? state.demos.filter(d => d.use_case_id === state._demoFilter) : state.demos;
+
   container.append(card(
-    dc('div', { className: 'card-label' }, `DEMONSTRATIONS (${state.demos.length})`),
-    ...state.demos.map(d => dc('div', { style: 'padding:8px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:10px' },
-      `${d.original_name} · ${d.modality}`))
+    dc('div', { className: 'card-label' }, dc('span', { className: 'live-dot' }), 'DEMONSTRATIONS (' + filtered.length + ')'),
+    dc('div', { style: 'margin-bottom:10px' },
+      dc('span', { className: 'chip' + (state._demoFilter === '' ? ' active' : ''), onClick: () => { state._demoFilter = ''; render(); } }, 'All'),
+      ...compilerCases.map(u => dc('span', { className: 'chip' + (state._demoFilter === u.id ? ' active' : ''), onClick: () => { state._demoFilter = u.id; render(); } }, u.name))
+    ),
+    filtered.length === 0 ? dc('div', { style: 'color:var(--text3);font-size:10px' }, 'None yet.') :
+    dc('div', {}, ...filtered.map(d => {
+      const useCase = compilerCases.find(u => u.id === d.use_case_id);
+      const showingCompileForm = state._compileFormFor === d.id;
+      return dc('div', { style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px' },
+        dc('div', { style: 'display:flex;justify-content:space-between;align-items:center' },
+          dc('div', { style: 'font-size:10px' }, d.original_name + ' · ' + d.modality),
+          btn('Compile', 'btn-cyan', () => { state._compileFormFor = showingCompileForm ? null : d.id; render(); })
+        ),
+        showingCompileForm && useCase && dc('div', { style: 'margin-top:10px;padding-top:10px;border-top:1px solid var(--border)' },
+          field('OUTPUT TARGET', (() => {
+            const el = dc('select', { id: 'fld-compile-target-' + d.id });
+            useCase.output_targets.forEach(t => el.append(dc('option', { value: t }, t)));
+            return el;
+          })()),
+          btn(state.busy ? '⟳ Starting…' : '▶ Start Compilation', 'btn-cyan btn-full', () => startCompilerJob(d.id, d.use_case_id), state.busy)
+        )
+      );
+    }))
   ));
   return container;
 }
@@ -215,23 +322,65 @@ async function uploadDemonstration() {
   } catch (e) { alert(e.message); }
   state.busy = false; render();
 }
+async function loadDemonstrations() { try { state.demos = await api('GET', '/api/demonstrations'); render(); } catch (e) { console.error(e); } }
 
-// ── Training Runs ────────────────────────────────────────────────────────
+async function startCompilerJob(demonstration_id, use_case_id) {
+  const target_output = document.getElementById('fld-compile-target-' + demonstration_id)?.value;
+  state.busy = true; render();
+  try {
+    const job = await api('POST', '/api/compiler-jobs', { use_case_id, demonstration_id, target_output });
+    state.compilerJobs = [job, ...state.compilerJobs];
+    state._compileFormFor = null;
+    state.module = 'compiler';
+  } catch (e) { alert(e.message); }
+  state.busy = false; render();
+}
+
+// ── Training Runs — progress bar, live poll, detail with reward chart ─────
 function renderTraining() {
   if (!state.useCases) { state.useCases = []; loadUseCases(); }
+  if (!state._trainingPolling) {
+    state._trainingPolling = true;
+    startPolling(async () => {
+      await loadTrainingRuns();
+      if (state._runDetail) await loadRunDetail(state._runDetail);
+    }, 4000);
+  }
+
   const container = dc('div', {});
   container.append(modHeader('SEM MODEL TRAINING', 'Training Runs'));
   container.append(card(
     dc('div', { className: 'card-label' }, 'START A TRAINING RUN'),
     btn(state.busy ? '⟳ Starting…' : '▶ Start Run (all sem_only use cases)', 'btn-cyan btn-full', startTrainingRun, state.busy)
   ));
+
   container.append(card(
-    dc('div', { className: 'card-label' }, 'RUNS'),
+    dc('div', { className: 'card-label' }, dc('span', { className: 'live-dot' }), 'RUNS'),
     state.trainingRuns.length === 0 ? dc('div', { style: 'color:var(--text3);font-size:10px' }, 'None yet.') :
-    dc('div', {}, ...state.trainingRuns.map(t => dc('div', { style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;font-size:10px' },
-      dc('div', {}, `${t.status} — ${t.completed_scenarios}/${t.total_scenarios} scenarios`),
-      t.mean_reward != null && dc('div', { style: 'color:var(--text3)' }, `mean reward: ${t.mean_reward.toFixed(3)}`))))
+    dc('div', {}, ...state.trainingRuns.map(t => {
+      const pct = t.total_items > 0 ? Math.round((t.completed_items / t.total_items) * 100) : 0;
+      return dc('div', {
+        className: 'row-clickable', style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;font-size:10px',
+        onClick: () => { state._runDetail = t.id; loadRunDetail(t.id); render(); },
+      },
+        dc('div', {}, t.status + ' — ' + t.completed_items + '/' + t.total_items + ' scenarios'),
+        dc('div', { className: 'progress-track' }, dc('div', { className: 'progress-fill', style: 'width:' + pct + '%' })),
+        t.mean_reward != null && dc('div', { style: 'color:var(--text3)' }, 'mean reward: ' + t.mean_reward.toFixed(3))
+      );
+    }))
   ));
+
+  if (state._runDetail && state._runDetailResults) {
+    const results = state._runDetailResults;
+    container.append(card(
+      dc('div', { className: 'card-label' }, 'RUN DETAIL — REWARD PER SCENARIO'),
+      results.length > 0 ? svgBarChart(results.map(r => r.reward), results.map((_, i) => i + 1)) : dc('div', { style: 'color:var(--text3);font-size:10px' }, 'No results yet.'),
+      dc('div', { style: 'margin-top:10px;max-height:300px;overflow-y:auto' },
+        ...results.map(r => dc('div', { style: 'padding:6px;border-bottom:1px solid var(--border);font-size:9px' },
+          'reward ' + r.reward + ' — proposed ' + JSON.stringify(r.proposed_structure) + ' vs true ' + JSON.stringify(r.hidden_intervention)))
+      )
+    ));
+  }
   return container;
 }
 async function startTrainingRun() {
@@ -239,48 +388,73 @@ async function startTrainingRun() {
   try {
     const run = await api('POST', '/api/training-runs', { use_case_ids: [] });
     state.trainingRuns = [run, ...state.trainingRuns];
-    pollTrainingRun(run.id);
   } catch (e) { alert(e.message); }
   state.busy = false; render();
 }
-async function pollTrainingRun(id) {
-  while (true) {
-    const run = await api('GET', '/api/training-runs/' + id).catch(() => null);
-    if (!run) return;
-    state.trainingRuns = state.trainingRuns.map(t => t.id === id ? run : t);
-    render();
-    if (run.status === 'completed' || run.status === 'failed') return;
-    await new Promise(r => setTimeout(r, 2000));
-  }
-}
+async function loadTrainingRuns() { try { state.trainingRuns = await api('GET', '/api/training-runs'); render(); } catch (e) { console.error(e); } }
+async function loadRunDetail(id) { try { state._runDetailResults = await api('GET', '/api/training-runs/' + id + '/results'); render(); } catch (e) { console.error(e); } }
 
-// ── Compiler Jobs ─────────────────────────────────────────────────────────
+// ── Compiler Jobs — full stage detail, live poll for in-progress jobs ─────
 function renderCompiler() {
-  if (!state.useCases) { state.useCases = []; loadUseCases(); }
+  if (!state._compilerPolling) {
+    state._compilerPolling = true;
+    startPolling(loadCompilerJobs, 4000);
+  }
+  const STAGES = ['ingestion', 'extraction', 'verification', 'abstraction', 'compilation', 'completed'];
   const container = dc('div', {});
   container.append(modHeader('SKILL COMPILATION', 'Compiler Jobs'));
-  const STAGES = ['ingestion', 'extraction', 'verification', 'abstraction', 'compilation', 'completed'];
   container.append(card(
-    dc('div', { className: 'card-label' }, 'JOBS'),
-    state.compilerJobs.length === 0 ? dc('div', { style: 'color:var(--text3);font-size:10px' }, 'None yet — start one from the Demonstrations tab by compiling an uploaded demonstration.') :
-    dc('div', {}, ...state.compilerJobs.map(j => dc('div', { style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px' },
-      dc('div', { className: 'stage-row' }, ...STAGES.map(s => dc('span', {
-        className: 'stage-pill ' + (j.stage === 'failed' && s === 'ingestion' ? 'failed' : STAGES.indexOf(j.stage) > STAGES.indexOf(s) || j.stage === 'completed' ? 'done' : j.stage === s ? 'active' : '')
-      }, s))),
-      dc('div', { style: 'font-size:9px;color:var(--text3)' }, `target: ${j.target_output}`))))
+    dc('div', { className: 'card-label' }, dc('span', { className: 'live-dot' }), 'JOBS'),
+    state.compilerJobs.length === 0 ? dc('div', { style: 'color:var(--text3);font-size:10px' }, 'None yet — start one from the Demonstrations tab.') :
+    dc('div', {}, ...state.compilerJobs.map(j => {
+      const expanded = state._expandedJob === j.id;
+      return dc('div', {
+        className: 'row-clickable', style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px',
+        onClick: () => { state._expandedJob = expanded ? null : j.id; render(); },
+      },
+        dc('div', { className: 'stage-row' }, ...STAGES.map(s => dc('span', {
+          className: 'stage-pill ' + (j.stage === 'failed' ? 'failed' : STAGES.indexOf(j.stage) > STAGES.indexOf(s) || j.stage === 'completed' ? 'done' : j.stage === s ? 'active' : '')
+        }, s))),
+        dc('div', { style: 'font-size:9px;color:var(--text3)' }, 'target: ' + j.target_output),
+        j.error_message && dc('div', { style: 'font-size:9px;color:var(--red)' }, j.error_message),
+        expanded && dc('div', { style: 'margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px' },
+          j.observation_sequence && dc('div', {}, dc('div', { style: 'font-size:9px;color:var(--text3);margin-bottom:4px' }, 'OBSERVATION SEQUENCE'), dc('div', { className: 'detail-json' }, JSON.stringify(j.observation_sequence, null, 2))),
+          j.causal_structure && dc('div', {}, dc('div', { style: 'font-size:9px;color:var(--text3);margin-bottom:4px' }, 'CAUSAL STRUCTURE'), dc('div', { className: 'detail-json' }, JSON.stringify(j.causal_structure, null, 2))),
+          j.verified_structure && dc('div', {}, dc('div', { style: 'font-size:9px;color:var(--text3);margin-bottom:4px' }, 'VERIFIED STRUCTURE'), dc('div', { className: 'detail-json' }, JSON.stringify(j.verified_structure, null, 2))),
+          j.abstracted_procedure && dc('div', {}, dc('div', { style: 'font-size:9px;color:var(--text3);margin-bottom:4px' }, 'ABSTRACTED PROCEDURE'), dc('div', { className: 'detail-json' }, JSON.stringify(j.abstracted_procedure, null, 2))),
+          j.compiled_output && dc('div', {}, dc('div', { style: 'font-size:9px;color:var(--text3);margin-bottom:4px' }, 'COMPILED OUTPUT'), dc('div', { className: 'detail-json' }, JSON.stringify(j.compiled_output, null, 2))),
+          j.confidence_notes && dc('div', { style: 'font-size:9px;color:var(--yellow)' }, j.confidence_notes),
+          !j.observation_sequence && dc('div', { style: 'font-size:9px;color:var(--text3)' }, 'This job hasn\'t produced stage output yet — the pipeline stages are integration points ready for the real extraction/verification logic (see README).')
+        )
+      );
+    }))
   ));
   return container;
 }
+async function loadCompilerJobs() { try { state.compilerJobs = await api('GET', '/api/compiler-jobs'); render(); } catch (e) { console.error(e); } }
 
-// ── Checkpoints ───────────────────────────────────────────────────────────
+// ── Checkpoints — wired to the real backend, not a stub ───────────────────
 function renderCheckpoints() {
+  if (state.checkpoints === null) { state.checkpoints = []; loadCheckpoints(); }
   const container = dc('div', {});
   container.append(modHeader('SEM MODEL REGISTRY', 'Checkpoints'));
   container.append(card(
     dc('div', { className: 'card-label' }, 'CHECKPOINTS'),
-    dc('div', { style: 'color:var(--text3);font-size:10px' }, 'No checkpoints yet — a checkpoint is created once a training run produces a model worth registering.')
+    state.checkpoints.length === 0
+      ? dc('div', { style: 'color:var(--text3);font-size:10px' }, 'No checkpoints yet — a checkpoint is created once a training run produces a model worth registering.')
+      : dc('div', {}, ...state.checkpoints.map(c => dc('div', { style: 'display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;font-size:10px' },
+          dc('div', {},
+            dc('div', {}, dc('b', {}, c.version), ' · ', c.base_model, c.is_active && dc('span', { className: 'badge badge-sem', style: 'margin-left:8px' }, 'ACTIVE')),
+            c.mean_reward != null && dc('div', { style: 'color:var(--text3);margin-top:2px' }, 'mean reward: ' + c.mean_reward.toFixed(3))
+          ),
+          !c.is_active && btn('Activate', 'btn-cyan', () => activateCheckpoint(c.id))
+        )))
   ));
   return container;
+}
+async function loadCheckpoints() { try { state.checkpoints = await api('GET', '/api/checkpoints'); render(); } catch (e) { console.error(e); } }
+async function activateCheckpoint(id) {
+  try { await api('POST', '/api/checkpoints/' + id + '/activate'); await loadCheckpoints(); } catch (e) { alert(e.message); }
 }
 
 render();

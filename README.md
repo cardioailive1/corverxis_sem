@@ -4,6 +4,26 @@ A standalone lab (SEM+OSC — Structural Extraction Model + One-Shot Compiler) f
 Extraction Model) and the One-Shot Skill Compiler. **Shares no code with
 NexGen Lab** — separate backend, separate frontend, separate database.
 
+## Architecture note — simulators run in-process (JS), not shelled out to Python
+
+Earlier versions of this backend called `training/simulators/*.py` via
+`execFile('python3', ...)`. That was removed — Render's `runtime: node`
+service is a native, language-isolated environment and does not provide a
+Python interpreter, so those calls failed in production even though they
+worked fine locally. The `industrial_fault_simulator.py` logic has been
+ported to `backend/simulators/industrialFaultSimulator.js`, registered in
+`JS_SIMULATORS` in `server.js`, and confirmed to produce identical reward
+behavior to the Python version (same 1.0-for-correct, 0.05-0.3-for-wrong
+spread, verified pairwise).
+
+The Python files under `training/` remain as the canonical, independently
+testable reference for local experimentation (`training_loop.py` still
+runs standalone, no server needed) — they're just no longer what actually
+executes when a real request comes in. **Any new simulator needs both**:
+the Python reference version (for local testing, matching the existing
+pattern) and a JS port registered in `JS_SIMULATORS` (for it to actually
+work once deployed).
+
 ## What's genuinely real and tested here, vs. what's a scaffolded integration point
 
 Being direct about this distinction matters, so it's worth stating plainly
@@ -11,23 +31,26 @@ rather than letting the code's confidence-inspiring structure imply more
 than what's actually been proven:
 
 ### Real, tested, runs correctly right now
-- **`training/simulators/industrial_fault_simulator.py`** — a real, working
-  toy simulator. Actually generates scenarios, actually verifies proposed
-  structures against hidden ground truth, with a genuinely sensible reward
-  spread (correct = 1.0, wrong guesses = 0.05-0.3, never conflated). Run its
-  self-test directly: `python3 industrial_fault_simulator.py`
+- **`backend/simulators/industrialFaultSimulator.js`** — the real, in-process
+  simulator actually used by both `/api/scenarios/generate` and training
+  runs. Confirmed to produce identical reward behavior to its Python
+  reference, tested pairwise across every component combination.
+- **`training/simulators/industrial_fault_simulator.py`** — the reference
+  implementation, still real and independently runnable for local testing.
+  Run its self-test directly: `python3 industrial_fault_simulator.py`
 - **`training/training_loop.py`** — the real propose/verify/reward loop,
   runnable end to end right now with `python3 training_loop.py --n_scenarios 15`.
   Uses a heuristic offline proposer by default (no API key needed to test
   the mechanism); pass `--use_api` to route proposals through Claude instead.
-- **`training/run_single_scenario.py`** — the CLI wrapper the backend job
-  system actually calls; tested directly from the command line, confirmed
-  working.
-- **Backend routes** — all 13 routes are real, working Express/Prisma code,
+- **Backend routes** — all 14 routes are real, working Express/Prisma code,
   syntax-validated. The use case registry is seeded with the actual 12 real
   use cases, correctly split 6 sem_only / 6 compiler.
-- **Frontend** — genuinely functional, all 6 modules render correctly,
-  tested against realistic mocked data matching the backend's actual
+- **Frontend** — genuinely functional and interactive: live polling on
+  Scenarios/Demonstrations/Training/Compiler Jobs, real dependency-free SVG
+  charts, expandable detail views, filtering, a working Compile action on
+  each Demonstration, and Checkpoints wired to the real backend route.
+  Every feature individually verified against realistic mocked data
+  matching the backend's actual
   response shapes.
 
 ### Explicit integration points, not yet real implementations
@@ -50,7 +73,10 @@ rather than faked:
    security-incident simulator and a medical-diagnostics simulator share
    almost nothing in actual implementation, only the same *shape* (hidden
    intervention → generate observations → verify proposals against
-   perturbation).
+   perturbation). Each needs **two** artifacts, per the architecture note
+   above: a Python reference version under `training/simulators/` for local
+   testing, and a JS port under `backend/simulators/` registered in
+   `JS_SIMULATORS` — only the JS port is what actually runs in production.
 
 ## Deploying to Render
 
@@ -96,10 +122,12 @@ python3 training_loop.py --n_scenarios 20
 
 ## Building the second simulator, as a template for the rest
 
-`industrial_fault_simulator.py` is the reference shape every other
-simulator should follow: `sample_intervention()`, `generate_observations()`,
-`verify_proposed_structure()`. Building out medical diagnostics next would
-mean writing this same three-function shape against a real (even if
-simplified) model of symptom-to-condition relationships, then registering
-it via the `UseCase.simulatorSpec` field so `/api/scenarios/generate` can
-call it.
+`industrial_fault_simulator.py` / `industrialFaultSimulator.js` is the
+reference shape every other simulator should follow: `sample_intervention()`
+/ `sampleIntervention()`, `generate_observations()` / `generateObservations()`,
+`verify_proposed_structure()` / `verifyProposedStructure()`. Building out
+medical diagnostics next means writing this same shape twice — once in
+Python under `training/simulators/` for local testing, once in JS under
+`backend/simulators/` — then adding the JS module to the `JS_SIMULATORS`
+registry in `server.js`, keyed by the use case's slug (`'medical-diagnostics'`),
+so `/api/scenarios/generate` and training runs can actually call it.

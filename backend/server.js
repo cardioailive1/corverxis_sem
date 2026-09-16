@@ -39,7 +39,8 @@ const USE_CASES = [
   { slug: 'medical-diagnostics', name: 'Medical Diagnostics', kind: 'sem_only',
     description: 'Determine the actual root cause behind a patient\'s symptoms or an unusual test result, verified against known disease-progression models rather than a first guess.' },
   { slug: 'industrial-fault-diagnosis', name: 'Industrial Fault Diagnosis', kind: 'sem_only',
-    description: 'Why a machine failed or a production batch came out defective, from sensor logs, checked against a simulator instead of trusted on first pass.' },
+    description: 'Why a machine failed or a production batch came out defective, from sensor logs, checked against a simulator instead of trusted on first pass.',
+    simulatorSpec: 'industrial_fault_simulator.py' },
   { slug: 'security-incident-investigation', name: 'Security Incident Investigation', kind: 'sem_only',
     description: 'Reconstruct the true attack chain behind a breach from logs, rather than a plausible-sounding but unverified story.' },
   { slug: 'financial-fraud-investigation', name: 'Financial Fraud/Anomaly Investigation', kind: 'sem_only',
@@ -74,10 +75,10 @@ async function seedUseCases() {
   for (const uc of USE_CASES) {
     await prisma.useCase.upsert({
       where: { slug: uc.slug },
-      update: {},
+      update: { simulatorSpec: uc.simulatorSpec || null, outputTargets: uc.outputTargets || [] },
       create: {
         slug: uc.slug, name: uc.name, kind: uc.kind, description: uc.description,
-        outputTargets: uc.outputTargets || [],
+        outputTargets: uc.outputTargets || [], simulatorSpec: uc.simulatorSpec || null,
       },
     });
   }
@@ -108,23 +109,27 @@ const toScenario = s => ({
   observations: s.observations, source: s.source, created_at: s.createdAt,
 });
 
+// ── Simulator registry — maps a use case slug to its JS simulator module.
+// Simulators run in-process now (see backend/simulators/), not shelled out
+// to python3 — Render's Node-native runtime doesn't provide a Python
+// interpreter, and native runtimes are isolated per language. The
+// training/simulators/*.py files remain as the canonical, independently
+// testable reference implementation for local experimentation; this
+// registry is what actually runs in production.
+const JS_SIMULATORS = {
+  'industrial-fault-diagnosis': require('./simulators/industrialFaultSimulator.js'),
+};
+
 app.post('/api/scenarios/generate', authenticate, async (req, res) => {
   const { use_case_id, count } = req.body;
   const useCase = await prisma.useCase.findUnique({ where: { id: use_case_id } });
   if (!useCase) return res.status(404).json({ error: 'Use case not found' });
   if (useCase.kind !== 'sem_only') return res.status(400).json({ error: 'Scenario generation is for sem_only use cases. Compiler use cases take demonstrations instead — see /api/demonstrations/upload.' });
-  if (!useCase.simulatorSpec) return res.status(400).json({ error: `No simulator is registered for '${useCase.slug}' yet. A domain-specific simulator script must be built and registered before scenarios can be generated for this use case.` });
+  const simulator = JS_SIMULATORS[useCase.slug];
+  if (!simulator) return res.status(400).json({ error: `No simulator is registered for '${useCase.slug}' yet. A domain-specific simulator module must be built and added to JS_SIMULATORS before scenarios can be generated for this use case.` });
 
   try {
-    const { execFile } = require('child_process');
-    const simulatorPath = path.join(__dirname, '..', 'training', 'simulators', useCase.simulatorSpec);
-    const output = await new Promise((resolve, reject) => {
-      execFile('python3', [simulatorPath, '--generate', String(count || 10)], { timeout: 30000 }, (err, stdout, stderr) => {
-        if (err) return reject(new Error(stderr || err.message));
-        resolve(stdout);
-      });
-    });
-    const generated = JSON.parse(output);   // simulator scripts are expected to print a JSON array of {hidden_intervention, observations}
+    const generated = simulator.generateScenarios(count || 10);
     const created = await Promise.all(generated.map(g => prisma.scenario.create({ data: {
       useCaseId: use_case_id, hiddenIntervention: g.hidden_intervention, observations: g.observations, source: 'synthetic',
     }})));
@@ -206,23 +211,17 @@ async function processTrainingRun(runId) {
 
   try {
     const where = run.useCaseIds.length > 0 ? { useCaseId: { in: run.useCaseIds } } : {};
-    const scenarios = await prisma.scenario.findMany({ where });
+    const scenarios = await prisma.scenario.findMany({ where, include: { useCase: true } });
     await prisma.trainingRun.update({ where: { id: runId }, data: { totalScenarios: scenarios.length } });
 
     let totalReward = 0;
     for (const scenario of scenarios) {
-      // In production this calls the real training_loop.py propose step
-      // against the model currently being trained. Left as an explicit
-      // integration point — see training/training_loop.py for the real,
-      // tested loop this would invoke per scenario.
-      const { execFile } = require('child_process');
-      const scriptPath = path.join(__dirname, '..', 'training', 'run_single_scenario.py');
-      const result = await new Promise((resolve, reject) => {
-        execFile('python3', [scriptPath, JSON.stringify(scenario.observations), JSON.stringify(scenario.hiddenIntervention)], { timeout: 15000 }, (err, stdout) => {
-          if (err) return reject(err);
-          resolve(JSON.parse(stdout));
-        });
-      }).catch(() => ({ proposed: null, reward: 0 }));   // one failed scenario shouldn't kill the whole run
+      // Runs in-process via the JS simulator registry — see the comment on
+      // JS_SIMULATORS above for why this isn't shelled out to python3.
+      const simulator = JS_SIMULATORS[scenario.useCase.slug];
+      const result = simulator
+        ? simulator.runSingleScenario(scenario.observations, scenario.hiddenIntervention)
+        : { proposed: null, reward: 0 };
 
       await prisma.scenarioResult.create({ data: {
         trainingRunId: runId, scenarioId: scenario.id,
@@ -254,6 +253,22 @@ app.get('/api/training-runs/:id', authenticate, async (req, res) => {
   const run = await prisma.trainingRun.findUnique({ where: { id: req.params.id } });
   if (!run) return res.status(404).json({ error: 'Training run not found' });
   res.json(toTrainingRun(run));
+});
+
+// GET /api/training-runs/:id/results — per-scenario propose/verify/reward
+// records for a run, for the detail view (what did it actually propose,
+// scenario by scenario, and what reward did each one get).
+app.get('/api/training-runs/:id/results', authenticate, async (req, res) => {
+  const results = await prisma.scenarioResult.findMany({
+    where: { trainingRunId: req.params.id },
+    include: { scenario: true },
+    orderBy: { createdAt: 'asc' },
+  });
+  res.json(results.map(r => ({
+    id: r.id, scenario_id: r.scenarioId,
+    hidden_intervention: r.scenario.hiddenIntervention, observations: r.scenario.observations,
+    proposed_structure: r.proposedStructure, reward: r.reward, created_at: r.createdAt,
+  })));
 });
 
 app.get('/api/training-runs', authenticate, async (req, res) => {
