@@ -75,6 +75,20 @@ Respond with ONLY a JSON array, one object per step, in the form:
 No other text.`;
 }
 
+// Claude sometimes wraps a JSON response in a markdown code fence
+// (```json ... ```) even when explicitly told to respond with only JSON
+// and no other text — a real, confirmed failure mode, not a theoretical
+// one. Strips that before parsing, with a regex fallback for a fence
+// with no language tag, rather than assuming the model always complies
+// with the instruction literally.
+function parseJSONResponse(text) {
+  let cleaned = text.trim();
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '').trim();
+  }
+  return JSON.parse(cleaned);
+}
+
 async function extractCausalStructure(anthropicClient, observationSequence) {
   const prompt = buildExtractionPrompt(observationSequence);
   const msg = await anthropicClient.messages.create({
@@ -82,7 +96,7 @@ async function extractCausalStructure(anthropicClient, observationSequence) {
     messages: [{ role: 'user', content: prompt }],
   });
   const text = msg.content[0]?.text || '[]';
-  const parsed = JSON.parse(text);   // let a malformed response surface as a real error, not a silently wrong empty structure
+  const parsed = parseJSONResponse(text);   // let a malformed response surface as a real error, not a silently wrong empty structure
   return { steps: parsed };
 }
 
@@ -115,7 +129,7 @@ async function verifyStructure(anthropicClient, observationSequence, extraction)
     messages: [{ role: 'user', content: prompt }],
   });
   const text = msg.content[0]?.text || '[]';
-  const parsed = JSON.parse(text);
+  const parsed = parseJSONResponse(text);
   const anyLowConfidence = parsed.some(s => s.confidence === 'low' || s.note);
   return {
     steps: parsed,
@@ -150,7 +164,7 @@ async function abstractProcedure(anthropicClient, observationSequence, verifiedS
     messages: [{ role: 'user', content: prompt }],
   });
   const text = msg.content[0]?.text || '[]';
-  return { steps: JSON.parse(text) };
+  return { steps: parseJSONResponse(text) };
 }
 
 // ── Stage 5: Compilation — pure logic, no LLM call ──────────────────────────
@@ -182,7 +196,7 @@ function compileToTarget(abstractedProcedure, targetOutput) {
 }
 
 module.exports = {
-  ingestLogDemonstration,
+  ingestLogDemonstration, parseJSONResponse,
   buildExtractionPrompt, extractCausalStructure,
   buildVerificationPrompt, verifyStructure,
   buildAbstractionPrompt, abstractProcedure,
