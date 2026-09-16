@@ -61,21 +61,34 @@ than what's actually been proven:
   matching the backend's actual
   response shapes.
 
-### Explicit integration points, not yet real implementations
-Two places in the backend are deliberately left as clear placeholders
-rather than faked:
+### The Skill Compiler pipeline — real for `log` demonstrations, placeholder for the rest
 
-1. **`processCompilerJob`** in `server.js` — cycles through the 6 pipeline
-   stages with a timeout in place of real processing. Each stage (ingestion
-   parsing, calling SEM for extraction, perturbation-testing verification,
-   abstraction, target-specific compilation) is substantial work in its own
-   right — see the design document from earlier in this project for what
-   each stage actually needs to do. Wiring a real stage in means replacing
-   the `setTimeout` placeholder with a call to that stage's actual logic.
+`processCompilerJob` now runs a genuinely real pipeline for `log`
+modality demonstrations (a structured JSON action sequence) —
+`backend/compiler/logPipeline.js`. This is the modality the design
+document itself recommended starting with: exact, structured input, no
+computer-vision perception problem to solve first.
 
-This is now the **only** remaining scaffolded integration point — all 6
-`sem_only` use cases have real, tested simulators as of the latest update
-(see below).
+- **Stage 1 (ingestion)** and **Stage 5 (compilation)** are pure,
+  deterministic logic — no LLM call, fully tested directly, including
+  real error-handling for malformed logs.
+- **Stages 2-4 (extraction, verification, abstraction)** call Claude.
+  Their prompt construction is tested directly; the full 5-stage
+  orchestration was confirmed working end to end against a mocked
+  Anthropic client (data flows correctly between every stage) — but the
+  actual LLM reasoning itself couldn't be verified in the environment
+  this was built in (no live API key available there). Test this for
+  real, with a real key, before trusting it in production.
+- **`video` / `screen_recording` / `motion_capture` demonstrations still
+  use the original placeholder** — parsing raw video or screen recordings
+  into structured observations is a separate, genuinely harder
+  computer-vision problem, not solved here. A job for one of these
+  modalities completes with an honest note explaining this, rather than
+  silently producing a fake result.
+
+Requires `ANTHROPIC_API_KEY` to be set — the log pipeline calls Claude
+directly for three of its five stages.
+
 
 ## Deploying to Render
 

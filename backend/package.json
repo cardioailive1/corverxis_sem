@@ -1,7 +1,7 @@
 {
   "name": "sem-osc-backend",
   "version": "0.1.0",
-  "description": "SEM+OSC — Structural Extraction Model + One-Shot Compiler. Standalone backend, separate from NexGen Lab.",
+  "description": "SEM+OSC \u2014 Structural Extraction Model + One-Shot Compiler. Standalone backend, separate from NexGen Lab.",
   "main": "server.js",
   "engines": {
     "node": ">=20.0.0"
@@ -17,6 +17,7 @@
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "multer": "^1.4.5-lts.1",
-    "prisma": "^5.16.0"
+    "prisma": "^5.16.0",
+    "@anthropic-ai/sdk": "^0.27.0"
   }
 }

@@ -9,9 +9,12 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const { PrismaClient } = require('@prisma/client');
+const Anthropic = require('@anthropic-ai/sdk');
+const logPipeline = require('./compiler/logPipeline.js');
 
 const app = express();
 const prisma = new PrismaClient();
+const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null;
 app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
 app.use(express.json({ limit: '5mb' }));
@@ -327,19 +330,70 @@ const toCompilerJob = c => ({
 });
 
 async function processCompilerJob(jobId) {
-  const stages = ['ingestion', 'extraction', 'verification', 'abstraction', 'compilation'];
-  try {
-    for (const stage of stages) {
-      await prisma.compilerJob.update({ where: { id: jobId }, data: { stage } });
-      // Each stage is a real integration point to the corresponding
-      // component (ingestion parsers, the SEM model for extraction,
-      // perturbation-testing verifiers, the abstraction/compilation
-      // logic per target). Left explicit here rather than faked, since
-      // each one is substantial, domain-specific work in its own right —
-      // see the design document for what each stage actually needs to do.
-      await new Promise(r => setTimeout(r, 500));   // placeholder for real stage processing time
+  const job = await prisma.compilerJob.findUnique({ where: { id: jobId } });
+  if (!job) return;
+  const demonstration = await prisma.demonstration.findUnique({ where: { id: job.demonstrationId } });
+
+  // Only `log` modality has a real, implemented pipeline (see
+  // backend/compiler/logPipeline.js and its README note on why this is
+  // the first fully-supported modality). Other modalities fall back to
+  // the same honest placeholder as before — parsing raw video/screen
+  // recordings is a separate, harder computer-vision problem, not solved
+  // here.
+  if (!demonstration || demonstration.modality !== 'log') {
+    try {
+      const stages = ['ingestion', 'extraction', 'verification', 'abstraction', 'compilation'];
+      for (const stage of stages) {
+        await prisma.compilerJob.update({ where: { id: jobId }, data: { stage } });
+        await new Promise(r => setTimeout(r, 500));
+      }
+      await prisma.compilerJob.update({ where: { id: jobId }, data: {
+        stage: 'completed', completedAt: new Date(),
+        confidenceNotes: `No real pipeline exists yet for "${demonstration?.modality || 'unknown'}" modality — only "log" demonstrations are fully processed. This is a placeholder result.`,
+      }});
+    } catch (err) {
+      await prisma.compilerJob.update({ where: { id: jobId }, data: { stage: 'failed', errorMessage: err.message } });
     }
-    await prisma.compilerJob.update({ where: { id: jobId }, data: { stage: 'completed', completedAt: new Date() } });
+    return;
+  }
+
+  if (!anthropic) {
+    await prisma.compilerJob.update({ where: { id: jobId }, data: {
+      stage: 'failed', errorMessage: 'ANTHROPIC_API_KEY is not configured on this server — the real log-modality pipeline needs it for stages 2-4.',
+    }});
+    return;
+  }
+
+  try {
+    // ── Stage 1: Ingestion — real, deterministic, no LLM call ─────────────
+    await prisma.compilerJob.update({ where: { id: jobId }, data: { stage: 'ingestion' } });
+    const fileBuffer = fs.readFileSync(path.join(GENERATED_DIR, demonstration.storageKey));
+    const observationSequence = logPipeline.ingestLogDemonstration(fileBuffer);
+    await prisma.compilerJob.update({ where: { id: jobId }, data: { observationSeq: observationSequence } });
+
+    // ── Stage 2: Causal Extraction ─────────────────────────────────────────
+    await prisma.compilerJob.update({ where: { id: jobId }, data: { stage: 'extraction' } });
+    const extraction = await logPipeline.extractCausalStructure(anthropic, observationSequence);
+    await prisma.compilerJob.update({ where: { id: jobId }, data: { causalStructure: extraction } });
+
+    // ── Stage 3: Verification ──────────────────────────────────────────────
+    await prisma.compilerJob.update({ where: { id: jobId }, data: { stage: 'verification' } });
+    const verified = await logPipeline.verifyStructure(anthropic, observationSequence, extraction);
+    await prisma.compilerJob.update({ where: { id: jobId }, data: {
+      verifiedStructure: verified, confidenceNotes: verified.confidence_notes,
+    }});
+
+    // ── Stage 4: Abstraction ───────────────────────────────────────────────
+    await prisma.compilerJob.update({ where: { id: jobId }, data: { stage: 'abstraction' } });
+    const abstracted = await logPipeline.abstractProcedure(anthropic, observationSequence, verified);
+    await prisma.compilerJob.update({ where: { id: jobId }, data: { abstractedProcedure: abstracted } });
+
+    // ── Stage 5: Compilation — real, deterministic, no LLM call ───────────
+    await prisma.compilerJob.update({ where: { id: jobId }, data: { stage: 'compilation' } });
+    const compiled = logPipeline.compileToTarget(abstracted, job.targetOutput);
+    await prisma.compilerJob.update({ where: { id: jobId }, data: {
+      compiledOutput: compiled, stage: 'completed', completedAt: new Date(),
+    }});
   } catch (err) {
     await prisma.compilerJob.update({ where: { id: jobId }, data: { stage: 'failed', errorMessage: err.message } });
   }

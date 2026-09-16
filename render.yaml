@@ -23,12 +23,11 @@ services:
         fromDatabase:
           name: sem-osc-db
           property: connectionString
-      # ANTHROPIC_API_KEY is not yet consumed by server.js — the Skill
-      # Compiler's extraction stage (processCompilerJob) is currently a
-      # placeholder, not a real call to SEM or Claude. Add this once that
-      # stage is wired to something that actually needs it.
-      # - key: ANTHROPIC_API_KEY
-      #   sync: false
+      # Genuinely needed now — the Skill Compiler's real log-modality
+      # pipeline (backend/compiler/logPipeline.js) calls Claude directly
+      # for stages 2-4 (extraction, verification, abstraction).
+      - key: ANTHROPIC_API_KEY
+        sync: false
 
 databases:
   - name: sem-osc-db

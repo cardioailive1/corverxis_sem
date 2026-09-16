@@ -360,11 +360,22 @@ function renderTraining() {
   }));
   const totalScenarios = domainCounts.reduce((sum, d) => sum + d.count, 0);
   container.append(card(
-    dc('div', { className: 'card-label' }, 'DATA PIPELINE — SCENARIOS FEEDING TRAINING'),
+    dc('div', { className: 'card-label' }, 'COLLECTED EXAMPLE SCENARIOS'),
     dc('div', { style: 'font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:10px;line-height:1.6' },
-      totalScenarios + ' total scenarios currently available across all domains, generated on the Scenarios tab. A real GRPO training run (see below) pulls fresh scenarios directly from the same 6 simulators at training time — this count reflects what already exists, not what a specific run consumed.'),
+      totalScenarios + ' scenarios stored in the database, generated on the Scenarios tab — for browsing real examples and running Reference checks below. ',
+      dc('b', {style:'color:var(--yellow)'}, 'Real GRPO training does not read from here.')),
     domainCounts.length > 0 ? svgBarChart(domainCounts.map(d => d.count), domainCounts.map(d => d.name.split(' ')[0])) :
       dc('div', { style: 'color:var(--text3);font-size:10px' }, 'No scenarios generated yet — visit the Scenarios tab.')
+  ));
+
+  container.append(card(
+    dc('div', { className: 'card-label' }, 'THE ACTUAL GRPO DATA PIPELINE'),
+    dc('div', { style: 'font-family:var(--mono);font-size:9px;color:var(--text3);line-height:1.7' },
+      'Lives entirely in code, not this database. ',
+      dc('code', {style:'color:var(--cyan)'}, 'training/grpo/dataset.py'),
+      ' calls the 6 simulator modules directly and generates fresh synthetic scenarios in memory, at training time, feeding straight into ',
+      dc('code', {style:'color:var(--cyan)'}, 'GRPOTrainer'),
+      ' — no collection or storage step, since synthetic scenarios are cheap to regenerate on demand rather than needing to be saved and read back. The card above is a separate, parallel thing: real, useful, but not part of this path.')
   ));
 
   container.append(card(
