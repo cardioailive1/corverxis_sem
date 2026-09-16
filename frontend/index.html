@@ -282,7 +282,18 @@ function renderDemonstrations() {
         .forEach(([value, label]) => el.append(dc('option', { value }, label)));
       return el;
     })()),
-    field('FILE', dc('input', { type: 'file', id: 'fld-demo-file' })),
+    field('FILE', dc('input', {
+      type: 'file', id: 'fld-demo-file',
+      // Captures the actual File object into app state immediately on
+      // selection — a re-render (this tab polls every 5s) rebuilds the
+      // whole DOM including this input, and unlike text fields, a file
+      // input's selection cannot be restored via JS at all once that
+      // happens. Reading from state at upload time, not re-querying this
+      // element, is what makes the selection survive.
+      onchange: e => { state._demoSelectedFile = e.target.files?.[0] || null; render(); },
+    })),
+    state._demoSelectedFile && dc('div', { style: 'font-size:9px;color:var(--cyan);margin:-6px 0 10px 0' },
+      '✓ ' + state._demoSelectedFile.name + ' selected'),
     btn(state.busy ? '⟳ Uploading…' : '⬆ Upload', 'btn-cyan btn-full', uploadDemonstration, state.busy)
   ));
 
@@ -346,7 +357,7 @@ function downloadSampleLogFile() {
   URL.revokeObjectURL(url);
 }
 async function uploadDemonstration() {
-  const file = document.getElementById('fld-demo-file')?.files?.[0];
+  const file = state._demoSelectedFile;
   const use_case_id = document.getElementById('fld-demo-usecase')?.value;
   const modality = document.getElementById('fld-demo-modality')?.value;
   if (!file || !use_case_id) return;
@@ -358,6 +369,7 @@ async function uploadDemonstration() {
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error);
     state.demos = [data, ...state.demos];
+    state._demoSelectedFile = null;   // clear only on genuine success — a failed upload keeps the file selected so the user doesn't have to re-pick it to retry
   } catch (e) { alert(e.message); }
   state.busy = false; render();
 }
