@@ -89,6 +89,22 @@ computer-vision perception problem to solve first.
 Requires `ANTHROPIC_API_KEY` to be set — the log pipeline calls Claude
 directly for three of its five stages.
 
+### File storage — local disk vs. S3
+
+Demonstration files are stored locally by default, which is **ephemeral
+on Render** — every redeploy wipes anything previously written there,
+while the database record survives fine, since it's in Postgres, not on
+disk. This produces a real, confirmed bug: a demonstration uploaded
+before any later redeploy becomes unreadable (`ENOENT`) the moment you
+try to compile it, even though it still shows up fine in the UI.
+
+Setting `S3_BUCKET`, `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY`
+(see `render.yaml`) fixes this properly — new uploads go straight to S3
+and survive redeploys. Without them, the app still works exactly as
+before, just with the same underlying limitation — the only difference
+is a clear, actionable error message instead of a raw stack trace when a
+file goes missing.
+
 
 ## Deploying to Render
 

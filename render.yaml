@@ -28,6 +28,16 @@ services:
       # for stages 2-4 (extraction, verification, abstraction).
       - key: ANTHROPIC_API_KEY
         sync: false
+      # Optional. Without these, demonstration files are stored on local
+      # disk only, which does NOT survive a redeploy — every code push
+      # wipes previously uploaded files (this is what caused a real ENOENT
+      # error during development). Set all three to fix this properly.
+      # - key: S3_BUCKET
+      #   sync: false
+      # - key: AWS_ACCESS_KEY_ID
+      #   sync: false
+      # - key: AWS_SECRET_ACCESS_KEY
+      #   sync: false
 
 databases:
   - name: sem-osc-db

@@ -15,6 +15,58 @@ const logPipeline = require('./compiler/logPipeline.js');
 const app = express();
 const prisma = new PrismaClient();
 const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null;
+
+// ── S3-backed durable storage for demonstration files ─────────────────────
+// Render's local disk does NOT survive redeploys — every code push wipes
+// anything previously written to it. Without this, an uploaded
+// demonstration becomes permanently unreadable (a real ENOENT) the moment
+// any other change gets deployed, even though its database row looks
+// completely fine. Optional: without S3 env vars set, this cleanly falls
+// back to local disk with the exact same limitation as before, just with
+// a clear error instead of a raw stack trace when a file goes missing.
+function isS3Configured() {
+  return !!(process.env.S3_BUCKET && process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY);
+}
+let _s3Client = null;
+function getS3Client() {
+  if (!_s3Client) {
+    const { S3Client } = require('@aws-sdk/client-s3');
+    _s3Client = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+  }
+  return _s3Client;
+}
+async function storeDemonstrationFile(localPath, filename) {
+  if (isS3Configured()) {
+    const { PutObjectCommand } = require('@aws-sdk/client-s3');
+    const buffer = fs.readFileSync(localPath);
+    await getS3Client().send(new PutObjectCommand({ Bucket: process.env.S3_BUCKET, Key: `demonstrations/${filename}`, Body: buffer }));
+    fs.unlinkSync(localPath);   // don't keep a local copy once it's durably stored — avoids relying on ephemeral disk even briefly
+    return { storageKey: `demonstrations/${filename}`, persistent: true };
+  }
+  return { storageKey: filename, persistent: false };   // unchanged fallback — same limitation as before, S3 not configured
+}
+async function readDemonstrationBuffer(demonstration) {
+  if (demonstration.persistent && isS3Configured()) {
+    const { GetObjectCommand } = require('@aws-sdk/client-s3');
+    const obj = await getS3Client().send(new GetObjectCommand({ Bucket: process.env.S3_BUCKET, Key: demonstration.storageKey }));
+    const chunks = [];
+    for await (const chunk of obj.Body) chunks.push(chunk);
+    return Buffer.concat(chunks);
+  }
+  const localPath = path.join(GENERATED_DIR, demonstration.storageKey);
+  if (!fs.existsSync(localPath)) {
+    // The actual, specific fix for the reported bug: a clear, actionable
+    // error instead of a raw ENOENT stack trace surfacing straight to the
+    // user. Explains WHY, not just THAT it failed.
+    throw new Error(
+      `Demonstration file "${demonstration.originalName}" is no longer available. ` +
+      (isS3Configured()
+        ? 'This file was uploaded before S3 storage was configured, so it only ever existed on local disk, which does not survive a redeploy. Please re-upload it.'
+        : 'This server has no durable file storage configured (S3), and local disk does not survive a redeploy — every code push wipes previously uploaded files. Please re-upload, and consider configuring S3 (see README) so this stops happening.')
+    );
+  }
+  return fs.readFileSync(localPath);
+}
 app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
 app.use(express.json({ limit: '5mb' }));
@@ -186,11 +238,13 @@ app.post('/api/demonstrations/upload', authenticate, (req, res) => {
       const existing = await prisma.demonstration.findFirst({ where: { contentHash: hash } });
       if (existing) return res.status(409).json({ error: 'This exact file has already been uploaded.', duplicate_of: toDemonstration(existing) });
 
-      const storageKey = `demo-${crypto.randomBytes(8).toString('hex')}${path.extname(req.file.originalname)}`;
-      fs.writeFileSync(path.join(GENERATED_DIR, storageKey), req.file.buffer);
+      const filename = `demo-${crypto.randomBytes(8).toString('hex')}${path.extname(req.file.originalname)}`;
+      const localPath = path.join(GENERATED_DIR, filename);
+      fs.writeFileSync(localPath, req.file.buffer);   // always written locally first; storeDemonstrationFile promotes it to S3 and removes the local copy when S3 is configured
+      const { storageKey, persistent } = await storeDemonstrationFile(localPath, filename);
 
       const demo = await prisma.demonstration.create({ data: {
-        useCaseId: use_case_id, modality, storageKey, persistent: false,
+        useCaseId: use_case_id, modality, storageKey, persistent,
         originalName: req.file.originalname, contentHash: hash, uploadedById: req.user?.id,
       }});
       res.status(201).json(toDemonstration(demo));
@@ -367,7 +421,7 @@ async function processCompilerJob(jobId) {
   try {
     // ── Stage 1: Ingestion — real, deterministic, no LLM call ─────────────
     await prisma.compilerJob.update({ where: { id: jobId }, data: { stage: 'ingestion' } });
-    const fileBuffer = fs.readFileSync(path.join(GENERATED_DIR, demonstration.storageKey));
+    const fileBuffer = await readDemonstrationBuffer(demonstration);
     const observationSequence = logPipeline.ingestLogDemonstration(fileBuffer);
     await prisma.compilerJob.update({ where: { id: jobId }, data: { observationSeq: observationSequence } });
 
