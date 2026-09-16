@@ -45,6 +45,19 @@ async function storeDemonstrationFile(localPath, filename) {
   }
   return { storageKey: filename, persistent: false };   // unchanged fallback — same limitation as before, S3 not configured
 }
+async function demonstrationFileExists(demonstration) {
+  if (demonstration.persistent && isS3Configured()) {
+    const { HeadObjectCommand } = require('@aws-sdk/client-s3');
+    try {
+      await getS3Client().send(new HeadObjectCommand({ Bucket: process.env.S3_BUCKET, Key: demonstration.storageKey }));
+      return true;
+    } catch (err) {
+      return false;   // NotFound or any other head-check failure — treat as gone rather than guessing
+    }
+  }
+  return fs.existsSync(path.join(GENERATED_DIR, demonstration.storageKey));
+}
+
 async function readDemonstrationBuffer(demonstration) {
   if (demonstration.persistent && isS3Configured()) {
     const { GetObjectCommand } = require('@aws-sdk/client-s3');
@@ -236,7 +249,25 @@ app.post('/api/demonstrations/upload', authenticate, (req, res) => {
     try {
       const hash = crypto.createHash('sha256').update(req.file.buffer).digest('hex');
       const existing = await prisma.demonstration.findFirst({ where: { contentHash: hash } });
-      if (existing) return res.status(409).json({ error: 'This exact file has already been uploaded.', duplicate_of: toDemonstration(existing) });
+      if (existing) {
+        // Don't just trust the hash match — a duplicate whose actual file
+        // is confirmed gone (e.g. wiped by a redeploy, see the S3 storage
+        // note above) isn't a real duplicate anymore; it's a broken
+        // record blocking a legitimate re-upload of the same content.
+        // Heal it in place instead of rejecting, so any compiler jobs
+        // that already reference this demonstration's id become usable
+        // again too, rather than leaving an orphaned duplicate row.
+        const stillExists = await demonstrationFileExists(existing);
+        if (stillExists) {
+          return res.status(409).json({ error: 'This exact file has already been uploaded.', duplicate_of: toDemonstration(existing) });
+        }
+        const filename = `demo-${crypto.randomBytes(8).toString('hex')}${path.extname(req.file.originalname)}`;
+        const localPath = path.join(GENERATED_DIR, filename);
+        fs.writeFileSync(localPath, req.file.buffer);
+        const { storageKey, persistent } = await storeDemonstrationFile(localPath, filename);
+        const healed = await prisma.demonstration.update({ where: { id: existing.id }, data: { storageKey, persistent } });
+        return res.status(200).json({ ...toDemonstration(healed), healed: true });
+      }
 
       const filename = `demo-${crypto.randomBytes(8).toString('hex')}${path.extname(req.file.originalname)}`;
       const localPath = path.join(GENERATED_DIR, filename);

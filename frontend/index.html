@@ -368,7 +368,14 @@ async function uploadDemonstration() {
     const resp = await fetch(API + '/api/demonstrations/upload', { method: 'POST', body: formData });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error);
-    state.demos = [data, ...state.demos];
+    if (data.healed) {
+      // Updates an existing record in place — replace it, don't prepend
+      // a duplicate row for what's actually the same demonstration id.
+      state.demos = state.demos.map(d => d.id === data.id ? data : d);
+      alert('This file was already uploaded, but its stored copy was missing — re-linked the existing demonstration to this fresh upload instead of creating a duplicate. Compiler Jobs tied to it should now work again.');
+    } else {
+      state.demos = [data, ...state.demos];
+    }
     state._demoSelectedFile = null;   // clear only on genuine success — a failed upload keeps the file selected so the user doesn't have to re-pick it to retry
   } catch (e) { alert(e.message); }
   state.busy = false; render();
