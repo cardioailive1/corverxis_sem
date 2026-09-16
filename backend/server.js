@@ -351,6 +351,21 @@ app.get('/api/checkpoints', authenticate, async (req, res) => {
   res.json(checkpoints.map(toCheckpoint));
 });
 
+// POST /api/checkpoints — registers a real training run's output. The
+// actual GRPO training script (training/grpo/train_grpo.py) calls this
+// directly when a training run finishes, using its API key — this is
+// the piece that was missing before: checkpoints could be listed and
+// activated, but never actually created.
+app.post('/api/checkpoints', authenticate, async (req, res) => {
+  const { version, base_model, training_run_id, mean_reward, storage_key } = req.body;
+  if (!version || !base_model) return res.status(400).json({ error: 'version and base_model are required' });
+  const checkpoint = await prisma.semCheckpoint.create({ data: {
+    version, baseModel: base_model, trainingRunId: training_run_id || null,
+    meanReward: mean_reward ?? null, storageKey: storage_key || '', isActive: false,
+  }});
+  res.status(201).json(toCheckpoint(checkpoint));
+});
+
 app.post('/api/checkpoints/:id/activate', authenticate, async (req, res) => {
   await prisma.semCheckpoint.updateMany({ data: { isActive: false } });
   const updated = await prisma.semCheckpoint.update({ where: { id: req.params.id }, data: { isActive: true } });

@@ -44,7 +44,7 @@ def generate_observations(intervention: dict, rng: random.Random) -> dict:
     return observations
 
 
-def verify_proposed_structure(proposed: dict, intervention: dict, rng: random.Random, n_trials: int = 20) -> float:
+def verify_proposed_structure(proposed: dict, intervention: dict, rng: random.Random = None, n_trials: int = 20) -> float:
     """
     The verifier — this is the actual reward signal. Rather than just checking
     if the proposed component name matches the hidden intervention (which
