@@ -90,6 +90,28 @@ Note the blueprint deliberately leaves `ANTHROPIC_API_KEY` commented out —
 still a placeholder, see below). Uncomment that block once the extraction
 stage is wired to something real.
 
+## Two kinds of training run, shown side by side in the UI
+
+The Training Runs tab now distinguishes two genuinely different things,
+badged clearly so they're never confused:
+
+- **Reference** — the original, fast, in-process heuristic loop. Useful
+  for a quick mechanism sanity-check, not real model training. Started
+  directly from a button in the UI.
+- **GRPO** — real training, actually updating Qwen3.8-27B's weights via
+  `training/grpo/train_grpo.py`, running on a dedicated GPU pod. Started
+  from the command line on that pod (see `training/grpo/README.md`), not
+  from a button here — but once started, it creates a real `TrainingRun`
+  record and reports live progress back to this exact page automatically,
+  via `PATCH /api/training-runs/:id/progress`. Confirmed with a real
+  integration test: the script's requests were checked against an actual
+  mock server, not just syntax-checked.
+
+The Training Runs tab also now shows a real **data pipeline** view — live
+scenario counts per domain, reused from data already loaded elsewhere in
+the app, so it's clear what's actually available for training to draw
+from before starting a real run.
+
 ## Setup — local development
 
 **Backend:**

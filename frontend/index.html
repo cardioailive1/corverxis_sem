@@ -339,6 +339,7 @@ async function startCompilerJob(demonstration_id, use_case_id) {
 // ── Training Runs — progress bar, live poll, detail with reward chart ─────
 function renderTraining() {
   if (!state.useCases) { state.useCases = []; loadUseCases(); }
+  if (!state.scenarios || state.scenarios.length === 0) { loadScenarios(); }
   if (!state._trainingPolling) {
     state._trainingPolling = true;
     startPolling(async () => {
@@ -349,21 +350,50 @@ function renderTraining() {
 
   const container = dc('div', {});
   container.append(modHeader('SEM MODEL TRAINING', 'Training Runs'));
+
+  // ── Data pipeline — real visibility into what actually feeds training,
+  // not just a button that starts something opaque. Reuses scenario data
+  // already loaded elsewhere, no new backend call needed. ─────────────────
+  const semCases = (state.useCases || []).filter(u => u.kind === 'sem_only');
+  const domainCounts = semCases.map(u => ({
+    name: u.name, count: (state.scenarios || []).filter(s => s.use_case_id === u.id).length,
+  }));
+  const totalScenarios = domainCounts.reduce((sum, d) => sum + d.count, 0);
   container.append(card(
-    dc('div', { className: 'card-label' }, 'START A TRAINING RUN'),
-    btn(state.busy ? '⟳ Starting…' : '▶ Start Run (all sem_only use cases)', 'btn-cyan btn-full', startTrainingRun, state.busy)
+    dc('div', { className: 'card-label' }, 'DATA PIPELINE — SCENARIOS FEEDING TRAINING'),
+    dc('div', { style: 'font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:10px;line-height:1.6' },
+      totalScenarios + ' total scenarios currently available across all domains, generated on the Scenarios tab. A real GRPO training run (see below) pulls fresh scenarios directly from the same 6 simulators at training time — this count reflects what already exists, not what a specific run consumed.'),
+    domainCounts.length > 0 ? svgBarChart(domainCounts.map(d => d.count), domainCounts.map(d => d.name.split(' ')[0])) :
+      dc('div', { style: 'color:var(--text3);font-size:10px' }, 'No scenarios generated yet — visit the Scenarios tab.')
+  ));
+
+  container.append(card(
+    dc('div', { className: 'card-label' }, 'REFERENCE RUN — FAST, IN-PROCESS MECHANISM CHECK'),
+    dc('div', { style: 'font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:10px;line-height:1.6' },
+      'Runs the heuristic proposer against existing scenarios, right here in the backend, in seconds. Useful for confirming the reward mechanism works — this is NOT real model training, no weights are updated.'),
+    btn(state.busy ? '⟳ Starting…' : '▶ Start Reference Run', 'btn-cyan btn-full', startTrainingRun, state.busy)
+  ));
+
+  container.append(card(
+    dc('div', { className: 'card-label' }, 'REAL GRPO TRAINING'),
+    dc('div', { style: 'font-family:var(--mono);font-size:9px;color:var(--text3);line-height:1.6' },
+      'Real training — actually updates Qwen3.8-27B\'s weights via GRPO — runs separately on a dedicated GPU pod (training/grpo/train_grpo.py), not from a button here, since it needs real GPU hardware this web app doesn\'t have. Once started there, it reports live progress back to this exact page automatically — any run below with the GRPO badge is a real, external job, not a simulation.')
   ));
 
   container.append(card(
     dc('div', { className: 'card-label' }, dc('span', { className: 'live-dot' }), 'RUNS'),
     state.trainingRuns.length === 0 ? dc('div', { style: 'color:var(--text3);font-size:10px' }, 'None yet.') :
     dc('div', {}, ...state.trainingRuns.map(t => {
-      const pct = t.total_items > 0 ? Math.round((t.completed_items / t.total_items) * 100) : 0;
+      const pct = t.total_scenarios > 0 ? Math.round((t.completed_scenarios / t.total_scenarios) * 100) : 0;
+      const isGrpo = t.run_type === 'grpo';
       return dc('div', {
         className: 'row-clickable', style: 'padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;font-size:10px',
         onClick: () => { state._runDetail = t.id; loadRunDetail(t.id); render(); },
       },
-        dc('div', {}, t.status + ' — ' + t.completed_items + '/' + t.total_items + ' scenarios'),
+        dc('div', { style: 'display:flex;justify-content:space-between;align-items:center' },
+          dc('div', {}, t.status + ' — ' + t.completed_scenarios + '/' + t.total_scenarios + ' scenarios'),
+          dc('span', { className: 'badge ' + (isGrpo ? 'badge-compiler' : 'badge-sem') }, isGrpo ? 'GRPO' : 'REFERENCE')
+        ),
         dc('div', { className: 'progress-track' }, dc('div', { className: 'progress-fill', style: 'width:' + pct + '%' })),
         t.mean_reward != null && dc('div', { style: 'color:var(--text3)' }, 'mean reward: ' + t.mean_reward.toFixed(3))
       );
@@ -374,8 +404,8 @@ function renderTraining() {
     const results = state._runDetailResults;
     container.append(card(
       dc('div', { className: 'card-label' }, 'RUN DETAIL — REWARD PER SCENARIO'),
-      results.length > 0 ? svgBarChart(results.map(r => r.reward), results.map((_, i) => i + 1)) : dc('div', { style: 'color:var(--text3);font-size:10px' }, 'No results yet.'),
-      dc('div', { style: 'margin-top:10px;max-height:300px;overflow-y:auto' },
+      results.length > 0 ? svgBarChart(results.map(r => r.reward), results.map((_, i) => i + 1)) : dc('div', { style: 'color:var(--text3);font-size:10px' }, 'No results yet — GRPO runs report aggregate reward progress, not per-scenario detail (see the mean reward on the run card above).'),
+      results.length > 0 && dc('div', { style: 'margin-top:10px;max-height:300px;overflow-y:auto' },
         ...results.map(r => dc('div', { style: 'padding:6px;border-bottom:1px solid var(--border);font-size:9px' },
           'reward ' + r.reward + ' — proposed ' + JSON.stringify(r.proposed_structure) + ' vs true ' + JSON.stringify(r.hidden_intervention)))
       )

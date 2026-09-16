@@ -81,6 +81,7 @@ model SemCheckpoint {
 model TrainingRun {
   id             String   @id @default(cuid())
   useCaseIds     String[]                        // which use cases' scenarios this run trains on — [] means all
+  runType        String   @default("reference")   // "reference" (the toy heuristic loop, fast, for mechanism testing) | "grpo" (a real training job on a GPU pod, progress reported externally via train_grpo.py)
   status         String   @default("queued")      // queued | running | completed | failed
   totalScenarios Int      @default(0)
   completedScenarios Int  @default(0)

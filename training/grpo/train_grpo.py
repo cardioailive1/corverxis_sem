@@ -74,6 +74,62 @@ def build_model_and_tokenizer(base_model: str, use_4bit: bool):
     return model, tokenizer
 
 
+def create_training_run(backend_url: str, use_case_ids: list, config: dict) -> str:
+    """Creates the real TrainingRun record this script's progress will
+    report against — called once, at the very start, before training
+    begins. Returns the run's id, or None if the backend call fails (in
+    which case training still proceeds — a broken UI connection shouldn't
+    block a real training job from running)."""
+    import requests
+    try:
+        resp = requests.post(f"{backend_url}/api/training-runs", json={
+            "use_case_ids": use_case_ids, "config": config, "run_type": "grpo",
+        }, timeout=15)
+        if resp.ok:
+            run_id = resp.json()["id"]
+            print(f"Created TrainingRun {run_id} (run_type=grpo) — progress will report here")
+            return run_id
+        print(f"Could not create TrainingRun (training proceeds without UI progress reporting): HTTP {resp.status_code}")
+    except Exception as e:
+        print(f"Could not create TrainingRun (training proceeds without UI progress reporting): {e}")
+    return None
+
+
+def report_progress(backend_url: str, run_id: str, **fields):
+    """Best-effort progress report — never raises. A dropped progress
+    update should never be able to interrupt or fail actual training."""
+    if not run_id:
+        return
+    import requests
+    try:
+        requests.patch(f"{backend_url}/api/training-runs/{run_id}/progress", json=fields, timeout=10)
+    except Exception as e:
+        print(f"Progress report failed (training continues): {e}")
+
+
+def build_progress_callback(backend_url: str, run_id: str, total_scenarios: int):
+    """A real transformers.TrainerCallback — GRPOTrainer extends the
+    standard HF Trainer, so this is the correct, supported way to hook
+    into training progress, not a custom polling loop bolted on
+    separately. Reports at every logging step (matches GRPOConfig's
+    logging_steps), which is the natural cadence trl already uses."""
+    from transformers import TrainerCallback
+
+    class SEMProgressCallback(TrainerCallback):
+        def on_log(self, args, state, control, logs=None, **kwargs):
+            if logs is None:
+                return
+            report_progress(
+                backend_url, run_id,
+                status="running",
+                completed_scenarios=state.global_step,
+                total_scenarios=total_scenarios,
+                mean_reward=logs.get("reward"),   # trl logs a "reward" key during GRPO training
+            )
+
+    return SEMProgressCallback()
+
+
 def register_checkpoint(backend_url: str, version: str, base_model: str, mean_reward: float, storage_key: str, training_run_id: str = None):
     """Calls the SEM+OSC backend's checkpoint registration route (added
     specifically to support this) once training produces something worth
@@ -103,12 +159,21 @@ def main():
     parser.add_argument("--learning-rate", type=float, default=1e-5)
     parser.add_argument("--backend-url", default=os.environ.get("SEM_BACKEND_URL", "http://localhost:4001"))
     parser.add_argument("--register-checkpoint", action="store_true", help="POST the result to the SEM+OSC backend when training finishes")
+    parser.add_argument("--no-progress-reporting", action="store_true", help="Skip creating a TrainingRun / reporting progress to the backend entirely — useful for a quick local test run")
     args = parser.parse_args()
 
     from trl import GRPOConfig, GRPOTrainer
 
-    print(f"Building training dataset — {args.n_per_domain} scenarios × 6 domains = {args.n_per_domain * 6} total examples")
+    total_examples = args.n_per_domain * 6
+    print(f"Building training dataset — {args.n_per_domain} scenarios × 6 domains = {total_examples} total examples")
     train_dataset = build_hf_dataset(n_per_domain=args.n_per_domain)
+
+    run_id = None
+    if not args.no_progress_reporting:
+        run_id = create_training_run(args.backend_url, use_case_ids=[], config={
+            "base_model": args.base_model, "n_per_domain": args.n_per_domain,
+            "num_generations": args.num_generations, "learning_rate": args.learning_rate,
+        })
 
     print(f"Loading {args.base_model} with QLoRA (4-bit: {not args.no_4bit})")
     model, tokenizer = build_model_and_tokenizer(args.base_model, use_4bit=not args.no_4bit)
@@ -129,19 +194,29 @@ def main():
         save_steps=100,
     )
 
+    callbacks = []
+    if run_id:
+        callbacks.append(build_progress_callback(args.backend_url, run_id, total_examples))
+
     trainer = GRPOTrainer(
         model=model,
         reward_funcs=[sem_reward],
         args=grpo_config,
         train_dataset=train_dataset,
         processing_class=tokenizer,
+        callbacks=callbacks,
     )
 
     print("Starting GRPO training...")
-    trainer.train()
+    try:
+        trainer.train()
+    except Exception:
+        report_progress(args.backend_url, run_id, status="failed")
+        raise
 
     trainer.save_model(args.output_dir)
     print(f"Training complete. Adapter saved to {args.output_dir}")
+    report_progress(args.backend_url, run_id, status="completed", completed_scenarios=total_examples, total_scenarios=total_examples)
 
     if args.register_checkpoint:
         # mean_reward here would realistically come from evaluating a
@@ -154,6 +229,7 @@ def main():
             base_model=args.base_model,
             mean_reward=None,
             storage_key=args.output_dir,
+            training_run_id=run_id,
         )
 
 

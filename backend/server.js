@@ -209,7 +209,7 @@ app.get('/api/demonstrations', authenticate, async (req, res) => {
 // elsewhere: create the run, launch the actual Python training script as a
 // detached process, return immediately, let the frontend poll for status.
 const toTrainingRun = t => ({
-  id: t.id, use_case_ids: t.useCaseIds, status: t.status,
+  id: t.id, use_case_ids: t.useCaseIds, run_type: t.runType, status: t.status,
   total_scenarios: t.totalScenarios, completed_scenarios: t.completedScenarios,
   mean_reward: t.meanReward, config: t.config, created_at: t.createdAt, completed_at: t.completedAt,
 });
@@ -251,12 +251,43 @@ async function processTrainingRun(runId) {
 }
 
 app.post('/api/training-runs', authenticate, async (req, res) => {
-  const { use_case_ids, config } = req.body;
+  const { use_case_ids, config, run_type } = req.body;
+  const runType = run_type === 'grpo' ? 'grpo' : 'reference';
   const run = await prisma.trainingRun.create({ data: {
-    useCaseIds: use_case_ids || [], config: config || {}, createdById: req.user?.id,
+    useCaseIds: use_case_ids || [], config: config || {}, runType, createdById: req.user?.id,
   }});
-  processTrainingRun(run.id).catch(err => console.error('Training run error:', err.message));   // fire-and-forget, status polled via GET
+  // A 'grpo' run is real training happening externally on a GPU pod
+  // (train_grpo.py) — nothing to run in-process here. It reports its own
+  // progress via PATCH /api/training-runs/:id/progress below. Only the
+  // 'reference' type runs the fast, in-process heuristic loop, useful for
+  // quickly checking a simulator/reward mechanism without touching a GPU.
+  if (runType === 'reference') {
+    processTrainingRun(run.id).catch(err => console.error('Training run error:', err.message));   // fire-and-forget, status polled via GET
+  }
   res.status(202).json(toTrainingRun(run));
+});
+
+// PATCH /api/training-runs/:id/progress — called externally by
+// train_grpo.py while a real GRPO job is actually running on a GPU pod,
+// since that process — not this backend — is the one doing the training
+// and is the only thing that knows real progress as it happens.
+app.patch('/api/training-runs/:id/progress', authenticate, async (req, res) => {
+  const { completed_scenarios, total_scenarios, mean_reward, status } = req.body;
+  const data = {};
+  if (completed_scenarios !== undefined) data.completedScenarios = completed_scenarios;
+  if (total_scenarios !== undefined) data.totalScenarios = total_scenarios;
+  if (mean_reward !== undefined) data.meanReward = mean_reward;
+  if (status !== undefined) {
+    data.status = status;
+    if (status === 'completed' || status === 'failed') data.completedAt = new Date();
+  }
+  try {
+    const updated = await prisma.trainingRun.update({ where: { id: req.params.id }, data });
+    res.json(toTrainingRun(updated));
+  } catch (err) {
+    if (err.code === 'P2025') return res.status(404).json({ error: 'Training run not found' });
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get('/api/training-runs/:id', authenticate, async (req, res) => {
