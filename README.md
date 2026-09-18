@@ -98,11 +98,25 @@ compiled correctly with zero modification needed.
   couldn't be verified in the environment this was built in: the actual
   LLM reasoning quality for real video frames, since no live API key was
   available there. Test this for real before trusting it in production.
-- **`video` (general/physical-world footage) and `motion_capture`
-  (robotics joint/pose data) still use the original placeholder** —
-  genuinely different, harder problems from "a UI being interacted
-  with," not solved here. A job for one of these modalities completes
-  with an honest note explaining this, rather than silently producing a
+- **`video` (general/physical-world footage)** uses the exact same
+  `videoPipeline.js` mechanism as `screen_recording` — frame extraction
+  and frame-pair analysis don't inherently know or care whether they're
+  looking at a UI or a physical task. Only the action vocabulary in the
+  prompt differs (`click`/`type`/`navigate` vs. `pick_up`/`place`/
+  `assemble`/`adjust`), parametrized by modality rather than duplicated
+  as a second pipeline. Confirmed both prompts are genuinely distinct and
+  correctly selected by modality, with sensible fallback behavior.
+- **`motion_capture` (robotics joint/pose data) still uses the original
+  placeholder, deliberately** — not because it's technically harder in
+  the same way video ingestion was, but because `robot`-targeted output
+  has real physical consequences a wrong compiled step can't casually
+  undo. The current verification stage (Stage 3) is a Claude
+  self-consistency check — a reasonable stand-in for software, where a
+  wrong step just means a UI action gets retried, but nowhere near a
+  strong enough guarantee before compiled output drives physical
+  hardware. This is explicitly meant to wait for a real trained SEM
+  checkpoint doing genuine perturbation-based verification (see
+  `sem-training-architecture.md`), not to be built ahead of it. A job
   fake result.
 
 Requires `ANTHROPIC_API_KEY` to be set — the log pipeline calls Claude

@@ -82,23 +82,44 @@ async function extractFrames(videoBuffer) {
 }
 
 // ── Stage 1b: infer the action between each consecutive frame pair ───────
-function buildFrameTransitionPrompt() {
-  return `These two images are consecutive frames from a screen recording, roughly ${FRAME_INTERVAL_SECONDS} second(s) apart. Identify the single most likely user action that occurred between them (e.g. a click, typing into a field, selecting a menu option, navigating to a new screen).
+// Same underlying mechanism for both modalities — frame extraction and
+// frame-pair analysis don't inherently know or care whether they're
+// looking at a UI or a physical task. The only real difference is the
+// action vocabulary the prompt asks for, so that's the one thing that's
+// actually parametrized here, not a second, duplicated pipeline.
+const MODALITY_PROMPTS = {
+  screen_recording: {
+    context: 'a screen recording of someone using software',
+    actionTypes: '"click"|"type"|"navigate"|"select"|"none"',
+    actionExamples: 'a click, typing into a field, selecting a menu option, navigating to a new screen',
+    targetHint: "what was interacted with, e.g. 'submit button', 'search field'",
+  },
+  video: {
+    context: 'a video of someone performing a physical task',
+    actionTypes: '"pick_up"|"place"|"move"|"assemble"|"adjust"|"none"',
+    actionExamples: 'picking up an object, placing it somewhere, assembling two parts together, adjusting a setting or control',
+    targetHint: "what was acted on, e.g. 'the wrench', 'the left bracket'",
+  },
+};
+
+function buildFrameTransitionPrompt(modality) {
+  const m = MODALITY_PROMPTS[modality] || MODALITY_PROMPTS.video;
+  return `These two images are consecutive frames from ${m.context}, roughly ${FRAME_INTERVAL_SECONDS} second(s) apart. Identify the single most likely action that occurred between them (e.g. ${m.actionExamples}).
 
 Respond with ONLY a JSON object in the form:
-{"action": "click"|"type"|"navigate"|"select"|"none", "target": "<short description of what was interacted with, e.g. 'submit button', 'search field'>", "value": "<text entered, if action is type, else null>"}
+{"action": ${m.actionTypes}, "target": "<short description of ${m.targetHint}>", "value": "<text entered or a relevant detail, if applicable, else null>"}
 
 If nothing meaningfully changed between the frames, respond with {"action": "none", "target": null, "value": null}.
 No other text.`;
 }
 
-async function inferActionBetweenFrames(anthropicClient, frameBefore, frameAfter) {
+async function inferActionBetweenFrames(anthropicClient, frameBefore, frameAfter, modality) {
   const msg = await anthropicClient.messages.create({
     model: 'claude-sonnet-4-6', max_tokens: 300,
     messages: [{ role: 'user', content: [
       { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: frameBefore.toString('base64') } },
       { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: frameAfter.toString('base64') } },
-      { type: 'text', text: buildFrameTransitionPrompt() },
+      { type: 'text', text: buildFrameTransitionPrompt(modality) },
     ]}],
   });
   const text = msg.content[0]?.text || '{}';
@@ -120,9 +141,12 @@ function parseJSONResponseLocal(text) {
   return JSON.parse(cleaned);
 }
 
-// ── The full Stage 1 for screen_recording — produces the exact same
-// shape ingestLogDemonstration() does, so Stages 2-5 need zero changes. ──
-async function ingestScreenRecordingDemonstration(videoBuffer, anthropicClient) {
+// ── The full Stage 1 for screen_recording AND general video — produces
+// the exact same shape ingestLogDemonstration() does, so Stages 2-5 need
+// zero changes regardless of which of the two this is. `motion_capture`
+// is deliberately NOT included here — see the module docstring and
+// server.js's REAL_MODALITIES list for why that one still needs to wait. ──
+async function ingestVideoDemonstration(videoBuffer, anthropicClient, modality) {
   const frames = await extractFrames(videoBuffer);
   if (frames.length < 2) {
     throw new Error('Video is too short to infer any actions from — need at least 2 distinct frames.');
@@ -132,7 +156,7 @@ async function ingestScreenRecordingDemonstration(videoBuffer, anthropicClient) 
   for (let i = 0; i < frames.length - 1; i++) {
     let inferred;
     try {
-      inferred = await inferActionBetweenFrames(anthropicClient, frames[i], frames[i + 1]);
+      inferred = await inferActionBetweenFrames(anthropicClient, frames[i], frames[i + 1], modality);
     } catch (err) {
       // One unparseable/failed frame pair shouldn't kill the whole
       // ingestion — record it as a "none" step rather than aborting,
@@ -155,8 +179,12 @@ async function ingestScreenRecordingDemonstration(videoBuffer, anthropicClient) 
   }
   return observationSequence;
 }
+// Back-compat alias — the original, more specific name still works.
+const ingestScreenRecordingDemonstration = (videoBuffer, anthropicClient) =>
+  ingestVideoDemonstration(videoBuffer, anthropicClient, 'screen_recording');
 
 module.exports = {
   extractFrames, buildFrameTransitionPrompt, inferActionBetweenFrames,
-  ingestScreenRecordingDemonstration, FRAME_INTERVAL_SECONDS, MAX_FRAMES,
+  ingestVideoDemonstration, ingestScreenRecordingDemonstration,
+  FRAME_INTERVAL_SECONDS, MAX_FRAMES,
 };

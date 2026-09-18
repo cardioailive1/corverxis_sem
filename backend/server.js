@@ -420,14 +420,18 @@ async function processCompilerJob(jobId) {
   if (!job) return;
   const demonstration = await prisma.demonstration.findUnique({ where: { id: job.demonstrationId } });
 
-  // `log` and `screen_recording` both have real, implemented pipelines
-  // now — they share the exact same Stages 2-5 (logPipeline.js), only
-  // Stage 1 (ingestion) differs, since that's the only stage that
-  // actually needs to know the demonstration's raw format. `video`
-  // (general/physical-world footage) and `motion_capture` (robotics
-  // joint/pose data) remain separate, genuinely harder problems, not
-  // solved here — same honest scoping as before.
-  const REAL_MODALITIES = ['log', 'screen_recording'];
+  // `log`, `screen_recording`, and `video` all have real, implemented
+  // pipelines now — they share the exact same Stages 2-5 (logPipeline.js),
+  // only Stage 1 (ingestion) differs, since that's the only stage that
+  // actually needs to know the demonstration's raw format. `video` and
+  // `screen_recording` even share the same underlying video-analysis
+  // mechanism (videoPipeline.js) — only the action vocabulary in the
+  // prompt differs. `motion_capture` (robotics joint/pose data) is the
+  // one modality still deliberately held back — see the design
+  // discussion on why robot-targeted verification needs a real trained
+  // SEM checkpoint before compiled output should ever drive physical
+  // hardware, not the current Claude-based verification stand-in.
+  const REAL_MODALITIES = ['log', 'screen_recording', 'video'];
   if (!demonstration || !REAL_MODALITIES.includes(demonstration.modality)) {
     try {
       const stages = ['ingestion', 'extraction', 'verification', 'abstraction', 'compilation'];
@@ -437,7 +441,7 @@ async function processCompilerJob(jobId) {
       }
       await prisma.compilerJob.update({ where: { id: jobId }, data: {
         stage: 'completed', completedAt: new Date(),
-        confidenceNotes: `No real pipeline exists yet for "${demonstration?.modality || 'unknown'}" modality — only "log" and "screen_recording" demonstrations are fully processed. This is a placeholder result.`,
+        confidenceNotes: `No real pipeline exists yet for "${demonstration?.modality || 'unknown'}" modality — "log", "screen_recording", and "video" demonstrations are fully processed; "motion_capture" is not. This is a placeholder result.`,
       }});
     } catch (err) {
       await prisma.compilerJob.update({ where: { id: jobId }, data: { stage: 'failed', errorMessage: err.message } });
@@ -456,8 +460,8 @@ async function processCompilerJob(jobId) {
     // ── Stage 1: Ingestion — the one stage that differs by modality ───────
     await prisma.compilerJob.update({ where: { id: jobId }, data: { stage: 'ingestion' } });
     const fileBuffer = await readDemonstrationBuffer(demonstration);
-    const observationSequence = demonstration.modality === 'screen_recording'
-      ? await videoPipeline.ingestScreenRecordingDemonstration(fileBuffer, anthropic)
+    const observationSequence = (demonstration.modality === 'screen_recording' || demonstration.modality === 'video')
+      ? await videoPipeline.ingestVideoDemonstration(fileBuffer, anthropic, demonstration.modality)
       : logPipeline.ingestLogDemonstration(fileBuffer);
     await prisma.compilerJob.update({ where: { id: jobId }, data: { observationSeq: observationSequence } });
 
