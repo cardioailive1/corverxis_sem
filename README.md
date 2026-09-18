@@ -61,30 +61,49 @@ than what's actually been proven:
   matching the backend's actual
   response shapes.
 
-### The Skill Compiler pipeline — real for `log` demonstrations, placeholder for the rest
+### The Skill Compiler pipeline — real for `log` and `screen_recording`, placeholder for the rest
 
-`processCompilerJob` now runs a genuinely real pipeline for `log`
-modality demonstrations (a structured JSON action sequence) —
-`backend/compiler/logPipeline.js`. This is the modality the design
-document itself recommended starting with: exact, structured input, no
-computer-vision perception problem to solve first.
+`processCompilerJob` runs a genuinely real, shared pipeline for `log` and
+`screen_recording` demonstrations. The key architectural point: **only
+Stage 1 (ingestion) differs by modality** — `logPipeline.js` parses a
+structured JSON action sequence, `videoPipeline.js` extracts frames from
+a real video and infers the action between each consecutive pair via
+Claude's vision API. Both produce the exact same observation-sequence
+shape (`[{index, action, target, value, raw}, ...]`), so Stages 2-5
+(extraction, verification, abstraction, compilation) run completely
+unchanged regardless of which modality a demonstration came from —
+confirmed directly: fed a simulated video-derived observation sequence
+through `logPipeline.js`'s existing, already-tested Stage 5 and it
+compiled correctly with zero modification needed.
 
-- **Stage 1 (ingestion)** and **Stage 5 (compilation)** are pure,
+- **`log` — Stage 1 (ingestion) and Stage 5 (compilation)** are pure,
   deterministic logic — no LLM call, fully tested directly, including
   real error-handling for malformed logs.
-- **Stages 2-4 (extraction, verification, abstraction)** call Claude.
-  Their prompt construction is tested directly; the full 5-stage
-  orchestration was confirmed working end to end against a mocked
-  Anthropic client (data flows correctly between every stage) — but the
-  actual LLM reasoning itself couldn't be verified in the environment
-  this was built in (no live API key available there). Test this for
-  real, with a real key, before trusting it in production.
-- **`video` / `screen_recording` / `motion_capture` demonstrations still
-  use the original placeholder** — parsing raw video or screen recordings
-  into structured observations is a separate, genuinely harder
-  computer-vision problem, not solved here. A job for one of these
-  modalities completes with an honest note explaining this, rather than
-  silently producing a fake result.
+- **`screen_recording` — frame extraction** uses `ffmpeg-static`, a
+  self-contained npm binary (no `apt-get` needed — the same lesson
+  learned the hard way with `poppler-utils` and `python3` elsewhere in
+  this project). Genuinely, fully tested end to end: generated a real
+  synthetic test video, extracted real frames, confirmed valid JPEG
+  output, confirmed a clean error for corrupted input, and confirmed the
+  frame-count downsampling logic (caps at 40 frames per video, evenly
+  sampled across the whole recording rather than just its start) with no
+  duplicate or out-of-range indices.
+- **Stages 2-4 (extraction, verification, abstraction) and per-frame
+  action inference** call Claude. Their prompt construction is tested
+  directly, and the full log-pipeline orchestration was confirmed working
+  end to end against a mocked Anthropic client, including deliberately
+  fenced responses (```json ... ``` wrapping) — a real, confirmed failure
+  mode caught in production and fixed with a shared fence-stripping
+  parser used in both `logPipeline.js` and `videoPipeline.js`. What
+  couldn't be verified in the environment this was built in: the actual
+  LLM reasoning quality for real video frames, since no live API key was
+  available there. Test this for real before trusting it in production.
+- **`video` (general/physical-world footage) and `motion_capture`
+  (robotics joint/pose data) still use the original placeholder** —
+  genuinely different, harder problems from "a UI being interacted
+  with," not solved here. A job for one of these modalities completes
+  with an honest note explaining this, rather than silently producing a
+  fake result.
 
 Requires `ANTHROPIC_API_KEY` to be set — the log pipeline calls Claude
 directly for three of its five stages.

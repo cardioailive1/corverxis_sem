@@ -11,6 +11,7 @@ const fs = require('fs');
 const { PrismaClient } = require('@prisma/client');
 const Anthropic = require('@anthropic-ai/sdk');
 const logPipeline = require('./compiler/logPipeline.js');
+const videoPipeline = require('./compiler/videoPipeline.js');
 
 const app = express();
 const prisma = new PrismaClient();
@@ -419,13 +420,15 @@ async function processCompilerJob(jobId) {
   if (!job) return;
   const demonstration = await prisma.demonstration.findUnique({ where: { id: job.demonstrationId } });
 
-  // Only `log` modality has a real, implemented pipeline (see
-  // backend/compiler/logPipeline.js and its README note on why this is
-  // the first fully-supported modality). Other modalities fall back to
-  // the same honest placeholder as before — parsing raw video/screen
-  // recordings is a separate, harder computer-vision problem, not solved
-  // here.
-  if (!demonstration || demonstration.modality !== 'log') {
+  // `log` and `screen_recording` both have real, implemented pipelines
+  // now — they share the exact same Stages 2-5 (logPipeline.js), only
+  // Stage 1 (ingestion) differs, since that's the only stage that
+  // actually needs to know the demonstration's raw format. `video`
+  // (general/physical-world footage) and `motion_capture` (robotics
+  // joint/pose data) remain separate, genuinely harder problems, not
+  // solved here — same honest scoping as before.
+  const REAL_MODALITIES = ['log', 'screen_recording'];
+  if (!demonstration || !REAL_MODALITIES.includes(demonstration.modality)) {
     try {
       const stages = ['ingestion', 'extraction', 'verification', 'abstraction', 'compilation'];
       for (const stage of stages) {
@@ -434,7 +437,7 @@ async function processCompilerJob(jobId) {
       }
       await prisma.compilerJob.update({ where: { id: jobId }, data: {
         stage: 'completed', completedAt: new Date(),
-        confidenceNotes: `No real pipeline exists yet for "${demonstration?.modality || 'unknown'}" modality — only "log" demonstrations are fully processed. This is a placeholder result.`,
+        confidenceNotes: `No real pipeline exists yet for "${demonstration?.modality || 'unknown'}" modality — only "log" and "screen_recording" demonstrations are fully processed. This is a placeholder result.`,
       }});
     } catch (err) {
       await prisma.compilerJob.update({ where: { id: jobId }, data: { stage: 'failed', errorMessage: err.message } });
@@ -444,18 +447,22 @@ async function processCompilerJob(jobId) {
 
   if (!anthropic) {
     await prisma.compilerJob.update({ where: { id: jobId }, data: {
-      stage: 'failed', errorMessage: 'ANTHROPIC_API_KEY is not configured on this server — the real log-modality pipeline needs it for stages 2-4.',
+      stage: 'failed', errorMessage: 'ANTHROPIC_API_KEY is not configured on this server — the real pipeline needs it for stages 2-4.',
     }});
     return;
   }
 
   try {
-    // ── Stage 1: Ingestion — real, deterministic, no LLM call ─────────────
+    // ── Stage 1: Ingestion — the one stage that differs by modality ───────
     await prisma.compilerJob.update({ where: { id: jobId }, data: { stage: 'ingestion' } });
     const fileBuffer = await readDemonstrationBuffer(demonstration);
-    const observationSequence = logPipeline.ingestLogDemonstration(fileBuffer);
+    const observationSequence = demonstration.modality === 'screen_recording'
+      ? await videoPipeline.ingestScreenRecordingDemonstration(fileBuffer, anthropic)
+      : logPipeline.ingestLogDemonstration(fileBuffer);
     await prisma.compilerJob.update({ where: { id: jobId }, data: { observationSeq: observationSequence } });
 
+    // ── Stages 2-5 — identical regardless of modality; both ingestion
+    // paths above produce the exact same observation-sequence shape. ─────
     // ── Stage 2: Causal Extraction ─────────────────────────────────────────
     await prisma.compilerJob.update({ where: { id: jobId }, data: { stage: 'extraction' } });
     const extraction = await logPipeline.extractCausalStructure(anthropic, observationSequence);
