@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEM Diagnose</title>
+<link rel="icon" href="data:,">
+<meta name="description" content="Pick a domain, mark what you observe, and get the most likely cause.">
+<style>
+:root{--bg:#f4f8fb;--surface:#fff;--ink:#0b2238;--ink2:#4a6378;--line:#d5e2ec;--brand:#0583a6;--brand-ink:#fff;--accent:#05d2fc;--ok:#157a45;--warn:#8a5a00;--warn-bg:#fff4d6;--bad:#b3261e;--chip:#eaf2f8;--chip-on:#0583a6;--shadow:0 1px 2px rgba(11,34,56,.06),0 4px 16px rgba(11,34,56,.06)}
+:root[data-theme=dark]{--bg:#021830;--surface:#072544;--ink:#eaf4fb;--ink2:#9ab6cc;--line:#16466e;--brand:#05d2fc;--brand-ink:#021830;--ok:#4ade80;--warn:#fbbf24;--warn-bg:#3a2e0a;--bad:#f87171;--chip:#0d2f52;--chip-on:#05d2fc;--shadow:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#021830;--surface:#072544;--ink:#eaf4fb;--ink2:#9ab6cc;--line:#16466e;--brand:#05d2fc;--brand-ink:#021830;--ok:#4ade80;--warn:#fbbf24;--warn-bg:#3a2e0a;--bad:#f87171;--chip:#0d2f52;--chip-on:#05d2fc;--shadow:none}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface)}
+header img{height:30px;border-radius:4px}
+header h1{font-size:17px;margin:0;font-weight:650}
+header .sp{flex:1}
+header .btn{min-height:36px;padding:6px 14px}
+.model{font-size:13px;color:var(--ink2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;}
+.model.live{color:var(--ok);border-color:var(--ok)}
+main{max-width:880px;margin:0 auto;padding:20px 16px 64px}
+h2{font-size:15px;margin:28px 0 10px;color:var(--ink2);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.dom{all:unset;box-sizing:border-box;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:block}
+.dom:hover{border-color:var(--brand)}
+.dom[aria-pressed=true]{border-color:var(--brand);box-shadow:0 0 0 2px var(--brand)}
+.dom b{display:block;font-size:15px}.dom span{color:var(--ink2);font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 14px;border-radius:999px;background:var(--chip);border:1px solid var(--line);font-size:14px;min-height:40px;display:inline-flex;align-items:center}
+.chip[aria-pressed=true]{background:var(--chip-on);color:var(--brand-ink);border-color:var(--chip-on);font-weight:600}
+:where(button,input):focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{all:unset;box-sizing:border-box;cursor:pointer;background:var(--brand);color:var(--brand-ink);font-weight:650;padding:11px 22px;border-radius:10px;min-height:44px;display:inline-flex;align-items:center}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px}
+.hint{color:var(--ink2);font-size:13px}
+.answer{font-size:26px;font-weight:700;margin:4px 0 2px;word-break:break-word}
+.badge{display:inline-block;font-size:12px;font-weight:650;padding:2px 9px;border-radius:999px;border:1px solid var(--line)}
+.badge.sem{color:var(--ok);border-color:var(--ok)}.badge.fb{color:var(--warn);border-color:var(--warn)}
+.note{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:8px 12px;font-size:14px;margin-top:12px}
+.err{color:var(--bad);margin-top:12px;font-size:14px}
+.bar{display:grid;grid-template-columns:minmax(120px,38%) 1fr 48px;gap:8px;align-items:center;margin:6px 0;font-size:14px}
+.bar i{display:block;height:10px;border-radius:5px;background:var(--chip);overflow:hidden}.bar i u{display:block;height:100%;background:var(--brand);text-decoration:none}
+.bar.top span{font-weight:650}.bar em{font-style:normal;text-align:right;color:var(--ink2)}
+.hist{list-style:none;margin:0;padding:0}.hist li{padding:8px 0;border-top:1px solid var(--line);font-size:14px;display:flex;gap:10px;justify-content:space-between}
+.hist li:first-child{border-top:0}
+.gate{max-width:420px;margin:12vh auto 0}
+input[type=password],input[type=text]{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;min-height:44px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:s .7s linear infinite;margin-right:8px}
+@keyframes s{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+@media (max-width:520px){.bar{grid-template-columns:1fr 1fr 44px}.answer{font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+  <img src="assets/corverxis_logo.jpg" alt="Corverxis">
+  <h1>SEM Diagnose</h1><span class="sp"></span>
+  <span id="model" class="model" hidden></span>
+  <button class="btn ghost" id="signout" hidden>Sign out</button>
+</header>
+<main id="app"></main>
+<script src="config.js"></script>
+<script>
+(function(){
+'use strict';
+var API=(window.SEM_API_BASE||'').replace(/\/$/,'')+'/api/product';
+var $=function(s){return document.querySelector(s)};
+var app=$('#app');
+var S={key:null,domains:null,domain:null,signals:{},busy:false,result:null,error:null,history:[],model:null};
+
+function store(op,k,v){try{var s=window.localStorage;return op==='get'?s.getItem(k):op==='set'?s.setItem(k,v):s.removeItem(k)}catch(e){return null}}
+function el(tag,attrs){var e=document.createElement(tag);attrs=attrs||{};for(var k in attrs){if(k==='text')e.textContent=attrs[k];else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),attrs[k]);else if(attrs[k]!==false&&attrs[k]!==null&&attrs[k]!==undefined)e.setAttribute(k,attrs[k]===true?'':attrs[k])}
+  for(var i=2;i<arguments.length;i++){add(e,arguments[i])}return e}
+function add(e,c){if(Array.isArray(c))c.forEach(function(x){add(e,x)});else if(c)e.append(c.nodeType?c:document.createTextNode(c))}
+function human(s){return s.replace(/_/g,' ')}
+function pct(p){return (p*100<1&&p>0?'<1':Math.round(p*100))+'%'}
+
+function call(path,opts){
+  opts=opts||{};var headers={'x-api-key':S.key};if(opts.body)headers['content-type']='application/json';
+  return fetch(API+path,{method:opts.body?'POST':'GET',headers:headers,body:opts.body?JSON.stringify(opts.body):undefined}).then(function(r){
+    return r.json().catch(function(){return{}}).then(function(j){
+      if(r.status===401){signOut(true);throw new Error('That access key was not accepted.')}
+      if(r.status===429)throw new Error('Too many requests. Please wait a moment and try again.');
+      if(r.status===503)throw new Error((j.error||'The service is unavailable')+(j.detail?' ('+j.detail+')':''));
+      if(!r.ok)throw new Error(j.error||('Request failed ('+r.status+')'));
+      return j});
+  },function(){throw new Error('Could not reach the service. Check your connection and the API address in config.js.')});
+}
+
+function signOut(keepMsg){store('del','sem_key');S.key=null;S.domains=null;S.domain=null;S.result=null;S.error=keepMsg?'That access key was not accepted.':null;render()}
+$('#signout').addEventListener('click',function(){signOut(false)});
+
+function renderGate(){
+  var input=el('input',{type:'password',id:'k',autocomplete:'off','aria-label':'Access key',placeholder:'Access key'});
+  var err=el('div',{class:'err',role:'alert',text:S.error||''});
+  function go(){var v=input.value.trim();if(!v)return;S.key=v;S.error=null;load(true)}
+  input.addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  app.replaceChildren(el('div',{class:'card gate'},el('h2',{text:'Sign in',style:'margin-top:0'}),
+    el('p',{class:'hint',text:'Enter the access key you were given to use SEM Diagnose.'}),input,err,
+    el('div',{class:'row'},el('button',{class:'btn',onclick:go,text:'Continue'}))));
+  input.focus();
+}
+
+function load(save){
+  app.replaceChildren(el('p',{class:'hint'},el('span',{class:'spin'}),'Loading…'));
+  Promise.all([call('/domains'),call('/model')]).then(function(r){
+    S.domains=r[0];S.model=r[1];if(save)store('set','sem_key',S.key);render();
+  },function(e){S.error=e.message;S.key=null;store('del','sem_key');render()});
+}
+
+function renderModelChip(){
+  var m=$('#model'),so=$('#signout');so.hidden=!S.key;
+  if(!S.key||!S.model){m.hidden=true;return}
+  m.hidden=false;var ck=S.model.checkpoint;
+  if(ck&&S.model.inference_configured){m.className='model live';m.textContent='SEM '+ck.version+(ck.held_out_mean_reward!=null?' · eval '+ck.held_out_mean_reward.toFixed(2):'')}
+  else{m.className='model';m.textContent=S.model.fallback_enabled?'SEM model not live · fallback on':'SEM model not live'}
+}
+
+function renderMain(){
+  var kids=[];
+  kids.push(el('h2',{text:'1 · What are you investigating?'}));
+  kids.push(el('div',{class:'grid'},S.domains.map(function(d){
+    return el('button',{class:'dom','aria-pressed':String(S.domain===d.slug),onclick:function(){S.domain=d.slug;S.signals={};S.result=null;S.error=null;render()}},el('b',{text:d.name}),el('span',{text:d.options.length+' possible causes'}))})));
+  if(S.domain){
+    var d=S.domains.filter(function(x){return x.slug===S.domain})[0];
+    kids.push(el('h2',{text:'2 · What do you observe?'}));
+    kids.push(el('div',{class:'card'},
+      el('p',{class:'hint',style:'margin-top:0',text:'Select every signal that is present. Leave the rest off. Selecting none means all readings are normal.'}),
+      el('div',{class:'chips',role:'group','aria-label':'Observed signals'},d.signals.map(function(s){
+        return el('button',{class:'chip','aria-pressed':String(!!S.signals[s]),onclick:function(){S.signals[s]=!S.signals[s];S.result=null;render(true)}},human(s))})),
+      el('div',{class:'row'},
+        el('button',{class:'btn',id:'go',disabled:S.busy,onclick:diagnose},S.busy?el('span',{class:'spin'}):null,S.busy?'Diagnosing…':'Diagnose'),
+        el('button',{class:'btn ghost',onclick:function(){S.signals={};S.result=null;render(true)},text:'Clear'}),
+        el('span',{class:'hint',text:Object.keys(S.signals).filter(function(k){return S.signals[k]}).length+' selected'})),
+      S.error?el('div',{class:'err',role:'alert',text:S.error}):null));
+  }
+  var live=el('div',{'aria-live':'polite'});
+  if(S.result)live.append(renderResult(S.result));
+  kids.push(live);
+  if(S.history.length){kids.push(el('h2',{text:'Recent in this session'}));
+    kids.push(el('div',{class:'card'},el('ul',{class:'hist'},S.history.map(function(h){return el('li',{},el('span',{text:h.domain+': '+(h.answer?human(h.answer):'no valid answer')}),el('span',{class:'hint',text:h.by}))}))))}
+  app.replaceChildren.apply(app,kids);
+}
+
+function renderResult(r){
+  var sem=r.served_by==='sem-checkpoint';
+  var c=el('div',{class:'card',style:'margin-top:16px'});
+  c.append(el('div',{class:'row',style:'margin:0 0 4px'},el('span',{class:'badge '+(sem?'sem':'fb'),text:sem?'SEM model '+(r.checkpoint?r.checkpoint.version:''):'Fallback: general model, not SEM'}),el('span',{class:'hint',text:r.latency_ms+' ms'})));
+  if(r.valid){c.append(el('div',{class:'hint',text:'Most likely cause'}),el('div',{class:'answer',text:human(r.answer)}));
+    c.append(el('div',{class:'hint',text:r.agrees_with_reference?'Matches the most probable cause in the reference model below.':'Differs from the most probable cause in the reference model below. Treat with extra care.'}))}
+  else c.append(el('div',{class:'err',role:'alert',text:r.error||'No valid answer.'}));
+  if(r.note)c.append(el('div',{class:'note',text:r.note}));
+  if(r.caution)c.append(el('div',{class:'note',text:r.caution}));
+  c.append(el('h2',{text:'Reference probabilities'}),el('p',{class:'hint',style:'margin:0 0 6px',text:'From the simulator the model was trained against, assuming every cause is equally likely beforehand. This is context, not the model’s confidence.'}));
+  r.reference_probabilities.forEach(function(p,i){c.append(el('div',{class:'bar'+(i===0?' top':'')},el('span',{text:human(p.cause)}),el('i',{},el('u',{style:'width:'+Math.max(1,p.probability*100)+'%'})),el('em',{text:pct(p.probability)})))});
+  return c;
+}
+
+function diagnose(){
+  var sigs=Object.keys(S.signals).filter(function(k){return S.signals[k]});
+  S.busy=true;S.error=null;render(true);
+  call('/diagnose',{body:{domain:S.domain,signals:sigs}}).then(function(r){
+    S.busy=false;S.result=r;
+    var name=S.domains.filter(function(x){return x.slug===S.domain})[0].name;
+    S.history.unshift({domain:name,answer:r.answer,by:r.served_by==='sem-checkpoint'?'SEM':'fallback'});S.history=S.history.slice(0,5);render(true);
+    var res=app.querySelector('.card[style*="margin-top:16px"]');if(res&&res.scrollIntoView)res.scrollIntoView({block:'nearest'});
+  },function(e){S.busy=false;S.error=e.message;render(true)});
+}
+
+function render(){renderModelChip();if(!S.key)return renderGate();if(!S.domains)return;renderMain()}
+
+S.key=store('get','sem_key');
+if(S.key)load(false);else render();
+})();
+</script>
+</body>
+</html>

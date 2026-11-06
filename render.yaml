@@ -28,6 +28,23 @@ services:
       # for stages 2-4 (extraction, verification, abstraction).
       - key: ANTHROPIC_API_KEY
         sync: false
+      # ── Product API (customer-facing, /api/product/*) ──────────────────
+      # Comma-separated access keys. Without it the product API refuses to
+      # serve in production. Give each customer their own key.
+      - key: SEM_PRODUCT_API_KEYS
+        sync: false
+      # Where the trained SEM model is served. Without it (or without an
+      # ACTIVE checkpoint) the product falls back to a clearly labelled general
+      # model, or returns 503 if SEM_PRODUCT_ALLOW_FALLBACK=false.
+      # SEM_INFERENCE_KIND: openai (vLLM, default) | hf | runpod
+      - key: SEM_INFERENCE_URL
+        sync: false
+      - key: SEM_INFERENCE_KIND
+        value: openai
+      - key: SEM_INFERENCE_API_KEY
+        sync: false
+      - key: SEM_PRODUCT_ALLOW_FALLBACK
+        value: "true"
       # Optional. Without these, demonstration files are stored on local
       # disk only, which does NOT survive a redeploy — every code push
       # wipes previously uploaded files (this is what caused a real ENOENT
@@ -38,6 +55,19 @@ services:
       #   sync: false
       # - key: AWS_SECRET_ACCESS_KEY
       #   sync: false
+
+  # Customer-facing product UI — separate static site from the Lab UI
+  # (which the backend serves from /frontend). Set product/config.js
+  # SEM_API_BASE to the backend URL before deploying.
+  - type: web
+    name: sem-product-ui
+    runtime: static
+    branch: main
+    staticPublishPath: ./product
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
 
 databases:
   - name: sem-osc-db
