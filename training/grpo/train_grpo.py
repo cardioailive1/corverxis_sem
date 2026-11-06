@@ -156,6 +156,7 @@ def main():
     parser.add_argument("--output-dir", default="./sem-checkpoint")
     parser.add_argument("--no-4bit", action="store_true", help="Disable 4-bit quantization — only realistic on a GPU with substantially more than 80GB VRAM")
     parser.add_argument("--num-generations", type=int, default=8, help="How many candidate completions GRPO samples per prompt — the 'group' in Group Relative Policy Optimization")
+    parser.add_argument("--seed", type=int, default=1234, help="Seed for training-scenario generation. Fixed (not random) so train_manifest.json is reproducible; must differ from eval_sem.py's --seed")
     parser.add_argument("--learning-rate", type=float, default=1e-5)
     parser.add_argument("--backend-url", default=os.environ.get("SEM_BACKEND_URL", "http://localhost:4001"))
     parser.add_argument("--register-checkpoint", action="store_true", help="POST the result to the SEM+OSC backend when training finishes")
@@ -166,7 +167,13 @@ def main():
 
     total_examples = args.n_per_domain * 6
     print(f"Building training dataset — {args.n_per_domain} scenarios × 6 domains = {total_examples} total examples")
-    train_dataset = build_hf_dataset(n_per_domain=args.n_per_domain)
+    train_dataset = build_hf_dataset(n_per_domain=args.n_per_domain, seed=args.seed)
+    # Record which observation patterns were trained on, so eval_sem.py can run its memorisation probe.
+    import json as _json
+    os.makedirs(args.output_dir, exist_ok=True)
+    with open(os.path.join(args.output_dir, "train_manifest.json"), "w") as _f:
+        _json.dump({"seed": args.seed, "n_per_domain": args.n_per_domain,
+                    "patterns": sorted(set(train_dataset["obs_pattern"]))}, _f)
 
     run_id = None
     if not args.no_progress_reporting:
@@ -219,10 +226,11 @@ def main():
     report_progress(args.backend_url, run_id, status="completed", completed_scenarios=total_examples, total_scenarios=total_examples)
 
     if args.register_checkpoint:
-        # mean_reward here would realistically come from evaluating a
-        # held-out scenario set post-training, not training-set reward —
-        # left as a manual step / TODO rather than faked with a plausible
-        # number, since a real eval harness doesn't exist yet.
+        # mean_reward stays null here on purpose: it must come from the held-out
+        # evaluation, not training-set reward. After training run:
+        #   python3 eval_sem.py --backend hf --model <base> --adapter <output-dir> \
+        #       --train-manifest <output-dir>/train_manifest.json --out eval_out/<name> \
+        #       --register-checkpoint-id <id of the checkpoint registered below>
         register_checkpoint(
             backend_url=args.backend_url,
             version=f"sem-{args.base_model.split('/')[-1]}-{os.path.basename(args.output_dir)}",

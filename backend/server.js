@@ -547,6 +547,18 @@ app.post('/api/checkpoints', authenticate, async (req, res) => {
   res.status(201).json(toCheckpoint(checkpoint));
 });
 
+// PATCH /api/checkpoints/:id/eval — records the held-out evaluation result
+// (training/grpo/eval_sem.py --register-checkpoint-id). mean_reward here is
+// the mean verifier reward on the HELD-OUT iid suite, not training reward.
+app.patch('/api/checkpoints/:id/eval', authenticate, async (req, res) => {
+  const { mean_reward } = req.body;
+  if (typeof mean_reward !== 'number' || !isFinite(mean_reward)) return res.status(400).json({ error: 'mean_reward (number) is required' });
+  const existing = await prisma.semCheckpoint.findUnique({ where: { id: req.params.id } });
+  if (!existing) return res.status(404).json({ error: 'checkpoint not found' });
+  const updated = await prisma.semCheckpoint.update({ where: { id: req.params.id }, data: { meanReward: mean_reward } });
+  res.json(toCheckpoint(updated));
+});
+
 app.post('/api/checkpoints/:id/activate', authenticate, async (req, res) => {
   await prisma.semCheckpoint.updateMany({ data: { isActive: false } });
   const updated = await prisma.semCheckpoint.update({ where: { id: req.params.id }, data: { isActive: true } });
