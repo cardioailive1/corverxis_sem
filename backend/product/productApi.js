@@ -1,8 +1,8 @@
-// SEM Product API — the customer-facing surface, deliberately separate from the Lab API.
+// SI-SEM Product API — the customer-facing surface, deliberately separate from the Lab API.
 //
 // Mounted at /api/product by server.js. The Lab UI never calls these routes and the
 // product UI never calls the Lab's routes. What it does:
-//   * lists the diagnostic domains the SEM model was trained on
+//   * lists the diagnostic domains the SI-SEM model was trained on
 //   * POST /diagnose builds the EXACT prompt format used in GRPO training
 //     (training/grpo/dataset.py build_prompt), sends it to the model that is
 //     currently served, and returns the answer plus context
@@ -165,11 +165,11 @@ function createProductRouter({ prisma, anthropic, env = process.env }) {
     // 1) The SEM model, only if a checkpoint is active AND a serving endpoint is configured.
     if (ck && env.SEM_INFERENCE_URL) {
       try { raw = await callServedModel(prompt, env); served_by = 'sem-checkpoint'; }
-      catch (e) { note = `SEM model endpoint failed (${e.message}).`; }
+      catch (e) { note = `SI-SEM model endpoint failed (${e.message}).`; }
     } else {
-      note = !ck ? 'No SEM checkpoint is active.' : 'No SEM serving endpoint is configured.';
+      note = !ck ? 'No SI-SEM checkpoint is active.' : 'No SI-SEM serving endpoint is configured.';
     }
-    // 2) Clearly labelled fallback so the product keeps working. Never presented as SEM.
+    // 2) Clearly labelled fallback so the product keeps working. Never presented as SI-SEM.
     if (served_by === null && anthropic && env.SEM_PRODUCT_ALLOW_FALLBACK !== 'false') {
       try {
         const m = await anthropic.messages.create({ model: 'claude-sonnet-4-6', max_tokens: 64, messages: [{ role: 'user', content: prompt }] });
