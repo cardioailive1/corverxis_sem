@@ -83,3 +83,44 @@ didn't exist before) to register the result. Note the registered
 the trained model against a held-out scenario set, not training-set
 reward, and that evaluation harness doesn't exist yet. Treat that as the
 next real piece of work once a checkpoint actually exists to evaluate.
+
+## Evaluating a checkpoint (`eval_sem.py`)
+
+Training reward does not tell you the model improved. These simulators are
+Bernoulli models, so exact accuracy is capped by a Bayes ceiling (about 71% on the
+default item set, not 100%), and there are only a few hundred distinct observation
+patterns per domain, so a plain held-out split overlaps heavily with training. The
+harness reports results against that ceiling and probes for memorisation.
+
+```bash
+# 1. Train (writes <output-dir>/train_manifest.json; --seed defaults to 1234)
+python3 train_grpo.py --n-per-domain 200 --output-dir ./sem-checkpoint-v1 --register-checkpoint ...
+
+# 2. Evaluate the UNTRAINED base model and the trained adapter on the identical item set
+python3 eval_sem.py --backend hf --model Qwen/Qwen3.8-27B --out eval_out/base
+python3 eval_sem.py --backend hf --model Qwen/Qwen3.8-27B --adapter ./sem-checkpoint-v1 \
+    --train-manifest ./sem-checkpoint-v1/train_manifest.json --out eval_out/sem-v1 \
+    --register-checkpoint-id <checkpoint id> --backend-url https://<sem-backend>
+
+# 3. Paired comparison
+python3 eval_sem.py compare eval_out/base/items.jsonl eval_out/sem-v1/items.jsonl
+```
+
+Reports (`report.md`, `report.json`, per-item `items.jsonl`) cover accuracy with 95% CIs,
+verifier reward, format-valid rate, per domain and per suite (`iid`, `reordered`,
+`paraphrase`, `noisy`), random and Bayes reference scores, and a normalized score
+(0 = chance, 1 = ceiling). `--backend bayes|random|first` give reference rows with no GPU;
+`--backend predictions` scores completions produced elsewhere; `--dump-set` exports the items.
+
+How to read it:
+- A gain over the base model that the paired comparison calls significant is the real signal.
+- Normalized score near 1 on `iid` but a large drop on `reordered`, `paraphrase` or `noisy`
+  means the model learned the surface form, not the task.
+- In the memorisation probe, "unseen" accuracy well below "seen" means memorisation. Unseen
+  patterns are rare ones, so that subset is small. Check its `n` before trusting it.
+- Mean reward includes partial credit for wrong answers (random guessing scores about 0.35),
+  so judge progress by accuracy and the normalized score.
+
+Not verified: the `hf` and `endpoint` backends need a GPU or a served model and have not been
+run. Everything else was tested with the reference baselines and synthetic models (a
+memoriser and a format-brittle model) to confirm the metrics separate them.

@@ -54,6 +54,15 @@ def build_prompt(domain: str, observations: dict) -> str:
     )
 
 
+def pattern_id(domain: str, observations: dict) -> str:
+    """Surface-form-independent id of an observation pattern (which signals are
+    present). Shared with eval_sem.py so the eval can tell which patterns the
+    model saw during training."""
+    import hashlib
+    key = domain + "|" + ",".join(k for k, v in sorted(observations.items()) if v)
+    return hashlib.sha1(key.encode()).hexdigest()[:16]
+
+
 def generate_training_examples(n_per_domain: int, seed: int = None) -> list[dict]:
     """Generates n_per_domain scenarios from EVERY domain, mixed together —
     training across all 6 simulators in one run, not one domain at a time,
@@ -77,6 +86,7 @@ def generate_training_examples(n_per_domain: int, seed: int = None) -> list[dict
                 # it as a string, no schema unification to go wrong.
                 "hidden_intervention": json.dumps(intervention),
                 "domain": domain,
+                "obs_pattern": pattern_id(domain, observations),
             })
     rng.shuffle(examples)   # mixed order, not grouped by domain — avoids the model learning "the last N examples are always this domain"
     return examples
