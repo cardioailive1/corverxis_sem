@@ -91,6 +91,11 @@ app.use(express.json({ limit: '5mb' }));
 const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
 app.use(express.static(FRONTEND_DIR));
 
+// ── Product API — customer-facing, separate from the Lab routes below. The
+// product UI (../product/) only ever talks to /api/product/*. ────────────────
+const { createProductRouter } = require('./product/productApi.js');
+app.use('/api/product', createProductRouter({ prisma, anthropic }));
+
 
 const GENERATED_DIR = path.join(__dirname, 'generated');
 if (!fs.existsSync(GENERATED_DIR)) fs.mkdirSync(GENERATED_DIR, { recursive: true });
