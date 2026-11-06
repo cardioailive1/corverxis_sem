@@ -1,6 +1,6 @@
-# SEM Diagnose — product UI
+# SI-SEM Diagnose — product UI
 
-The customer-facing app for the trained SEM model. It is separate from the Lab UI (`../frontend/`, used to
+The customer-facing app for the trained SI-SEM (Super Intelligence-SEM) model. It is separate from the Lab UI (`../frontend/`, used to
 build, train and evaluate). It is a static site with no build step and only ever calls `/api/product/*`.
 
 ## What users do
@@ -21,13 +21,13 @@ build, train and evaluate). It is a static site with no build step and only ever
 
 ## Behaviour to know
 - The model is only used when a checkpoint is active AND `SEM_INFERENCE_URL` is set. Otherwise the product
-  falls back to a general Claude model and labels the answer "Fallback: general model, not SEM". Set
+  falls back to a general Claude model and labels the answer "Fallback: general model, not SI-SEM". Set
   `SEM_PRODUCT_ALLOW_FALLBACK=false` to return an error instead.
 - The served model is one endpoint. Activating a different checkpoint in the Lab changes the label shown, not
   the weights being served. Redeploy or swap the adapter on the endpoint to match.
 - Reference probabilities come from the simulators' own model with equal priors. They are context, not the
   model's confidence.
-- The task is the narrow one SEM was trained on: choose one cause from a fixed list given observed signals.
+- The task is the narrow one SI-SEM was trained on: choose one cause from a fixed list given observed signals.
   It does not analyse free-form logs or recordings.
 - Access keys are shared secrets, rate limited to 30 requests/min per key. There are no user accounts yet.
 

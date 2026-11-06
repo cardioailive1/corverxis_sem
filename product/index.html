@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SEM Diagnose</title>
+<title>SI-SEM Diagnose</title>
 <link rel="icon" href="data:,">
 <meta name="description" content="Pick a domain, mark what you observe, and get the most likely cause.">
 <style>
@@ -57,7 +57,7 @@ input[type=password],input[type=text]{width:100%;padding:11px 12px;border-radius
 <body>
 <header>
   <img src="assets/corverxis_logo.jpg" alt="Corverxis">
-  <h1>SEM Diagnose</h1><span class="sp"></span>
+  <h1>SI-SEM Diagnose</h1><span class="sp"></span>
   <span id="model" class="model" hidden></span>
   <button class="btn ghost" id="signout" hidden>Sign out</button>
 </header>
@@ -99,7 +99,7 @@ function renderGate(){
   function go(){var v=input.value.trim();if(!v)return;S.key=v;S.error=null;load(true)}
   input.addEventListener('keydown',function(e){if(e.key==='Enter')go()});
   app.replaceChildren(el('div',{class:'card gate'},el('h2',{text:'Sign in',style:'margin-top:0'}),
-    el('p',{class:'hint',text:'Enter the access key you were given to use SEM Diagnose.'}),input,err,
+    el('p',{class:'hint',text:'Enter the access key you were given to use SI-SEM Diagnose.'}),input,err,
     el('div',{class:'row'},el('button',{class:'btn',onclick:go,text:'Continue'}))));
   input.focus();
 }
@@ -115,8 +115,8 @@ function renderModelChip(){
   var m=$('#model'),so=$('#signout');so.hidden=!S.key;
   if(!S.key||!S.model){m.hidden=true;return}
   m.hidden=false;var ck=S.model.checkpoint;
-  if(ck&&S.model.inference_configured){m.className='model live';m.textContent='SEM '+ck.version+(ck.held_out_mean_reward!=null?' · eval '+ck.held_out_mean_reward.toFixed(2):'')}
-  else{m.className='model';m.textContent=S.model.fallback_enabled?'SEM model not live · fallback on':'SEM model not live'}
+  if(ck&&S.model.inference_configured){m.className='model live';m.textContent='SI-SEM '+ck.version+(ck.held_out_mean_reward!=null?' · eval '+ck.held_out_mean_reward.toFixed(2):'')}
+  else{m.className='model';m.textContent=S.model.fallback_enabled?'SI-SEM not live · fallback on':'SI-SEM not live'}
 }
 
 function renderMain(){
@@ -148,7 +148,7 @@ function renderMain(){
 function renderResult(r){
   var sem=r.served_by==='sem-checkpoint';
   var c=el('div',{class:'card',style:'margin-top:16px'});
-  c.append(el('div',{class:'row',style:'margin:0 0 4px'},el('span',{class:'badge '+(sem?'sem':'fb'),text:sem?'SEM model '+(r.checkpoint?r.checkpoint.version:''):'Fallback: general model, not SEM'}),el('span',{class:'hint',text:r.latency_ms+' ms'})));
+  c.append(el('div',{class:'row',style:'margin:0 0 4px'},el('span',{class:'badge '+(sem?'sem':'fb'),text:sem?'SI-SEM '+(r.checkpoint?r.checkpoint.version:''):'Fallback: general model, not SI-SEM'}),el('span',{class:'hint',text:r.latency_ms+' ms'})));
   if(r.valid){c.append(el('div',{class:'hint',text:'Most likely cause'}),el('div',{class:'answer',text:human(r.answer)}));
     c.append(el('div',{class:'hint',text:r.agrees_with_reference?'Matches the most probable cause in the reference model below.':'Differs from the most probable cause in the reference model below. Treat with extra care.'}))}
   else c.append(el('div',{class:'err',role:'alert',text:r.error||'No valid answer.'}));
@@ -165,7 +165,7 @@ function diagnose(){
   call('/diagnose',{body:{domain:S.domain,signals:sigs}}).then(function(r){
     S.busy=false;S.result=r;
     var name=S.domains.filter(function(x){return x.slug===S.domain})[0].name;
-    S.history.unshift({domain:name,answer:r.answer,by:r.served_by==='sem-checkpoint'?'SEM':'fallback'});S.history=S.history.slice(0,5);render(true);
+    S.history.unshift({domain:name,answer:r.answer,by:r.served_by==='sem-checkpoint'?'SI-SEM':'fallback'});S.history=S.history.slice(0,5);render(true);
     var res=app.querySelector('.card[style*="margin-top:16px"]');if(res&&res.scrollIntoView)res.scrollIntoView({block:'nearest'});
   },function(e){S.busy=false;S.error=e.message;render(true)});
 }

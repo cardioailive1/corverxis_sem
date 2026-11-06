@@ -76,7 +76,7 @@ test('fallback to Claude is labelled and never claims to be SEM', async () => {
   const anthropic = { messages: { create: async () => ({ content: [{ text: '{"failed_component": "bearing"}' }] }) } };
   const { srv, base } = await setup({ anthropic });   // no checkpoint, no endpoint
   const r = await (await jpost(base, '/diagnose', { domain: 'industrial-fault-diagnosis', signals: ['vibration_high', 'noise_abnormal'] }, 'k1')).json();
-  assert.equal(r.served_by, 'claude-fallback'); assert.equal(r.checkpoint, null); assert.match(r.note, /No SEM checkpoint/); assert.equal(r.answer, 'bearing');
+  assert.equal(r.served_by, 'claude-fallback'); assert.equal(r.checkpoint, null); assert.match(r.note, /No SI-SEM checkpoint/); assert.equal(r.answer, 'bearing');
   srv.close();
 });
 
