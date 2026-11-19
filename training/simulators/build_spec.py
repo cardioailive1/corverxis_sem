@@ -789,10 +789,28 @@ for _d in D:
     if _d["slug"] in DESCRIPTION: _d["description"] = DESCRIPTION[_d["slug"]]
 
 
+# ── Validation status ────────────────────────────────────────────────────────
+# Every domain starts as "illustrative" (hand-set probabilities). A domain is "calibrated" only when
+# calibrations/<slug>.json exists, written by calibrate.py from real labelled cases and a held-out check.
+# "expert_validated" is never set by a tool: it needs a named domain expert's sign-off recorded in
+# calibrations/<slug>.json under validation.signed_off_by.
+STATUSES = ("illustrative", "calibrated", "expert_validated")
+_cal_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "calibrations")
+for _d in D:
+    _d["validation"] = {"status": "illustrative"}
+    _f = os.path.join(_cal_dir, _d["slug"] + ".json")
+    if os.path.exists(_f):
+        _c = json.load(open(_f))
+        _d["profiles"] = {c: {s: float(p) for s, p in _c["profiles"][c].items()} for c in _d["causes"]}
+        _d["validation"] = _c["validation"]
+
+
 def validate(domains):
     slugs = set()
     for d in domains:
         assert d.get("category"), (d["slug"], "missing category")
+        assert d["validation"]["status"] in STATUSES, (d["slug"], d["validation"])
+        if d["validation"]["status"] == "expert_validated": assert d["validation"].get("signed_off_by"), (d["slug"], "expert_validated needs signed_off_by")
         assert d["slug"] not in slugs; slugs.add(d["slug"])
         assert 12 <= len(d["causes"]) <= 15, (d["slug"], len(d["causes"]))
         assert len(set(d["causes"])) == len(d["causes"]) and len(set(d["signals"])) == len(d["signals"])
@@ -807,7 +825,7 @@ if __name__ == "__main__":
     validate(D)
     here = os.path.dirname(os.path.abspath(__file__))
     targets = [os.path.join(here, "domains_spec.json"), os.path.join(here, "..", "..", "backend", "simulators", "domains_spec.json")]
-    text = json.dumps({"version": 3, "domains": D}, indent=1) + "\n"
+    text = json.dumps({"version": 4, "domains": D}, indent=1) + "\n"
     for t in targets:
         open(t, "w").write(text)
     print(f"wrote {len(D)} domains, {sum(len(d['causes']) for d in D)} causes to {len(targets)} files")

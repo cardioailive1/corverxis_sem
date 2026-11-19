@@ -129,3 +129,38 @@ How to read it:
 Not verified: the `hf` and `endpoint` backends need a GPU or a served model and have not been
 run. Everything else was tested with the reference baselines and synthetic models (a
 memoriser and a format-brittle model) to confirm the metrics separate them.
+
+## Real-world validation status (per domain)
+
+Every domain starts as **illustrative**: its cause-to-signal probabilities are hand-set examples. SI-SEM
+trained on them reproduces those tables, so it is not a validated expert in any field. Each domain carries a
+status that the API returns and the product page shows:
+
+| Status | Meaning | How it is reached |
+|---|---|---|
+| `illustrative` | Hand-set example probabilities | default |
+| `calibrated` | Probabilities re-estimated from real labelled cases and checked on held-out cases | `calibrate.py --write`, then `build_spec.py` |
+| `expert_validated` | Calibrated, and a named domain expert signed off | add `signed_off_by` to `calibrations/<slug>.json` by hand |
+
+```bash
+cd training/simulators
+python3 calibrate.py --domain cardiology-ecg-review --cases real_cases.csv --source "Hospital X 2024 registry"          # report only
+python3 calibrate.py --domain cardiology-ecg-review --cases real_cases.csv --source "..." --write && python3 build_spec.py
+```
+
+`real_cases.csv` has a `cause` column (a cause from the domain) and either a 0/1 column per signal or a `signals`
+column with `;`-separated names. The tool refuses to write unless there are at least 20 cases per cause overall,
+at least 15 fit cases for each cause that appears, at least 80% of causes present, and the calibrated model does not
+do worse than the current one on held-out cases. Re-train after calibrating so the model learns the new probabilities.
+
+What counts as real data: cases with a known true cause. Model outputs (for example answers from a language model
+served with vLLM) and unlabelled documents or images are not ground truth and cannot validate or calibrate a domain.
+Do not describe a domain as validated, in the product or in marketing, unless its status says so.
+
+## Next steps shown with each answer
+
+The `/diagnose` and `/chat` results include `actions`: unobserved signals worth checking to confirm the answer,
+signals that separate it from the runner-up, observed signals that are unusual for it, and who to involve. They are
+computed from the same probabilities, so they are consistent with the diagnosis. `POST /steps` adds optional
+general guidance written by a language model, labelled as unvalidated, and limited to verification, monitoring
+and who to consult in healthcare, finance and any domain with a caution.
