@@ -22,6 +22,7 @@ header .btn{min-height:36px;padding:6px 14px}
 main{max-width:880px;margin:0 auto;padding:20px 16px 64px}
 h2{font-size:15px;margin:28px 0 10px;color:var(--ink2);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.cat{margin:18px 0 8px;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#6b7280)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
 .dom{all:unset;box-sizing:border-box;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:block}
 .dom:hover{border-color:var(--brand)}
@@ -134,8 +135,12 @@ function renderMain(){
   kids.push(el('h2',{text:'Describe the problem'}));
   kids.push(renderChat());
   kids.push(el('h2',{text:'Or choose manually · What are you investigating?'}));
-  kids.push(el('div',{class:'grid'},S.domains.map(function(d){
-    return el('button',{class:'dom','aria-pressed':String(S.domain===d.slug),onclick:function(){S.domain=d.slug;S.signals={};S.result=null;S.error=null;render()}},el('b',{text:d.name}),el('span',{text:d.options.length+' possible causes'}))})));
+  var cats=[];S.domains.forEach(function(d){var c=d.category||'Other';if(cats.indexOf(c)<0)cats.push(c)});
+  cats.forEach(function(c){
+    kids.push(el('h3',{class:'cat',text:c}));
+    kids.push(el('div',{class:'grid'},S.domains.filter(function(d){return (d.category||'Other')===c}).map(function(d){
+      return el('button',{class:'dom','aria-pressed':String(S.domain===d.slug),title:d.description||'',onclick:function(){S.domain=d.slug;S.signals={};S.result=null;S.error=null;render()}},el('b',{text:d.name}),el('span',{text:d.options.length+' possible causes'}))})));
+  });
   if(S.domain){
     var d=S.domains.filter(function(x){return x.slug===S.domain})[0];
     kids.push(el('h2',{text:'What do you observe?'}));

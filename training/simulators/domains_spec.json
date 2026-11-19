@@ -1,5 +1,5 @@
 {
- "version": 2,
+ "version": 3,
  "domains": [
   {
    "slug": "industrial-fault-diagnosis",
@@ -136,7 +136,8 @@
      "noise_abnormal": 0.2,
      "leak_visible": 0.15
     }
-   }
+   },
+   "category": "Industry & Operations"
   },
   {
    "slug": "medical-diagnostics",
@@ -299,7 +300,8 @@
      "headache": 0.45,
      "body_aches": 0.45
     }
-   }
+   },
+   "category": "Healthcare"
   },
   {
    "slug": "security-incident-investigation",
@@ -451,7 +453,8 @@
      "known_malware_signature": 0.1,
      "outbound_data_transfer_spike": 0.35
     }
-   }
+   },
+   "category": "Technology & Security"
   },
   {
    "slug": "financial-fraud-investigation",
@@ -592,7 +595,8 @@
      "rapid_small_transactions": 0.25,
      "device_fingerprint_mismatch": 0.1
     }
-   }
+   },
+   "category": "Finance & Markets"
   },
   {
    "slug": "scientific-discovery",
@@ -729,7 +733,8 @@
      "instrument_calibration_drift": 0.3,
      "batch_effect_pattern": 0.2
     }
-   }
+   },
+   "category": "Science & Education"
   },
   {
    "slug": "production-incident-rootcause",
@@ -882,7 +887,8 @@
      "config_change_recent": 0.2,
      "cache_hit_rate_drop": 0.1
     }
-   }
+   },
+   "category": "Technology & Security"
   },
   {
    "slug": "cardiology-ecg-review",
@@ -1043,7 +1049,8 @@
      "bradycardia": 0.4,
      "palpitations": 0.1
     }
-   }
+   },
+   "category": "Healthcare"
   },
   {
    "slug": "network-infrastructure-outage",
@@ -1178,7 +1185,8 @@
      "bgp_route_flaps": 0.35,
      "connection_resets": 0.2
     }
-   }
+   },
+   "category": "Technology & Security"
   },
   {
    "slug": "supply-chain-disruption",
@@ -1303,7 +1311,8 @@
      "supplier_order_cancellations": 0.3,
      "single_supplier_dependency": 0.3
     }
-   }
+   },
+   "category": "Industry & Operations"
   },
   {
    "slug": "safety-incident-analysis",
@@ -1435,7 +1444,1526 @@
      "pressure_exceedance": 0.2,
      "electrical_arcing_or_trip": 0.2
     }
-   }
+   },
+   "category": "Industry & Operations"
+  },
+  {
+   "slug": "education-learning-support",
+   "name": "Education & Learning Support",
+   "label": "learning difficulty analysis",
+   "key": "learning_barrier",
+   "default_p": 0.03,
+   "caution": "Decision support for educators. Not a diagnosis of any learning disability. Involve qualified specialists and the family.",
+   "signals": [
+    "low_quiz_scores",
+    "strong_oral_but_weak_written",
+    "struggles_with_prerequisite_topics",
+    "test_day_underperformance",
+    "frequent_absences",
+    "falls_asleep_in_class",
+    "off_task_behavior",
+    "reading_fluency_low",
+    "slow_writing_speed",
+    "avoids_math_tasks",
+    "disengaged_from_homework",
+    "strong_in_some_subjects_only",
+    "social_withdrawal",
+    "difficulty_following_instructions",
+    "finishes_work_early",
+    "squinting_or_asking_to_repeat"
+   ],
+   "causes": [
+    "prerequisite_knowledge_gap",
+    "test_anxiety",
+    "attention_difficulty",
+    "dyslexia_like_reading_pattern",
+    "math_anxiety",
+    "low_motivation",
+    "sleep_deprivation",
+    "language_barrier",
+    "ineffective_study_methods",
+    "social_stress_or_bullying",
+    "under_challenged",
+    "pacing_too_fast",
+    "vision_or_hearing_difficulty",
+    "handwriting_motor_difficulty"
+   ],
+   "profiles": {
+    "prerequisite_knowledge_gap": {
+     "struggles_with_prerequisite_topics": 0.9,
+     "low_quiz_scores": 0.7,
+     "avoids_math_tasks": 0.35,
+     "disengaged_from_homework": 0.3,
+     "strong_in_some_subjects_only": 0.4
+    },
+    "test_anxiety": {
+     "test_day_underperformance": 0.9,
+     "avoids_math_tasks": 0.2,
+     "strong_oral_but_weak_written": 0.25,
+     "low_quiz_scores": 0.3,
+     "social_withdrawal": 0.15
+    },
+    "attention_difficulty": {
+     "off_task_behavior": 0.85,
+     "difficulty_following_instructions": 0.7,
+     "disengaged_from_homework": 0.5,
+     "low_quiz_scores": 0.4,
+     "test_day_underperformance": 0.2
+    },
+    "dyslexia_like_reading_pattern": {
+     "reading_fluency_low": 0.9,
+     "strong_oral_but_weak_written": 0.7,
+     "slow_writing_speed": 0.5,
+     "low_quiz_scores": 0.4,
+     "strong_in_some_subjects_only": 0.5,
+     "disengaged_from_homework": 0.3
+    },
+    "math_anxiety": {
+     "avoids_math_tasks": 0.9,
+     "test_day_underperformance": 0.55,
+     "low_quiz_scores": 0.4,
+     "strong_in_some_subjects_only": 0.45,
+     "disengaged_from_homework": 0.25
+    },
+    "low_motivation": {
+     "disengaged_from_homework": 0.85,
+     "off_task_behavior": 0.5,
+     "frequent_absences": 0.3,
+     "low_quiz_scores": 0.45,
+     "social_withdrawal": 0.2
+    },
+    "sleep_deprivation": {
+     "falls_asleep_in_class": 0.9,
+     "off_task_behavior": 0.4,
+     "frequent_absences": 0.3,
+     "low_quiz_scores": 0.35,
+     "difficulty_following_instructions": 0.3
+    },
+    "language_barrier": {
+     "difficulty_following_instructions": 0.7,
+     "strong_oral_but_weak_written": 0.35,
+     "reading_fluency_low": 0.5,
+     "low_quiz_scores": 0.5,
+     "social_withdrawal": 0.35,
+     "strong_in_some_subjects_only": 0.45
+    },
+    "ineffective_study_methods": {
+     "low_quiz_scores": 0.65,
+     "test_day_underperformance": 0.4,
+     "disengaged_from_homework": 0.2,
+     "struggles_with_prerequisite_topics": 0.3
+    },
+    "social_stress_or_bullying": {
+     "social_withdrawal": 0.8,
+     "frequent_absences": 0.55,
+     "falls_asleep_in_class": 0.2,
+     "off_task_behavior": 0.3,
+     "low_quiz_scores": 0.35,
+     "disengaged_from_homework": 0.4
+    },
+    "under_challenged": {
+     "finishes_work_early": 0.85,
+     "off_task_behavior": 0.5,
+     "disengaged_from_homework": 0.5,
+     "strong_in_some_subjects_only": 0.4,
+     "low_quiz_scores": 0.1
+    },
+    "pacing_too_fast": {
+     "low_quiz_scores": 0.55,
+     "struggles_with_prerequisite_topics": 0.4,
+     "difficulty_following_instructions": 0.5,
+     "disengaged_from_homework": 0.35,
+     "test_day_underperformance": 0.2
+    },
+    "vision_or_hearing_difficulty": {
+     "squinting_or_asking_to_repeat": 0.85,
+     "difficulty_following_instructions": 0.5,
+     "reading_fluency_low": 0.35,
+     "off_task_behavior": 0.3,
+     "low_quiz_scores": 0.35
+    },
+    "handwriting_motor_difficulty": {
+     "slow_writing_speed": 0.85,
+     "strong_oral_but_weak_written": 0.55,
+     "low_quiz_scores": 0.3
+    }
+   },
+   "category": "Science & Education",
+   "description": "The most likely barrier behind a learner's struggles, from classroom and assessment signals, to help educators choose where to look first."
+  },
+  {
+   "slug": "ai-ml-system-failures",
+   "name": "AI & ML Systems",
+   "label": "AI and machine learning failure diagnosis",
+   "key": "failure_cause",
+   "default_p": 0.03,
+   "caution": null,
+   "signals": [
+    "train_loss_low_val_loss_high",
+    "train_loss_plateau_high",
+    "loss_nan_or_exploding",
+    "accuracy_drop_after_deploy",
+    "suspiciously_high_eval_score",
+    "errors_concentrated_in_minority_class",
+    "performance_varies_by_subgroup",
+    "input_feature_distribution_shift",
+    "outputs_unsupported_by_sources",
+    "retrieval_returns_irrelevant_docs",
+    "gradient_norm_vanishing",
+    "latency_regression",
+    "accuracy_drop_after_quantization",
+    "output_format_violations",
+    "sensitive_to_prompt_wording",
+    "label_disagreement_among_annotators"
+   ],
+   "causes": [
+    "overfitting",
+    "underfitting_or_low_capacity",
+    "learning_rate_instability",
+    "data_leakage",
+    "covariate_shift",
+    "label_noise",
+    "class_imbalance",
+    "rag_retrieval_failure",
+    "ungrounded_hallucination",
+    "vanishing_gradients",
+    "quantization_degradation",
+    "prompt_brittleness",
+    "train_serving_skew",
+    "biased_training_data",
+    "inference_infra_regression"
+   ],
+   "profiles": {
+    "overfitting": {
+     "train_loss_low_val_loss_high": 0.9,
+     "accuracy_drop_after_deploy": 0.4,
+     "performance_varies_by_subgroup": 0.2,
+     "sensitive_to_prompt_wording": 0.2
+    },
+    "underfitting_or_low_capacity": {
+     "train_loss_plateau_high": 0.9,
+     "gradient_norm_vanishing": 0.25
+    },
+    "learning_rate_instability": {
+     "loss_nan_or_exploding": 0.85,
+     "train_loss_plateau_high": 0.3,
+     "gradient_norm_vanishing": 0.15
+    },
+    "data_leakage": {
+     "suspiciously_high_eval_score": 0.9,
+     "accuracy_drop_after_deploy": 0.75,
+     "train_loss_low_val_loss_high": 0.15
+    },
+    "covariate_shift": {
+     "input_feature_distribution_shift": 0.9,
+     "accuracy_drop_after_deploy": 0.75,
+     "performance_varies_by_subgroup": 0.3
+    },
+    "label_noise": {
+     "label_disagreement_among_annotators": 0.85,
+     "train_loss_plateau_high": 0.4,
+     "train_loss_low_val_loss_high": 0.25
+    },
+    "class_imbalance": {
+     "errors_concentrated_in_minority_class": 0.9,
+     "performance_varies_by_subgroup": 0.45
+    },
+    "rag_retrieval_failure": {
+     "retrieval_returns_irrelevant_docs": 0.9,
+     "outputs_unsupported_by_sources": 0.75
+    },
+    "ungrounded_hallucination": {
+     "outputs_unsupported_by_sources": 0.85,
+     "sensitive_to_prompt_wording": 0.3
+    },
+    "vanishing_gradients": {
+     "gradient_norm_vanishing": 0.9,
+     "train_loss_plateau_high": 0.6
+    },
+    "quantization_degradation": {
+     "accuracy_drop_after_quantization": 0.9,
+     "output_format_violations": 0.2,
+     "accuracy_drop_after_deploy": 0.3
+    },
+    "prompt_brittleness": {
+     "sensitive_to_prompt_wording": 0.9,
+     "output_format_violations": 0.5,
+     "performance_varies_by_subgroup": 0.2
+    },
+    "train_serving_skew": {
+     "accuracy_drop_after_deploy": 0.8,
+     "input_feature_distribution_shift": 0.55,
+     "latency_regression": 0.15
+    },
+    "biased_training_data": {
+     "performance_varies_by_subgroup": 0.9,
+     "errors_concentrated_in_minority_class": 0.55,
+     "label_disagreement_among_annotators": 0.2
+    },
+    "inference_infra_regression": {
+     "latency_regression": 0.9,
+     "output_format_violations": 0.2,
+     "accuracy_drop_after_deploy": 0.15
+    }
+   },
+   "category": "Technology & Security",
+   "description": "Why a machine learning or LLM system is underperforming (leakage, drift, retrieval, overfitting and more), from training and production signals."
+  },
+  {
+   "slug": "robotics-fault-diagnosis",
+   "name": "Robots & Robotics",
+   "label": "robot fault diagnosis",
+   "key": "fault_cause",
+   "default_p": 0.03,
+   "caution": null,
+   "signals": [
+    "joint_torque_spike",
+    "encoder_drift",
+    "localization_jump",
+    "motor_overheat",
+    "collision_detected",
+    "gripper_slip",
+    "path_oscillation",
+    "battery_voltage_sag",
+    "lidar_dropout",
+    "comms_latency_high",
+    "calibration_offset_in_pick",
+    "estop_triggered",
+    "vision_pose_error",
+    "payload_near_rating",
+    "wheel_or_foot_slip"
+   ],
+   "causes": [
+    "encoder_fault",
+    "motor_overload_or_overheat",
+    "gripper_wear",
+    "localization_failure",
+    "lidar_obstruction_or_failure",
+    "battery_degradation",
+    "comms_network_issue",
+    "calibration_drift",
+    "camera_or_vision_error",
+    "controller_tuning_poor",
+    "surface_or_traction_loss",
+    "payload_overload",
+    "unexpected_obstacle_collision",
+    "safety_scanner_false_trip"
+   ],
+   "profiles": {
+    "encoder_fault": {
+     "encoder_drift": 0.85,
+     "localization_jump": 0.35,
+     "path_oscillation": 0.4,
+     "joint_torque_spike": 0.3
+    },
+    "motor_overload_or_overheat": {
+     "motor_overheat": 0.9,
+     "joint_torque_spike": 0.5,
+     "payload_near_rating": 0.5,
+     "battery_voltage_sag": 0.25
+    },
+    "gripper_wear": {
+     "gripper_slip": 0.85,
+     "calibration_offset_in_pick": 0.35,
+     "payload_near_rating": 0.2
+    },
+    "localization_failure": {
+     "localization_jump": 0.9,
+     "path_oscillation": 0.5,
+     "lidar_dropout": 0.45,
+     "vision_pose_error": 0.3,
+     "wheel_or_foot_slip": 0.3
+    },
+    "lidar_obstruction_or_failure": {
+     "lidar_dropout": 0.9,
+     "localization_jump": 0.5,
+     "collision_detected": 0.35,
+     "estop_triggered": 0.3
+    },
+    "battery_degradation": {
+     "battery_voltage_sag": 0.9,
+     "motor_overheat": 0.2,
+     "estop_triggered": 0.3
+    },
+    "comms_network_issue": {
+     "comms_latency_high": 0.9,
+     "path_oscillation": 0.35,
+     "estop_triggered": 0.3,
+     "vision_pose_error": 0.15
+    },
+    "calibration_drift": {
+     "calibration_offset_in_pick": 0.9,
+     "vision_pose_error": 0.55,
+     "encoder_drift": 0.3
+    },
+    "camera_or_vision_error": {
+     "vision_pose_error": 0.9,
+     "calibration_offset_in_pick": 0.55,
+     "gripper_slip": 0.2,
+     "collision_detected": 0.2
+    },
+    "controller_tuning_poor": {
+     "path_oscillation": 0.85,
+     "joint_torque_spike": 0.4,
+     "motor_overheat": 0.2
+    },
+    "surface_or_traction_loss": {
+     "wheel_or_foot_slip": 0.9,
+     "localization_jump": 0.35,
+     "path_oscillation": 0.3,
+     "collision_detected": 0.15
+    },
+    "payload_overload": {
+     "payload_near_rating": 0.9,
+     "joint_torque_spike": 0.6,
+     "motor_overheat": 0.5,
+     "gripper_slip": 0.35,
+     "battery_voltage_sag": 0.3
+    },
+    "unexpected_obstacle_collision": {
+     "collision_detected": 0.9,
+     "estop_triggered": 0.7,
+     "joint_torque_spike": 0.5
+    },
+    "safety_scanner_false_trip": {
+     "estop_triggered": 0.8,
+     "lidar_dropout": 0.2,
+     "collision_detected": 0.1
+    }
+   },
+   "category": "Robotics, Mobility & Space",
+   "description": "The likely cause of a robot fault or degraded performance, from joint, sensor, power and navigation signals."
+  },
+  {
+   "slug": "process-plant-operations",
+   "name": "Process Industries",
+   "label": "process plant upset diagnosis",
+   "key": "upset_cause",
+   "default_p": 0.03,
+   "caution": "Decision support only. Follow the plant's operating procedures and involve a qualified process engineer for any safety-relevant action.",
+   "signals": [
+    "temperature_deviation",
+    "pressure_deviation",
+    "flow_rate_low",
+    "ph_out_of_range",
+    "composition_off_spec",
+    "foaming_observed",
+    "heat_transfer_efficiency_falling",
+    "valve_position_vs_flow_mismatch",
+    "cooling_water_temp_high",
+    "level_oscillation",
+    "pump_vibration_high",
+    "analyzer_reading_drift",
+    "feedstock_quality_variation",
+    "batch_cycle_time_longer",
+    "instrument_air_pressure_low"
+   ],
+   "causes": [
+    "heat_exchanger_fouling",
+    "control_valve_stiction",
+    "catalyst_deactivation",
+    "pump_wear",
+    "feed_composition_change",
+    "analyzer_drift",
+    "cooling_water_loss",
+    "instrument_air_loss",
+    "level_sensor_fault",
+    "poor_controller_tuning",
+    "line_leak",
+    "agitator_failure",
+    "contamination_event",
+    "foaming_event"
+   ],
+   "profiles": {
+    "heat_exchanger_fouling": {
+     "heat_transfer_efficiency_falling": 0.9,
+     "temperature_deviation": 0.5,
+     "pressure_deviation": 0.35,
+     "batch_cycle_time_longer": 0.4,
+     "flow_rate_low": 0.2
+    },
+    "control_valve_stiction": {
+     "valve_position_vs_flow_mismatch": 0.85,
+     "level_oscillation": 0.6,
+     "flow_rate_low": 0.3,
+     "temperature_deviation": 0.2
+    },
+    "catalyst_deactivation": {
+     "composition_off_spec": 0.7,
+     "batch_cycle_time_longer": 0.5,
+     "temperature_deviation": 0.4,
+     "heat_transfer_efficiency_falling": 0.1
+    },
+    "pump_wear": {
+     "pump_vibration_high": 0.85,
+     "flow_rate_low": 0.6,
+     "pressure_deviation": 0.4
+    },
+    "feed_composition_change": {
+     "feedstock_quality_variation": 0.9,
+     "composition_off_spec": 0.6,
+     "ph_out_of_range": 0.3,
+     "batch_cycle_time_longer": 0.3
+    },
+    "analyzer_drift": {
+     "analyzer_reading_drift": 0.9,
+     "composition_off_spec": 0.35,
+     "ph_out_of_range": 0.2
+    },
+    "cooling_water_loss": {
+     "cooling_water_temp_high": 0.9,
+     "temperature_deviation": 0.7,
+     "pressure_deviation": 0.4
+    },
+    "instrument_air_loss": {
+     "instrument_air_pressure_low": 0.9,
+     "valve_position_vs_flow_mismatch": 0.6,
+     "flow_rate_low": 0.3,
+     "level_oscillation": 0.2
+    },
+    "level_sensor_fault": {
+     "level_oscillation": 0.6,
+     "valve_position_vs_flow_mismatch": 0.2,
+     "pump_vibration_high": 0.1
+    },
+    "poor_controller_tuning": {
+     "level_oscillation": 0.6,
+     "temperature_deviation": 0.45,
+     "pressure_deviation": 0.4,
+     "flow_rate_low": 0.1
+    },
+    "line_leak": {
+     "pressure_deviation": 0.7,
+     "flow_rate_low": 0.7,
+     "level_oscillation": 0.2
+    },
+    "agitator_failure": {
+     "composition_off_spec": 0.55,
+     "temperature_deviation": 0.35,
+     "pump_vibration_high": 0.25,
+     "batch_cycle_time_longer": 0.55,
+     "ph_out_of_range": 0.3
+    },
+    "contamination_event": {
+     "ph_out_of_range": 0.6,
+     "composition_off_spec": 0.7,
+     "foaming_observed": 0.45,
+     "feedstock_quality_variation": 0.3
+    },
+    "foaming_event": {
+     "foaming_observed": 0.9,
+     "level_oscillation": 0.4,
+     "flow_rate_low": 0.2,
+     "composition_off_spec": 0.25
+    }
+   },
+   "category": "Industry & Operations",
+   "description": "The likely cause of a process plant upset (chemical, food, pharma, refining), from temperatures, pressures, flows and instrument signals."
+  },
+  {
+   "slug": "manufacturing-quality",
+   "name": "Manufacturing & Quality",
+   "label": "manufacturing defect root-cause analysis",
+   "key": "defect_cause",
+   "default_p": 0.03,
+   "caution": null,
+   "signals": [
+    "dimension_out_of_tolerance",
+    "surface_scratches_or_burrs",
+    "cycle_time_increase",
+    "tool_wear_indicator_high",
+    "material_lot_changed",
+    "operator_or_shift_changed",
+    "ambient_humidity_high",
+    "machine_vibration_high",
+    "defects_cluster_in_one_fixture",
+    "coolant_concentration_off",
+    "machine_temperature_drift",
+    "rework_rate_rising",
+    "defects_cluster_in_one_cavity",
+    "gauge_readings_inconsistent",
+    "intermittent_defects"
+   ],
+   "causes": [
+    "tool_wear",
+    "fixture_misalignment",
+    "material_lot_variation",
+    "thermal_drift",
+    "operator_error",
+    "coolant_degradation",
+    "mold_cavity_damage",
+    "program_or_offset_error",
+    "gauge_calibration_error",
+    "humidity_effect",
+    "spindle_bearing_wear",
+    "lubrication_failure",
+    "supplier_process_change",
+    "worn_die_or_press"
+   ],
+   "profiles": {
+    "tool_wear": {
+     "tool_wear_indicator_high": 0.9,
+     "dimension_out_of_tolerance": 0.7,
+     "surface_scratches_or_burrs": 0.6,
+     "cycle_time_increase": 0.2,
+     "machine_vibration_high": 0.3
+    },
+    "fixture_misalignment": {
+     "defects_cluster_in_one_fixture": 0.9,
+     "dimension_out_of_tolerance": 0.6,
+     "rework_rate_rising": 0.4
+    },
+    "material_lot_variation": {
+     "material_lot_changed": 0.9,
+     "dimension_out_of_tolerance": 0.4,
+     "surface_scratches_or_burrs": 0.3,
+     "rework_rate_rising": 0.4,
+     "intermittent_defects": 0.3
+    },
+    "thermal_drift": {
+     "machine_temperature_drift": 0.9,
+     "dimension_out_of_tolerance": 0.55,
+     "ambient_humidity_high": 0.2,
+     "intermittent_defects": 0.3
+    },
+    "operator_error": {
+     "operator_or_shift_changed": 0.8,
+     "intermittent_defects": 0.5,
+     "rework_rate_rising": 0.4,
+     "cycle_time_increase": 0.2
+    },
+    "coolant_degradation": {
+     "coolant_concentration_off": 0.9,
+     "surface_scratches_or_burrs": 0.4,
+     "tool_wear_indicator_high": 0.35,
+     "machine_temperature_drift": 0.3
+    },
+    "mold_cavity_damage": {
+     "defects_cluster_in_one_cavity": 0.9,
+     "surface_scratches_or_burrs": 0.45,
+     "rework_rate_rising": 0.4
+    },
+    "program_or_offset_error": {
+     "dimension_out_of_tolerance": 0.85,
+     "operator_or_shift_changed": 0.2,
+     "cycle_time_increase": 0.15
+    },
+    "gauge_calibration_error": {
+     "gauge_readings_inconsistent": 0.9,
+     "dimension_out_of_tolerance": 0.35,
+     "rework_rate_rising": 0.25,
+     "intermittent_defects": 0.3
+    },
+    "humidity_effect": {
+     "ambient_humidity_high": 0.9,
+     "intermittent_defects": 0.45,
+     "dimension_out_of_tolerance": 0.25
+    },
+    "spindle_bearing_wear": {
+     "machine_vibration_high": 0.85,
+     "surface_scratches_or_burrs": 0.5,
+     "dimension_out_of_tolerance": 0.45,
+     "cycle_time_increase": 0.15,
+     "machine_temperature_drift": 0.35
+    },
+    "lubrication_failure": {
+     "machine_vibration_high": 0.4,
+     "machine_temperature_drift": 0.45,
+     "cycle_time_increase": 0.4,
+     "tool_wear_indicator_high": 0.3
+    },
+    "supplier_process_change": {
+     "material_lot_changed": 0.6,
+     "dimension_out_of_tolerance": 0.35,
+     "rework_rate_rising": 0.45,
+     "intermittent_defects": 0.35
+    },
+    "worn_die_or_press": {
+     "surface_scratches_or_burrs": 0.75,
+     "dimension_out_of_tolerance": 0.5,
+     "defects_cluster_in_one_cavity": 0.2,
+     "machine_vibration_high": 0.3
+    }
+   },
+   "category": "Industry & Operations",
+   "description": "The root cause of a manufacturing defect or quality drift, from machine, material, operator and measurement signals."
+  },
+  {
+   "slug": "spacecraft-operations",
+   "name": "Spacecraft Operations",
+   "label": "spacecraft anomaly investigation",
+   "key": "anomaly_cause",
+   "default_p": 0.03,
+   "caution": "Illustrative simulator only. Not flight-qualified. Real anomaly response follows the mission's flight rules and engineering review.",
+   "signals": [
+    "bus_voltage_drop",
+    "battery_temperature_high",
+    "attitude_error_growing",
+    "reaction_wheel_current_high",
+    "star_tracker_dropout",
+    "solar_array_power_low",
+    "thermal_gradient_anomaly",
+    "comms_link_margin_low",
+    "telemetry_gaps",
+    "safe_mode_entry",
+    "processor_resets",
+    "propellant_pressure_drop",
+    "gyro_bias_drift",
+    "sun_sensor_disagreement",
+    "radiation_event_flag",
+    "occurs_at_eclipse_transition"
+   ],
+   "causes": [
+    "solar_array_degradation",
+    "battery_cell_failure",
+    "reaction_wheel_friction",
+    "star_tracker_blinding",
+    "gyro_drift",
+    "single_event_upset",
+    "thruster_leak",
+    "thermal_control_failure",
+    "antenna_pointing_error",
+    "power_regulator_fault",
+    "flight_software_bug",
+    "ground_command_error",
+    "eclipse_transition_transient",
+    "debris_or_micrometeoroid_hit"
+   ],
+   "profiles": {
+    "solar_array_degradation": {
+     "solar_array_power_low": 0.9,
+     "bus_voltage_drop": 0.45,
+     "battery_temperature_high": 0.1
+    },
+    "battery_cell_failure": {
+     "battery_temperature_high": 0.75,
+     "bus_voltage_drop": 0.7,
+     "occurs_at_eclipse_transition": 0.4,
+     "safe_mode_entry": 0.3
+    },
+    "reaction_wheel_friction": {
+     "reaction_wheel_current_high": 0.9,
+     "attitude_error_growing": 0.55,
+     "safe_mode_entry": 0.25
+    },
+    "star_tracker_blinding": {
+     "star_tracker_dropout": 0.9,
+     "attitude_error_growing": 0.5,
+     "sun_sensor_disagreement": 0.3,
+     "safe_mode_entry": 0.3
+    },
+    "gyro_drift": {
+     "gyro_bias_drift": 0.9,
+     "attitude_error_growing": 0.6,
+     "star_tracker_dropout": 0.1
+    },
+    "single_event_upset": {
+     "radiation_event_flag": 0.8,
+     "processor_resets": 0.7,
+     "safe_mode_entry": 0.55,
+     "telemetry_gaps": 0.3
+    },
+    "thruster_leak": {
+     "propellant_pressure_drop": 0.9,
+     "attitude_error_growing": 0.5,
+     "reaction_wheel_current_high": 0.4
+    },
+    "thermal_control_failure": {
+     "thermal_gradient_anomaly": 0.9,
+     "battery_temperature_high": 0.45,
+     "safe_mode_entry": 0.25
+    },
+    "antenna_pointing_error": {
+     "comms_link_margin_low": 0.9,
+     "telemetry_gaps": 0.5,
+     "attitude_error_growing": 0.25
+    },
+    "power_regulator_fault": {
+     "bus_voltage_drop": 0.85,
+     "processor_resets": 0.4,
+     "telemetry_gaps": 0.3,
+     "safe_mode_entry": 0.4
+    },
+    "flight_software_bug": {
+     "processor_resets": 0.7,
+     "safe_mode_entry": 0.6,
+     "telemetry_gaps": 0.3,
+     "attitude_error_growing": 0.15
+    },
+    "ground_command_error": {
+     "safe_mode_entry": 0.5,
+     "attitude_error_growing": 0.35,
+     "telemetry_gaps": 0.1,
+     "comms_link_margin_low": 0.1
+    },
+    "eclipse_transition_transient": {
+     "occurs_at_eclipse_transition": 0.9,
+     "bus_voltage_drop": 0.5,
+     "thermal_gradient_anomaly": 0.35,
+     "solar_array_power_low": 0.3
+    },
+    "debris_or_micrometeoroid_hit": {
+     "attitude_error_growing": 0.5,
+     "bus_voltage_drop": 0.3,
+     "telemetry_gaps": 0.3,
+     "sun_sensor_disagreement": 0.25,
+     "propellant_pressure_drop": 0.2,
+     "safe_mode_entry": 0.45,
+     "solar_array_power_low": 0.25
+    }
+   },
+   "category": "Robotics, Mobility & Space",
+   "description": "The likely cause of a spacecraft anomaly, from power, attitude, thermal, communications and fault-protection telemetry."
+  },
+  {
+   "slug": "financial-markets-analysis",
+   "name": "Financial Markets",
+   "label": "financial market move analysis",
+   "key": "market_driver",
+   "default_p": 0.03,
+   "caution": "Educational analysis of what may explain a market move. Not financial advice and not a trading signal.",
+   "signals": [
+    "price_gap_at_open",
+    "volume_spike",
+    "volatility_index_jump",
+    "bid_ask_spread_widening",
+    "sector_wide_move",
+    "company_specific_headline",
+    "central_bank_announcement",
+    "earnings_release_today",
+    "order_book_thin",
+    "options_expiry_day",
+    "index_rebalance_day",
+    "correlated_assets_selling_off",
+    "circuit_breaker_triggered",
+    "currency_move_large",
+    "credit_spreads_widening"
+   ],
+   "causes": [
+    "earnings_surprise",
+    "central_bank_surprise",
+    "macro_data_surprise",
+    "liquidity_crunch",
+    "short_squeeze",
+    "algorithmic_flash_crash",
+    "index_rebalancing_flow",
+    "options_expiry_effects",
+    "geopolitical_shock",
+    "sector_rotation",
+    "credit_contagion",
+    "large_block_trade",
+    "rumor_or_leak",
+    "currency_driven_move"
+   ],
+   "profiles": {
+    "earnings_surprise": {
+     "earnings_release_today": 0.9,
+     "company_specific_headline": 0.6,
+     "price_gap_at_open": 0.7,
+     "volume_spike": 0.75
+    },
+    "central_bank_surprise": {
+     "central_bank_announcement": 0.9,
+     "volatility_index_jump": 0.6,
+     "currency_move_large": 0.5,
+     "sector_wide_move": 0.4,
+     "credit_spreads_widening": 0.25
+    },
+    "macro_data_surprise": {
+     "volatility_index_jump": 0.4,
+     "currency_move_large": 0.35,
+     "sector_wide_move": 0.4,
+     "price_gap_at_open": 0.35,
+     "volume_spike": 0.4
+    },
+    "liquidity_crunch": {
+     "bid_ask_spread_widening": 0.85,
+     "order_book_thin": 0.8,
+     "volatility_index_jump": 0.5,
+     "correlated_assets_selling_off": 0.4,
+     "credit_spreads_widening": 0.35
+    },
+    "short_squeeze": {
+     "volume_spike": 0.85,
+     "price_gap_at_open": 0.4,
+     "company_specific_headline": 0.25,
+     "bid_ask_spread_widening": 0.3,
+     "order_book_thin": 0.3
+    },
+    "algorithmic_flash_crash": {
+     "circuit_breaker_triggered": 0.6,
+     "order_book_thin": 0.6,
+     "bid_ask_spread_widening": 0.6,
+     "volume_spike": 0.6,
+     "volatility_index_jump": 0.4
+    },
+    "index_rebalancing_flow": {
+     "index_rebalance_day": 0.9,
+     "volume_spike": 0.6,
+     "sector_wide_move": 0.15
+    },
+    "options_expiry_effects": {
+     "options_expiry_day": 0.9,
+     "volume_spike": 0.45,
+     "volatility_index_jump": 0.2
+    },
+    "geopolitical_shock": {
+     "volatility_index_jump": 0.75,
+     "correlated_assets_selling_off": 0.6,
+     "currency_move_large": 0.4,
+     "sector_wide_move": 0.5,
+     "credit_spreads_widening": 0.3
+    },
+    "sector_rotation": {
+     "sector_wide_move": 0.85,
+     "volume_spike": 0.4,
+     "correlated_assets_selling_off": 0.2
+    },
+    "credit_contagion": {
+     "credit_spreads_widening": 0.9,
+     "correlated_assets_selling_off": 0.6,
+     "volatility_index_jump": 0.5,
+     "bid_ask_spread_widening": 0.4,
+     "circuit_breaker_triggered": 0.1
+    },
+    "large_block_trade": {
+     "volume_spike": 0.6,
+     "price_gap_at_open": 0.2,
+     "order_book_thin": 0.35,
+     "company_specific_headline": 0.1
+    },
+    "rumor_or_leak": {
+     "company_specific_headline": 0.7,
+     "price_gap_at_open": 0.5,
+     "volume_spike": 0.6
+    },
+    "currency_driven_move": {
+     "currency_move_large": 0.9,
+     "sector_wide_move": 0.4,
+     "price_gap_at_open": 0.3
+    }
+   },
+   "category": "Finance & Markets",
+   "description": "What may explain a market move (earnings, central bank, liquidity, squeeze, flows), from price, volume and event signals. Educational, not advice."
+  },
+  {
+   "slug": "trading-system-diagnostics",
+   "name": "Trading Systems",
+   "label": "trading system diagnostics",
+   "key": "failure_mode",
+   "default_p": 0.03,
+   "caution": "Operational diagnostics for trading systems. Not trading or investment advice.",
+   "signals": [
+    "slippage_above_model",
+    "fill_rate_low",
+    "strategy_pnl_drawdown",
+    "market_data_gap",
+    "exchange_latency_spike",
+    "position_limit_breach",
+    "order_rejects_spike",
+    "duplicate_orders_sent",
+    "backtest_live_divergence",
+    "correlation_regime_change",
+    "volatility_regime_change",
+    "stale_quotes",
+    "risk_alarms_firing",
+    "clock_sync_drift",
+    "unexpected_overnight_position"
+   ],
+   "causes": [
+    "overfitted_strategy",
+    "market_regime_shift",
+    "market_data_feed_fault",
+    "exchange_connectivity_latency",
+    "execution_model_error",
+    "risk_limit_misconfiguration",
+    "duplicate_order_bug",
+    "clock_sync_drift_fault",
+    "liquidity_deterioration",
+    "parameter_misconfiguration",
+    "position_reconciliation_error",
+    "crowded_trade_unwind",
+    "fat_finger_input",
+    "api_rate_limiting"
+   ],
+   "profiles": {
+    "overfitted_strategy": {
+     "backtest_live_divergence": 0.9,
+     "strategy_pnl_drawdown": 0.6,
+     "slippage_above_model": 0.2
+    },
+    "market_regime_shift": {
+     "volatility_regime_change": 0.6,
+     "correlation_regime_change": 0.6,
+     "strategy_pnl_drawdown": 0.65,
+     "backtest_live_divergence": 0.35
+    },
+    "market_data_feed_fault": {
+     "market_data_gap": 0.85,
+     "stale_quotes": 0.7,
+     "slippage_above_model": 0.3,
+     "risk_alarms_firing": 0.25
+    },
+    "exchange_connectivity_latency": {
+     "exchange_latency_spike": 0.9,
+     "slippage_above_model": 0.6,
+     "fill_rate_low": 0.4,
+     "order_rejects_spike": 0.25
+    },
+    "execution_model_error": {
+     "slippage_above_model": 0.8,
+     "backtest_live_divergence": 0.45,
+     "strategy_pnl_drawdown": 0.3,
+     "fill_rate_low": 0.3
+    },
+    "risk_limit_misconfiguration": {
+     "position_limit_breach": 0.75,
+     "risk_alarms_firing": 0.7,
+     "order_rejects_spike": 0.35
+    },
+    "duplicate_order_bug": {
+     "duplicate_orders_sent": 0.9,
+     "position_limit_breach": 0.5,
+     "order_rejects_spike": 0.3,
+     "risk_alarms_firing": 0.4
+    },
+    "clock_sync_drift_fault": {
+     "clock_sync_drift": 0.9,
+     "stale_quotes": 0.3,
+     "order_rejects_spike": 0.3,
+     "backtest_live_divergence": 0.2
+    },
+    "liquidity_deterioration": {
+     "fill_rate_low": 0.7,
+     "slippage_above_model": 0.7,
+     "volatility_regime_change": 0.3,
+     "strategy_pnl_drawdown": 0.3
+    },
+    "parameter_misconfiguration": {
+     "strategy_pnl_drawdown": 0.45,
+     "order_rejects_spike": 0.35,
+     "position_limit_breach": 0.3,
+     "unexpected_overnight_position": 0.2
+    },
+    "position_reconciliation_error": {
+     "unexpected_overnight_position": 0.85,
+     "position_limit_breach": 0.35,
+     "risk_alarms_firing": 0.3
+    },
+    "crowded_trade_unwind": {
+     "correlation_regime_change": 0.55,
+     "strategy_pnl_drawdown": 0.7,
+     "volatility_regime_change": 0.5,
+     "fill_rate_low": 0.3,
+     "slippage_above_model": 0.3
+    },
+    "fat_finger_input": {
+     "order_rejects_spike": 0.35,
+     "position_limit_breach": 0.5,
+     "risk_alarms_firing": 0.6,
+     "slippage_above_model": 0.35,
+     "strategy_pnl_drawdown": 0.25
+    },
+    "api_rate_limiting": {
+     "order_rejects_spike": 0.8,
+     "fill_rate_low": 0.4,
+     "exchange_latency_spike": 0.3
+    }
+   },
+   "category": "Finance & Markets",
+   "description": "Why a trading system is misbehaving (data, latency, execution, risk, regime), from operational and performance signals. Not advice."
+  },
+  {
+   "slug": "autonomous-driving-faults",
+   "name": "Autonomous Vehicles",
+   "label": "autonomous vehicle fault diagnosis",
+   "key": "fault_source",
+   "default_p": 0.03,
+   "caution": "Illustrative simulator only. Not a safety case, validation result or certification tool.",
+   "signals": [
+    "phantom_braking_events",
+    "missed_detection_of_object",
+    "lane_keeping_oscillation",
+    "localization_drift",
+    "gnss_dropout",
+    "camera_glare_or_lens_dirty",
+    "radar_ghost_targets",
+    "planner_hesitation",
+    "hard_stop_at_junction",
+    "high_inference_latency",
+    "sensor_time_misalignment",
+    "map_mismatch",
+    "disengagement_in_rain_or_fog",
+    "steering_actuator_lag",
+    "tracking_id_switches"
+   ],
+   "causes": [
+    "camera_lens_contamination",
+    "radar_multipath",
+    "gnss_multipath_urban",
+    "weather_sensor_degradation",
+    "perception_domain_gap",
+    "sensor_time_sync_fault",
+    "outdated_map",
+    "planner_over_conservatism",
+    "steering_actuator_fault",
+    "compute_overload",
+    "tracking_algorithm_bug",
+    "extrinsic_calibration_drift",
+    "lidar_partial_failure",
+    "map_localization_failure"
+   ],
+   "profiles": {
+    "camera_lens_contamination": {
+     "camera_glare_or_lens_dirty": 0.9,
+     "missed_detection_of_object": 0.5,
+     "disengagement_in_rain_or_fog": 0.3,
+     "phantom_braking_events": 0.2
+    },
+    "radar_multipath": {
+     "radar_ghost_targets": 0.85,
+     "phantom_braking_events": 0.6,
+     "hard_stop_at_junction": 0.25
+    },
+    "gnss_multipath_urban": {
+     "gnss_dropout": 0.7,
+     "localization_drift": 0.7,
+     "lane_keeping_oscillation": 0.3
+    },
+    "weather_sensor_degradation": {
+     "disengagement_in_rain_or_fog": 0.9,
+     "missed_detection_of_object": 0.5,
+     "camera_glare_or_lens_dirty": 0.3,
+     "radar_ghost_targets": 0.2
+    },
+    "perception_domain_gap": {
+     "missed_detection_of_object": 0.8,
+     "tracking_id_switches": 0.4,
+     "phantom_braking_events": 0.3
+    },
+    "sensor_time_sync_fault": {
+     "sensor_time_misalignment": 0.9,
+     "tracking_id_switches": 0.55,
+     "localization_drift": 0.3,
+     "lane_keeping_oscillation": 0.25
+    },
+    "outdated_map": {
+     "map_mismatch": 0.9,
+     "planner_hesitation": 0.4,
+     "localization_drift": 0.35,
+     "hard_stop_at_junction": 0.3
+    },
+    "planner_over_conservatism": {
+     "planner_hesitation": 0.85,
+     "hard_stop_at_junction": 0.55,
+     "phantom_braking_events": 0.3
+    },
+    "steering_actuator_fault": {
+     "steering_actuator_lag": 0.9,
+     "lane_keeping_oscillation": 0.7
+    },
+    "compute_overload": {
+     "high_inference_latency": 0.9,
+     "missed_detection_of_object": 0.3,
+     "planner_hesitation": 0.3,
+     "tracking_id_switches": 0.25
+    },
+    "tracking_algorithm_bug": {
+     "tracking_id_switches": 0.85,
+     "phantom_braking_events": 0.3,
+     "planner_hesitation": 0.2
+    },
+    "extrinsic_calibration_drift": {
+     "localization_drift": 0.45,
+     "lane_keeping_oscillation": 0.45,
+     "sensor_time_misalignment": 0.15,
+     "missed_detection_of_object": 0.25,
+     "radar_ghost_targets": 0.15
+    },
+    "lidar_partial_failure": {
+     "missed_detection_of_object": 0.6,
+     "localization_drift": 0.4,
+     "high_inference_latency": 0.1
+    },
+    "map_localization_failure": {
+     "localization_drift": 0.85,
+     "map_mismatch": 0.5,
+     "lane_keeping_oscillation": 0.4,
+     "hard_stop_at_junction": 0.3
+    }
+   },
+   "category": "Robotics, Mobility & Space",
+   "description": "The likely source of an autonomous vehicle fault or odd behaviour, from perception, localization, planning and actuation signals."
+  },
+  {
+   "slug": "power-grid-operations",
+   "name": "Power Grid & Utilities",
+   "label": "power grid disturbance diagnosis",
+   "key": "disturbance_cause",
+   "default_p": 0.03,
+   "caution": "Illustrative simulator only. Grid operations follow the operator's procedures and protection engineering.",
+   "signals": [
+    "frequency_deviation",
+    "voltage_sag",
+    "voltage_swell",
+    "transformer_temperature_high",
+    "line_loading_above_limit",
+    "protection_relay_trip",
+    "harmonic_distortion",
+    "reactive_power_shortfall",
+    "renewable_output_drop",
+    "load_spike",
+    "sudden_generation_loss",
+    "scada_comms_loss",
+    "ground_fault_indication",
+    "weather_alert_active"
+   ],
+   "causes": [
+    "generator_trip",
+    "transmission_line_fault",
+    "transformer_overload",
+    "renewable_intermittency",
+    "demand_surge",
+    "capacitor_bank_failure",
+    "lightning_strike",
+    "ground_fault",
+    "nonlinear_load_harmonics",
+    "scada_comms_failure",
+    "cascading_overload",
+    "protection_misoperation",
+    "vegetation_contact"
+   ],
+   "profiles": {
+    "generator_trip": {
+     "sudden_generation_loss": 0.9,
+     "frequency_deviation": 0.85,
+     "protection_relay_trip": 0.4,
+     "voltage_sag": 0.3
+    },
+    "transmission_line_fault": {
+     "protection_relay_trip": 0.85,
+     "voltage_sag": 0.7,
+     "ground_fault_indication": 0.4,
+     "line_loading_above_limit": 0.3
+    },
+    "transformer_overload": {
+     "transformer_temperature_high": 0.9,
+     "line_loading_above_limit": 0.6,
+     "load_spike": 0.35
+    },
+    "renewable_intermittency": {
+     "renewable_output_drop": 0.9,
+     "frequency_deviation": 0.4,
+     "weather_alert_active": 0.35,
+     "voltage_sag": 0.15
+    },
+    "demand_surge": {
+     "load_spike": 0.9,
+     "line_loading_above_limit": 0.55,
+     "frequency_deviation": 0.35,
+     "voltage_sag": 0.3,
+     "weather_alert_active": 0.3
+    },
+    "capacitor_bank_failure": {
+     "reactive_power_shortfall": 0.8,
+     "voltage_sag": 0.6,
+     "harmonic_distortion": 0.3
+    },
+    "lightning_strike": {
+     "weather_alert_active": 0.75,
+     "protection_relay_trip": 0.7,
+     "voltage_swell": 0.4,
+     "ground_fault_indication": 0.35,
+     "scada_comms_loss": 0.15
+    },
+    "ground_fault": {
+     "ground_fault_indication": 0.9,
+     "protection_relay_trip": 0.6,
+     "voltage_sag": 0.3
+    },
+    "nonlinear_load_harmonics": {
+     "harmonic_distortion": 0.9,
+     "transformer_temperature_high": 0.3,
+     "voltage_swell": 0.1
+    },
+    "scada_comms_failure": {
+     "scada_comms_loss": 0.9,
+     "protection_relay_trip": 0.1
+    },
+    "cascading_overload": {
+     "line_loading_above_limit": 0.8,
+     "protection_relay_trip": 0.6,
+     "frequency_deviation": 0.5,
+     "voltage_sag": 0.5,
+     "sudden_generation_loss": 0.3
+    },
+    "protection_misoperation": {
+     "protection_relay_trip": 0.8,
+     "voltage_sag": 0.1
+    },
+    "vegetation_contact": {
+     "protection_relay_trip": 0.6,
+     "ground_fault_indication": 0.5,
+     "weather_alert_active": 0.4,
+     "voltage_sag": 0.4,
+     "line_loading_above_limit": 0.2
+    }
+   },
+   "category": "Industry & Operations",
+   "description": "The likely cause of a power grid disturbance, from frequency, voltage, protection and weather signals."
+  },
+  {
+   "slug": "agriculture-crop-health",
+   "name": "Agriculture & Crop Health",
+   "label": "crop health diagnosis",
+   "key": "stress_cause",
+   "default_p": 0.03,
+   "caution": "Decision support only. Confirm with a local agronomist or a lab test before treating.",
+   "signals": [
+    "leaf_yellowing",
+    "leaf_curling",
+    "wilting_midday",
+    "leaf_spots",
+    "stunted_growth",
+    "uneven_patches_in_field",
+    "root_discoloration",
+    "insect_damage_visible",
+    "white_powdery_coating",
+    "soil_moisture_low",
+    "soil_waterlogged",
+    "recent_heavy_rain",
+    "recent_frost",
+    "leaf_tip_burn"
+   ],
+   "causes": [
+    "nitrogen_deficiency",
+    "drought_stress",
+    "waterlogging_root_rot",
+    "fungal_leaf_spot",
+    "powdery_mildew",
+    "aphid_infestation",
+    "frost_damage",
+    "fertilizer_or_salt_burn",
+    "herbicide_drift",
+    "iron_chlorosis",
+    "viral_infection",
+    "potassium_deficiency",
+    "soil_compaction",
+    "nematode_damage"
+   ],
+   "profiles": {
+    "nitrogen_deficiency": {
+     "leaf_yellowing": 0.85,
+     "stunted_growth": 0.5,
+     "uneven_patches_in_field": 0.4
+    },
+    "drought_stress": {
+     "wilting_midday": 0.85,
+     "soil_moisture_low": 0.9,
+     "leaf_curling": 0.5,
+     "leaf_tip_burn": 0.3,
+     "stunted_growth": 0.3
+    },
+    "waterlogging_root_rot": {
+     "soil_waterlogged": 0.85,
+     "recent_heavy_rain": 0.6,
+     "root_discoloration": 0.7,
+     "wilting_midday": 0.4,
+     "leaf_yellowing": 0.5,
+     "stunted_growth": 0.4
+    },
+    "fungal_leaf_spot": {
+     "leaf_spots": 0.9,
+     "recent_heavy_rain": 0.4,
+     "leaf_yellowing": 0.3
+    },
+    "powdery_mildew": {
+     "white_powdery_coating": 0.9,
+     "leaf_curling": 0.3,
+     "stunted_growth": 0.2
+    },
+    "aphid_infestation": {
+     "insect_damage_visible": 0.8,
+     "leaf_curling": 0.6,
+     "leaf_yellowing": 0.3,
+     "stunted_growth": 0.2
+    },
+    "frost_damage": {
+     "recent_frost": 0.9,
+     "leaf_tip_burn": 0.4,
+     "wilting_midday": 0.3,
+     "uneven_patches_in_field": 0.3
+    },
+    "fertilizer_or_salt_burn": {
+     "leaf_tip_burn": 0.85,
+     "wilting_midday": 0.35,
+     "soil_moisture_low": 0.2,
+     "stunted_growth": 0.25
+    },
+    "herbicide_drift": {
+     "leaf_curling": 0.7,
+     "uneven_patches_in_field": 0.6,
+     "stunted_growth": 0.4,
+     "leaf_yellowing": 0.3
+    },
+    "iron_chlorosis": {
+     "leaf_yellowing": 0.75,
+     "uneven_patches_in_field": 0.35,
+     "stunted_growth": 0.25,
+     "soil_waterlogged": 0.2
+    },
+    "viral_infection": {
+     "leaf_yellowing": 0.5,
+     "stunted_growth": 0.6,
+     "leaf_curling": 0.5,
+     "insect_damage_visible": 0.3,
+     "uneven_patches_in_field": 0.45
+    },
+    "potassium_deficiency": {
+     "leaf_tip_burn": 0.55,
+     "leaf_yellowing": 0.5,
+     "stunted_growth": 0.3,
+     "leaf_spots": 0.2
+    },
+    "soil_compaction": {
+     "stunted_growth": 0.6,
+     "wilting_midday": 0.4,
+     "uneven_patches_in_field": 0.6,
+     "root_discoloration": 0.15,
+     "soil_waterlogged": 0.3
+    },
+    "nematode_damage": {
+     "root_discoloration": 0.5,
+     "stunted_growth": 0.65,
+     "uneven_patches_in_field": 0.6,
+     "wilting_midday": 0.45,
+     "leaf_yellowing": 0.35
+    }
+   },
+   "category": "Industry & Operations",
+   "description": "The likely cause of crop stress, from symptoms in the leaves, roots, soil and recent weather."
+  },
+  {
+   "slug": "hospital-operations",
+   "name": "Hospital Operations",
+   "label": "hospital operations bottleneck analysis",
+   "key": "bottleneck_cause",
+   "default_p": 0.03,
+   "caution": "Operational analytics only. Not clinical decision support.",
+   "signals": [
+    "ed_boarding_hours_rising",
+    "long_door_to_triage_time",
+    "high_left_without_being_seen",
+    "inpatient_beds_full",
+    "discharges_delayed_afternoon",
+    "or_turnover_time_up",
+    "lab_turnaround_slow",
+    "imaging_backlog",
+    "nurse_staffing_below_target",
+    "sick_calls_spike",
+    "high_overtime_hours",
+    "surge_in_ed_arrivals",
+    "respiratory_season_flag",
+    "ambulance_diversion_active",
+    "discharge_to_snf_delays",
+    "room_cleaning_turnaround_slow",
+    "supply_stockouts"
+   ],
+   "causes": [
+    "inpatient_bed_capacity_shortage",
+    "discharge_process_delay",
+    "nurse_staffing_shortage",
+    "seasonal_surge",
+    "lab_bottleneck",
+    "imaging_bottleneck",
+    "or_scheduling_inefficiency",
+    "post_acute_placement_delay",
+    "triage_process_inefficiency",
+    "ed_physician_coverage_gap",
+    "room_cleaning_delay",
+    "supply_shortage",
+    "ambulance_diversion_cascade",
+    "staff_illness_wave"
+   ],
+   "profiles": {
+    "inpatient_bed_capacity_shortage": {
+     "inpatient_beds_full": 0.9,
+     "ed_boarding_hours_rising": 0.8,
+     "high_left_without_being_seen": 0.45,
+     "ambulance_diversion_active": 0.4
+    },
+    "discharge_process_delay": {
+     "discharges_delayed_afternoon": 0.85,
+     "inpatient_beds_full": 0.55,
+     "ed_boarding_hours_rising": 0.5
+    },
+    "nurse_staffing_shortage": {
+     "nurse_staffing_below_target": 0.9,
+     "high_overtime_hours": 0.6,
+     "sick_calls_spike": 0.4,
+     "ed_boarding_hours_rising": 0.3,
+     "inpatient_beds_full": 0.3
+    },
+    "seasonal_surge": {
+     "surge_in_ed_arrivals": 0.8,
+     "respiratory_season_flag": 0.75,
+     "long_door_to_triage_time": 0.6,
+     "high_left_without_being_seen": 0.5,
+     "inpatient_beds_full": 0.5
+    },
+    "lab_bottleneck": {
+     "lab_turnaround_slow": 0.9,
+     "ed_boarding_hours_rising": 0.25,
+     "long_door_to_triage_time": 0.15
+    },
+    "imaging_bottleneck": {
+     "imaging_backlog": 0.9,
+     "ed_boarding_hours_rising": 0.3,
+     "discharges_delayed_afternoon": 0.2
+    },
+    "or_scheduling_inefficiency": {
+     "or_turnover_time_up": 0.85,
+     "inpatient_beds_full": 0.2
+    },
+    "post_acute_placement_delay": {
+     "discharge_to_snf_delays": 0.9,
+     "inpatient_beds_full": 0.55,
+     "discharges_delayed_afternoon": 0.4
+    },
+    "triage_process_inefficiency": {
+     "long_door_to_triage_time": 0.8,
+     "high_left_without_being_seen": 0.6
+    },
+    "ed_physician_coverage_gap": {
+     "high_left_without_being_seen": 0.5,
+     "long_door_to_triage_time": 0.45,
+     "high_overtime_hours": 0.3
+    },
+    "room_cleaning_delay": {
+     "room_cleaning_turnaround_slow": 0.9,
+     "inpatient_beds_full": 0.4,
+     "ed_boarding_hours_rising": 0.3
+    },
+    "supply_shortage": {
+     "supply_stockouts": 0.9,
+     "or_turnover_time_up": 0.35,
+     "discharges_delayed_afternoon": 0.1
+    },
+    "ambulance_diversion_cascade": {
+     "ambulance_diversion_active": 0.85,
+     "surge_in_ed_arrivals": 0.35,
+     "inpatient_beds_full": 0.5,
+     "ed_boarding_hours_rising": 0.5
+    },
+    "staff_illness_wave": {
+     "sick_calls_spike": 0.85,
+     "nurse_staffing_below_target": 0.6,
+     "high_overtime_hours": 0.5,
+     "respiratory_season_flag": 0.35
+    }
+   },
+   "category": "Healthcare",
+   "description": "The operational bottleneck behind ED crowding and delays, from flow, staffing and capacity signals."
   }
  ]
 }
