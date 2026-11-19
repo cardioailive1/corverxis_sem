@@ -80,7 +80,7 @@ textarea{flex:1;min-height:48px;max-height:140px;resize:vertical;padding:11px 12
 var API=(window.SEM_API_BASE||'').replace(/\/$/,'')+'/api/product';
 var $=function(s){return document.querySelector(s)};
 var app=$('#app');
-var S={chat:[],draft:'',chatBusy:false,focusChat:false,key:null,domains:null,domain:null,signals:{},busy:false,result:null,error:null,history:[],model:null};
+var S={media:{frames:[],source:'photo',busy:false,msg:null,err:null,res:null},chat:[],draft:'',chatBusy:false,focusChat:false,key:null,domains:null,domain:null,signals:{},busy:false,result:null,error:null,history:[],model:null};
 
 function store(op,k,v){try{var s=window.localStorage;return op==='get'?s.getItem(k):op==='set'?s.setItem(k,v):s.removeItem(k)}catch(e){return null}}
 function el(tag,attrs){var e=document.createElement(tag);attrs=attrs||{};for(var k in attrs){if(k==='text')e.textContent=attrs[k];else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),attrs[k]);else if(attrs[k]!==false&&attrs[k]!==null&&attrs[k]!==undefined)e.setAttribute(k,attrs[k]===true?'':attrs[k])}
@@ -134,6 +134,7 @@ function renderMain(){
   var kids=[];
   kids.push(el('h2',{text:'Describe the problem'}));
   kids.push(renderChat());
+  if(S.model&&S.model.vision_configured)kids.push(el('h2',{text:'Or add a photo or video'}),renderMedia());
   kids.push(el('h2',{text:'Or choose manually · What are you investigating?'}));
   var cats=[];S.domains.forEach(function(d){var c=d.category||'Other';if(cats.indexOf(c)<0)cats.push(c)});
   cats.forEach(function(c){
@@ -230,6 +231,40 @@ function renderFeedback(r){
   var dom=S.domains.filter(function(x){return x.slug===r.domain})[0];
   var sel=el('select',{'aria-label':'What was the real cause?',style:'max-width:100%;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)'},[el('option',{value:'',text:'The real cause was...'})].concat(((dom&&dom.options)||[]).map(function(o){return el('option',{value:o,text:human(o)})})));
   box.append(el('div',{class:'row',style:'margin-top:0'},[el('button',{class:'btn ghost',type:'button',text:'Yes, it was right',onclick:function(){send('correct')}}),sel,el('button',{class:'btn ghost',type:'button',text:'It was a different cause',onclick:function(){if(!sel.value){out.textContent='';out.append(el('div',{class:'err',role:'alert',text:'Pick the real cause first.'}));return}send('incorrect',sel.value)}})]),out);
+  return box}
+
+// ── Photo and video input. Frames are made in the browser (resized JPEGs) and sent to /analyze-media. ──
+var MAXDIM=1024,MAXFRAMES=6;
+function toJpeg(src,w,h,q){var c=document.createElement('canvas');var k=Math.min(1,MAXDIM/Math.max(w,h));c.width=Math.max(1,Math.round(w*k));c.height=Math.max(1,Math.round(h*k));c.getContext('2d').drawImage(src,0,0,c.width,c.height);return c.toDataURL('image/jpeg',q)}
+function imageFrame(file){return new Promise(function(res,rej){var u=URL.createObjectURL(file),im=new Image();im.onload=function(){try{res(toJpeg(im,im.naturalWidth,im.naturalHeight,0.8))}catch(e){rej(e)}URL.revokeObjectURL(u)};im.onerror=function(){URL.revokeObjectURL(u);rej(new Error('Could not read that image.'))};im.src=u})}
+function videoFrames(file){return new Promise(function(res,rej){var u=URL.createObjectURL(file),v=document.createElement('video'),out=[];v.muted=true;v.playsInline=true;v.preload='auto';
+  function done(e){URL.revokeObjectURL(u);if(e)rej(e);else res(out)}
+  v.onerror=function(){done(new Error('Could not read that video.'))};
+  v.onloadedmetadata=function(){var d=v.duration;if(!isFinite(d)||d<=0)return done(new Error('Could not read that video.'));var i=0;
+    (function next(){if(i>=MAXFRAMES)return done();v.onseeked=function(){try{out.push(toJpeg(v,v.videoWidth,v.videoHeight,0.8))}catch(e){return done(e)}i++;next()};v.currentTime=Math.min(d-0.05,Math.max(0,(i+0.5)/MAXFRAMES*d))})()};
+  v.src=u})}
+function loadFiles(files){var M=S.media;M.err=M.msg=null;M.res=null;M.busy=true;M.frames=[];render(true);
+  var list=[].slice.call(files),vid=list.filter(function(f){return /^video\//.test(f.type)})[0];
+  var p;if(vid){if(vid.size>300*1024*1024){p=Promise.reject(new Error('That video is too large. Use one under 300 MB.'))}else{M.source='video';p=videoFrames(vid)}}
+  else{list=list.filter(function(f){return /^image\//.test(f.type)}).slice(0,8);if(!list.length){p=Promise.reject(new Error('Choose a photo or a video.'))}else{M.source='photo';p=Promise.all(list.map(imageFrame))}}
+  p.then(function(fr){M.frames=fr;M.busy=false;render(true)}).catch(function(e){M.busy=false;M.err=e.message;render(true)})}
+function readMedia(){var M=S.media;M.busy=true;M.err=M.msg=null;M.res=null;S.result=null;render(true);
+  call('/diagnose-media',{body:{domain:S.domain||undefined,media:M.frames,source:M.source}}).then(function(x){M.busy=false;M.res=x.read;
+    if(x.read.domain){S.domain=x.read.domain;S.signals={};x.read.signals.forEach(function(y){S.signals[y.name]=true})}
+    if(x.diagnosis){S.result=x.diagnosis;S.error=null;M.msg=x.diagnosis.basis_note;S.history.unshift({domain:x.read.domain_name,answer:x.diagnosis.answer,by:x.diagnosis.served_by==='sem-checkpoint'?'SI-SEM':'fallback'});S.history=S.history.slice(0,5)}
+    else M.err=x.reason;
+    render(true)}).catch(function(e){M.busy=false;M.err=e.message;render(true)})}
+function renderMedia(){var M=S.media,box=el('div',{class:'card'});
+  box.append(el('p',{class:'hint',style:'margin:0 0 10px',text:'Take or choose a photo of the problem, or a short video. I read what is visible and propose observations for you to confirm. Nothing is stored. Please avoid faces and personal information.'}));
+  var inp=el('input',{type:'file',accept:'image/*,video/*',multiple:true,'aria-label':'Photo or video',onchange:function(e){if(e.target.files.length)loadFiles(e.target.files)}});box.append(inp);
+  if(M.busy)box.append(el('div',{class:'hint',style:'margin-top:10px',role:'status'},[el('span',{class:'spin'}),'Working...']));
+  if(M.frames.length){box.append(el('div',{style:'display:flex;gap:6px;flex-wrap:wrap;margin-top:10px'},M.frames.map(function(f,i){return el('img',{src:f,alt:(M.source==='video'?'Video frame ':'Photo ')+(i+1),style:'height:64px;border-radius:6px;border:1px solid var(--line)'})})));
+    box.append(el('div',{class:'row'},[el('button',{class:'btn',type:'button',disabled:M.busy,text:M.source==='video'?'Read the video and diagnose':'Read the photo and diagnose',onclick:readMedia}),el('span',{class:'hint',text:M.frames.length+(M.source==='video'?' frames sampled from the video':' photo'+(M.frames.length>1?'s':''))})]))}
+  if(M.err)box.append(el('div',{class:'err',role:'alert',text:M.err}));
+  if(M.res&&M.res.description)box.append(el('div',{class:'hint',style:'margin-top:10px',text:'What I see: '+M.res.description}));
+  if(M.res&&M.res.signals&&M.res.signals.length)box.append(el('ul',{style:'margin:8px 0 0;padding-left:20px;font-size:14px'},M.res.signals.map(function(x){return el('li',{text:human(x.name)+(x.evidence?' ('+x.evidence+')':'')})})));
+  if(M.msg)box.append(el('div',{class:'note',role:'status',text:M.msg}));
+  if(M.res)box.append(el('div',{class:'hint',style:'margin-top:8px',text:'Read by '+(M.res.provider==='sem-vision'?'the SI-SEM vision model':'a general model (fallback)')+'. '+M.res.note}));
   return box}
 
 function renderResult(r){

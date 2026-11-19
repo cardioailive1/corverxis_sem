@@ -45,3 +45,26 @@ Either describe the problem in plain language (chat) or use the manual form belo
 ## Tests
 `node --test product/productApi.test.js` from `backend/`. The prompt text is checked against
 `training/grpo/dataset.py` for a sample of 3,173 signal combinations across all 40 domains (`python3 training/simulators/test_spec.py parity.json`).
+
+## Photos and videos
+
+The page can read a photo or a short video and name the likely cause in one step (`POST /api/product/diagnose-media`).
+A vision-language model reports which of the domain's signals are visibly present, then SI-SEM diagnoses from those
+signals. The vision model never names the cause. SI-SEM does. The signals it read stay selected on the page, so the user
+can correct them or add what a photo cannot show, and diagnose again. It refuses to diagnose, with a reason, when the
+image is unusable, no listed sign is visible, or the area cannot be identified. When only a few signs were read, the answer
+says it rests on little. (`POST /analyze-media` still returns just the proposed signals.)
+
+- Photos: up to 8, resized in the browser to JPEG (1024 px longest side).
+- Video: 6 frames are sampled evenly across the clip in the browser, so the model sees the frames, not the motion or sound.
+  (The Qwen3.8 model card also describes native `video_url` input on vLLM; wiring that in is a possible later step.)
+- Text goes with it: the chat and the manual signal list work alongside the image.
+- Nothing is stored. Media is held in memory, sent to the vision model, and dropped.
+- Serving: set `SEM_VISION_URL` to an OpenAI-compatible server hosting a vision-language model (the model card for
+  Qwen/Qwen3.8-27B says `vllm serve Qwen/Qwen3.8-27B` accepts `image_url` parts). `SEM_VISION_MODEL` and `SEM_VISION_API_KEY`
+  are optional. Without `SEM_VISION_URL`, a labelled Claude fallback is used if `ANTHROPIC_API_KEY` is set. With neither,
+  the photo card is hidden.
+
+What this is not: SI-SEM itself was trained on text observations only. Reading images is done by the vision model in
+front of it. Many signals (a sound, a reading, a trend) cannot be seen in a photo, so the user adds those. Detection quality
+has not been measured on real photos. See `collect/` for how labelled real cases are gathered.

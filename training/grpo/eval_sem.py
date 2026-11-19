@@ -148,13 +148,15 @@ def generate_hf(items, args):
     """Greedy decoding of the RAW prompt string, exactly as GRPOTrainer saw it during
     training (plain-string prompts get no chat template). Untested here: needs a GPU."""
     import torch
-    from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+    from transformers import AutoTokenizer, BitsAndBytesConfig
+    import os, sys
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from model_loading import load_language_model
     tok = AutoTokenizer.from_pretrained(args.model, padding_side="left")
     if tok.pad_token is None: tok.pad_token = tok.eos_token
     q = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
                            bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True) if not args.no_4bit else None
-    model = AutoModelForCausalLM.from_pretrained(args.model, quantization_config=q,
-                                                 torch_dtype=torch.bfloat16, device_map="auto")
+    model = load_language_model(args.model, quantization_config=q, torch_dtype=torch.bfloat16, device_map="auto")
     if args.adapter:
         from peft import PeftModel
         model = PeftModel.from_pretrained(model, args.adapter)
