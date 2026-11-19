@@ -45,6 +45,11 @@ services:
         sync: false
       - key: SEM_PRODUCT_ALLOW_FALLBACK
         value: "true"
+      # ── Real-case collection (/api/collect/*) ──────────────────────────
+      # Admin keys as label=key pairs, comma separated, e.g. "ann=LONGRANDOM". Without it the
+      # collection API refuses to serve in production. Contributor keys are created in the UI.
+      - key: SEM_COLLECT_ADMIN_KEYS
+        sync: false
       # Optional. Without these, demonstration files are stored on local
       # disk only, which does NOT survive a redeploy — every code push
       # wipes previously uploaded files (this is what caused a real ENOENT
@@ -64,6 +69,18 @@ services:
     runtime: static
     branch: main
     staticPublishPath: ./product
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+
+  # Real-case collection UI (contributors submit and review real cases, admins see progress).
+  # Set collect/config.js SEM_API_BASE to the backend URL before deploying.
+  - type: web
+    name: sem-collect-ui
+    runtime: static
+    branch: main
+    staticPublishPath: ./collect
     headers:
       - path: /*
         name: X-Content-Type-Options
