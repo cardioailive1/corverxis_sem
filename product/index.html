@@ -52,6 +52,16 @@ input[type=password],input[type=text]{width:100%;padding:11px 12px;border-radius
 @keyframes s{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation:none}}
 @media (max-width:520px){.bar{grid-template-columns:1fr 1fr 44px}.answer{font-size:22px}}
+.chatbox{display:flex;flex-direction:column;gap:10px}
+.msgs{display:flex;flex-direction:column;gap:10px;max-height:46vh;overflow:auto;padding:2px}
+.msg{max-width:88%;padding:10px 14px;border-radius:14px;font-size:15px;white-space:pre-wrap;word-wrap:break-word}
+.msg.user{align-self:flex-end;background:var(--brand);color:var(--brand-ink);border-bottom-right-radius:4px}
+.msg.bot{align-self:flex-start;background:var(--chip);border-bottom-left-radius:4px}
+.msg small{display:block;margin-top:6px;color:var(--ink2);font-size:12px;white-space:normal}
+.msg.bot.error{color:var(--bad)}
+.compose{display:flex;gap:10px;align-items:flex-end}
+textarea{flex:1;min-height:48px;max-height:140px;resize:vertical;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.tiny{font-size:12px;color:var(--ink2)}
 </style>
 </head>
 <body>
@@ -69,7 +79,7 @@ input[type=password],input[type=text]{width:100%;padding:11px 12px;border-radius
 var API=(window.SEM_API_BASE||'').replace(/\/$/,'')+'/api/product';
 var $=function(s){return document.querySelector(s)};
 var app=$('#app');
-var S={key:null,domains:null,domain:null,signals:{},busy:false,result:null,error:null,history:[],model:null};
+var S={chat:[],draft:'',chatBusy:false,focusChat:false,key:null,domains:null,domain:null,signals:{},busy:false,result:null,error:null,history:[],model:null};
 
 function store(op,k,v){try{var s=window.localStorage;return op==='get'?s.getItem(k):op==='set'?s.setItem(k,v):s.removeItem(k)}catch(e){return null}}
 function el(tag,attrs){var e=document.createElement(tag);attrs=attrs||{};for(var k in attrs){if(k==='text')e.textContent=attrs[k];else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),attrs[k]);else if(attrs[k]!==false&&attrs[k]!==null&&attrs[k]!==undefined)e.setAttribute(k,attrs[k]===true?'':attrs[k])}
@@ -121,12 +131,14 @@ function renderModelChip(){
 
 function renderMain(){
   var kids=[];
-  kids.push(el('h2',{text:'1 · What are you investigating?'}));
+  kids.push(el('h2',{text:'Describe the problem'}));
+  kids.push(renderChat());
+  kids.push(el('h2',{text:'Or choose manually · What are you investigating?'}));
   kids.push(el('div',{class:'grid'},S.domains.map(function(d){
     return el('button',{class:'dom','aria-pressed':String(S.domain===d.slug),onclick:function(){S.domain=d.slug;S.signals={};S.result=null;S.error=null;render()}},el('b',{text:d.name}),el('span',{text:d.options.length+' possible causes'}))})));
   if(S.domain){
     var d=S.domains.filter(function(x){return x.slug===S.domain})[0];
-    kids.push(el('h2',{text:'2 · What do you observe?'}));
+    kids.push(el('h2',{text:'What do you observe?'}));
     kids.push(el('div',{class:'card'},
       el('p',{class:'hint',style:'margin-top:0',text:'Select every signal that is present. Leave the rest off. Selecting none means all readings are normal.'}),
       el('div',{class:'chips',role:'group','aria-label':'Observed signals'},d.signals.map(function(s){
@@ -143,6 +155,48 @@ function renderMain(){
   if(S.history.length){kids.push(el('h2',{text:'Recent in this session'}));
     kids.push(el('div',{class:'card'},el('ul',{class:'hist'},S.history.map(function(h){return el('li',{},el('span',{text:h.domain+': '+(h.answer?human(h.answer):'no valid answer')}),el('span',{class:'hint',text:h.by}))}))))}
   app.replaceChildren.apply(app,kids);
+}
+
+function renderChat(){
+  var box=el('div',{class:'card chatbox'});
+  if(S.chat.length){
+    var msgs=el('div',{class:'msgs',role:'log','aria-live':'polite'});
+    S.chat.forEach(function(m){
+      var b=el('div',{class:'msg '+(m.role==='user'?'user':'bot')+(m.error?' error':'')},m.text);
+      if(m.extracted&&m.extracted.domain){
+        var sig=m.extracted.signals.length?m.extracted.signals.map(human).join(', '):'no abnormal signals';
+        b.append(el('small',{text:'Understood as '+m.extracted.domain_name+' · '+sig+(m.extracted.ignored&&m.extracted.ignored.length?' · ignored: '+m.extracted.ignored.map(human).join(', '):'')}));
+        b.append(el('small',{text:(m.served_by==='sem-checkpoint'?'Cause from SI-SEM':'Cause from a general model (SI-SEM not live)')+'. A language model read your words and wrote this reply.'}));
+      }
+      msgs.append(b);
+    });
+    if(S.chatBusy)msgs.append(el('div',{class:'msg bot'},el('span',{class:'spin'}),'Thinking…'));
+    box.append(msgs);
+  }else{
+    box.append(el('p',{class:'hint',style:'margin:0',text:'Tell me what you are seeing in your own words, for example: \u201cThe pump is grinding and vibrating, and it got hot.\u201d I will pick out the signals, ask SI-SEM for the most likely cause, and show you what I understood so you can correct it.'}));
+  }
+  var ta=el('textarea',{id:'draft','aria-label':'Describe the problem',maxlength:'1500',rows:'2',placeholder:'Describe what you observe\u2026'});
+  ta.value=S.draft;
+  ta.addEventListener('input',function(){S.draft=ta.value});
+  ta.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}});
+  box.append(el('div',{class:'compose'},ta,el('button',{class:'btn',disabled:S.chatBusy,onclick:sendChat},'Send')));
+  box.append(el('div',{class:'row',style:'margin:0'},el('span',{class:'tiny',text:'Enter to send, Shift+Enter for a new line.'}),
+    S.chat.length?el('button',{class:'btn ghost',style:'min-height:34px;padding:4px 12px',onclick:function(){S.chat=[];S.draft='';S.domain=null;S.signals={};S.result=null;S.error=null;render()},text:'New chat'}):null));
+  return box;
+}
+
+function sendChat(){
+  var text=S.draft.trim();if(!text||S.chatBusy)return;
+  var sel=Object.keys(S.signals).filter(function(k){return S.signals[k]});
+  S.chat.push({role:'user',text:text});S.draft='';S.chatBusy=true;S.focusChat=true;render();
+  call('/chat',{body:{message:text,context:S.domain?{domain:S.domain,signals:sel}:undefined}}).then(function(r){
+    S.chatBusy=false;S.chat.push({role:'bot',text:r.reply,extracted:r.extracted,served_by:r.diagnosis&&r.diagnosis.served_by});
+    if(r.diagnosis){
+      S.domain=r.extracted.domain;S.signals={};r.extracted.signals.forEach(function(x){S.signals[x]=true});S.result=r.diagnosis;S.error=null;
+      S.history.unshift({domain:r.extracted.domain_name,answer:r.diagnosis.answer,by:r.diagnosis.served_by==='sem-checkpoint'?'SI-SEM':'fallback'});S.history=S.history.slice(0,5);
+    }
+    S.focusChat=true;render();
+  },function(e){S.chatBusy=false;S.chat.push({role:'bot',text:e.message,error:true});S.focusChat=true;render()});
 }
 
 function renderResult(r){
@@ -170,7 +224,9 @@ function diagnose(){
   },function(e){S.busy=false;S.error=e.message;render(true)});
 }
 
-function render(){renderModelChip();if(!S.key)return renderGate();if(!S.domains)return;renderMain()}
+function render(){renderModelChip();if(!S.key)return renderGate();if(!S.domains)return;renderMain();
+  var m=app.querySelector('.msgs');if(m)m.scrollTop=m.scrollHeight;
+  if(S.focusChat){S.focusChat=false;var t=$('#draft');if(t&&!S.chatBusy)t.focus()}}
 
 S.key=store('get','sem_key');
 if(S.key)load(false);else render();

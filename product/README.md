@@ -4,6 +4,14 @@ The customer-facing app for the trained SI-SEM (Super Intelligence-SEM) model. I
 build, train and evaluate). It is a static site with no build step and only ever calls `/api/product/*`.
 
 ## What users do
+Either describe the problem in plain language (chat) or use the manual form below it:
+- **Chat.** The user types something like "the pump is grinding and shaking". A general language model (Claude,
+  needs `ANTHROPIC_API_KEY` on the backend) picks out the domain and signals, SI-SEM gives the cause, and the
+  language model words the reply. The page shows exactly what was understood, and the picker below is filled in so
+  the user can correct it and press Diagnose. The cause always comes from SI-SEM (or the labelled fallback), never
+  from the language model's own judgement. Each chat message costs 2 language-model calls (3 when SI-SEM is not live).
+- **Form.** The steps below.
+
 1. Sign in with an access key.
 2. Pick a domain (industrial fault, medical, security, fraud, scientific, production incident).
 3. Tick the signals they observe and press Diagnose.
@@ -29,6 +37,8 @@ build, train and evaluate). It is a static site with no build step and only ever
   model's confidence.
 - The task is the narrow one SI-SEM was trained on: choose one cause from a fixed list given observed signals.
   It does not analyse free-form logs or recordings.
+- Chat limits: 1,500 characters per message. Signals or domains the language model invents are discarded. If
+  `ANTHROPIC_API_KEY` is missing, chat returns an error and the form still works.
 - Access keys are shared secrets, rate limited to 30 requests/min per key. There are no user accounts yet.
 
 ## Tests
