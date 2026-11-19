@@ -13,7 +13,7 @@ Being direct about this, same as everywhere else in this project:
   simulators, confirmed to produce a valid HuggingFace `Dataset` with the
   correct `prompt` column trl requires. Run directly: `python3 dataset.py`
 - `reward_functions.py` — the actual reward function GRPOTrainer would
-  call, confirmed against all 22 domains with three real cases each
+  call, confirmed against all 32 domains with three real cases each
   (correct JSON, malformed garbage, JSON wrapped in extra text). Run
   directly: `python3 reward_functions.py`
 - **A real bug was caught and fixed while building this**: HuggingFace's
@@ -59,9 +59,9 @@ python3 train_grpo.py \
   --backend-url https://your-sem-osc-backend.onrender.com
 ```
 
-There are now 22 domains with 12 to 15 possible causes each (defined once in
+There are now 32 domains with 12 to 15 possible causes each (defined once in
 `training/simulators/domains_spec.json`, authored in `build_spec.py`). With that many causes, use
-`--n-per-domain 500` as the starting scale: 11,000 total examples (500 x 22 domains = 11,000). The earlier
+`--n-per-domain 500` as the starting scale: 16,000 total examples (500 x 32 domains = 16,000). The earlier
 `200` figure was sized for 4 to 5 causes per domain. Expect to tune this upward based on how training
 actually progresses.
 

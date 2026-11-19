@@ -44,4 +44,4 @@ Either describe the problem in plain language (chat) or use the manual form belo
 
 ## Tests
 `node --test product/productApi.test.js` from `backend/`. The prompt text is checked against
-`training/grpo/dataset.py` for a sample of 3,173 signal combinations across all 22 domains (`python3 training/simulators/test_spec.py parity.json`).
+`training/grpo/dataset.py` for a sample of 3,173 signal combinations across all 32 domains (`python3 training/simulators/test_spec.py parity.json`).
