@@ -96,6 +96,15 @@ app.use(express.static(FRONTEND_DIR));
 const { createProductRouter } = require('./product/productApi.js');
 app.use('/api/product', createProductRouter({ prisma, anthropic }));
 
+// Real-case collection for validating SI-SEM before training. Own keys, separate from the Lab and the product.
+const { createCollectRouter } = require('./collect/collectApi.js');
+const collectRouter = createCollectRouter({ prisma, anthropic });
+app.use('/api/collect', collectRouter);
+// Automatic pre-screen of waiting cases every 10 minutes (flags only; humans still approve). Off with SEM_COLLECT_AUTO_SCREEN=false.
+if (anthropic && process.env.SEM_COLLECT_AUTO_SCREEN !== 'false' && process.env.NODE_ENV !== 'test') {
+  setInterval(() => collectRouter.runScreening(25).catch(e => console.error('collect screen:', e.message)), 10 * 60 * 1000).unref();
+}
+
 
 const GENERATED_DIR = path.join(__dirname, 'generated');
 if (!fs.existsSync(GENERATED_DIR)) fs.mkdirSync(GENERATED_DIR, { recursive: true });

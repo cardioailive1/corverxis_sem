@@ -141,3 +141,47 @@ model Refinement {
   detail         Json                                 // what was learned / what failed and where
   createdAt      DateTime @default(now())
 }
+
+// ── Real-case collection (SI-SEM validation data) ──────────────────────────
+// Real cases with a known, confirmed cause, contributed by qualified people and reviewed by a second person.
+// Approved cases are what calibrate.py uses to check and re-estimate a domain's probabilities. See backend/collect/.
+model CaseContributor {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  keyHash   String   @unique                     // sha256 of the contributor's access key; the key itself is shown once
+  status    String   @default("qualified")       // qualified | suspended
+  domains   String[]                              // domain slugs this person is qualified to contribute and review in
+  notes     String?                               // how they were qualified (credentials, role) - admin-written
+  createdAt DateTime @default(now())
+
+  cases     RealCase[]
+}
+
+model RealCase {
+  id            String   @id @default(cuid())
+  domainSlug    String
+  contributorId String?                           // null for cases pushed by a connected system or reported by a product user
+  contributor   CaseContributor? @relation(fields: [contributorId], references: [id])
+  origin        String   @default("manual")       // manual | ingest | product_feedback
+  ingestSource  String?                           // label of the connected system that pushed it
+  modelAnswer   String?                           // product_feedback only: what SI-SEM answered, to measure live agreement
+  screen        Json?                             // automatic pre-screen result (flags only; never approves)
+  screenedAt    DateTime?
+  signals       String[]                          // signals that were present; all others were checked and absent
+  trueCause     String                            // one of the domain's causes, or "other_not_listed"
+  otherCause    String?                           // free text when trueCause is other_not_listed (not used for calibration)
+  evidenceKind  String                            // confirmed_outcome | test_or_inspection | post_mortem | expert_judgement
+  evidence      String                            // how the cause was confirmed (de-identified)
+  source        String?                           // organisation or dataset, de-identified
+  occurredOn    String?                           // YYYY-MM or YYYY-MM-DD
+  caseHash      String   @unique                  // dedupe: same case cannot be entered twice
+  reviewStatus  String   @default("needs_review") // needs_review | approved | rejected | needs_revision | unverified (product user reports, never used to calibrate)
+  reviewNotes   String?
+  reviewedBy    String?                           // contributor id or admin label; never the author
+  reviewedAt    DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([domainSlug, reviewStatus])
+  @@index([contributorId])
+}

@@ -244,3 +244,19 @@ test('steps: validated input, labelled output, sensitive-domain guard in the pro
   assert.equal((await jpost(none.base, '/steps', { domain: 'cardiology-ecg-review', cause: 'stemi' }, 'k1')).status, 503);
   s.srv.close(); none.srv.close();
 });
+
+test('feedback route: records an outcome, validates input, requires a key', async () => {
+  const stored = [];
+  const prisma = { semCheckpoint: { findFirst: async () => null }, realCase: { create: async ({ data }) => { stored.push(data); return data; } } };
+  const app = express(); app.use(express.json());
+  app.use('/api/product', P.createProductRouter({ prisma, anthropic: null, env: { SEM_PRODUCT_API_KEYS: 'k1' } }));
+  const srv = await listen(app), base = `http://127.0.0.1:${srv.address().port}/api/product`;
+  const body = { domain: 'medical-diagnostics', signals: ['fever_high'], answer: 'covid19', outcome: 'correct' };
+  assert.equal((await jpost(base, '/feedback', body)).status, 401);
+  assert.deepEqual(await (await jpost(base, '/feedback', body, 'k1')).json(), { recorded: true });
+  assert.equal(stored.length, 1); assert.equal(stored[0].reviewStatus, 'unverified'); assert.equal(stored[0].modelAnswer, 'covid19');
+  assert.equal((await jpost(base, '/feedback', { ...body, outcome: 'incorrect' }, 'k1')).status, 400);
+  assert.equal((await jpost(base, '/feedback', { ...body, domain: 'nope' }, 'k1')).status, 400);
+  assert.deepEqual(await (await jpost(base, '/feedback', { ...body, outcome: 'unsure' }, 'k1')).json(), { recorded: false });
+  srv.close();
+});
