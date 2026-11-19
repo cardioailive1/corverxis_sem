@@ -45,6 +45,15 @@ services:
         sync: false
       - key: SEM_PRODUCT_ALLOW_FALLBACK
         value: "true"
+      # Photo and video reading (POST /api/product/analyze-media). Point at an OpenAI-compatible server that
+      # serves a vision-language model (for example the same vLLM that serves SI-SEM). Without it the product
+      # uses a clearly labelled Claude fallback when ANTHROPIC_API_KEY is set.
+      - key: SEM_VISION_URL
+        sync: false
+      - key: SEM_VISION_MODEL
+        value: Qwen/Qwen3.8-27B
+      - key: SEM_VISION_API_KEY
+        sync: false
       # ── Real-case collection (/api/collect/*) ──────────────────────────
       # Admin keys as label=key pairs, comma separated, e.g. "ann=LONGRANDOM". Without it the
       # collection API refuses to serve in production. Contributor keys are created in the UI.

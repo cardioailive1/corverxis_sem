@@ -17,6 +17,7 @@ const express = require('express');
 // label and key must match training/grpo/dataset.py DOMAIN_INSTRUCTIONS, which reads the same spec.
 const { SPEC } = require('../simulators/specSimulator.js');
 const { recordUserFeedback } = require('../collect/collectApi.js');
+const { createVision } = require('./vision.js');
 const DOMAIN_META = Object.fromEntries(Object.values(SPEC).map(d => [d.slug, { name: d.name, label: d.label, key: d.key, def: d.default_p, caution: d.caution }]));
 
 function domainInfo(slug) {
@@ -168,7 +169,7 @@ function createProductRouter({ prisma, anthropic, env = process.env }) {
   router.get('/model', auth, async (req, res) => {
     const c = await activeCheckpoint();
     res.json({ checkpoint: ckInfo(c), inference_configured: !!env.SEM_INFERENCE_URL,
-      fallback_enabled: env.SEM_PRODUCT_ALLOW_FALLBACK !== 'false' && !!anthropic });
+      fallback_enabled: env.SEM_PRODUCT_ALLOW_FALLBACK !== 'false' && !!anthropic, vision_configured: vision.configured() });
   });
 
   // Core diagnosis, shared by /diagnose (form) and /chat. `present` must already be validated.
@@ -232,6 +233,14 @@ function createProductRouter({ prisma, anthropic, env = process.env }) {
       if (!steps.length) return res.status(502).json({ error: 'No usable suggestions came back. Try again.' });
       res.json({ domain, cause, steps, sensitive, label: 'General guidance written by a language model. It is not validated and not part of the SI-SEM diagnosis.', escalate: ESCALATE[cat] });
     } catch (e) { res.status(502).json({ error: 'Could not get suggestions right now.' }); }
+  });
+
+  // Photo or video frames in, proposed signals out. The user confirms them, then uses /diagnose as usual.
+  const vision = createVision({ anthropic, env });
+  router.post('/analyze-media', auth, async (req, res) => {
+    const b = req.body || {};
+    const r = await vision.analyze({ domain: b.domain || null, media: b.media, note: b.note, source: b.source });
+    res.status(r.status).json(r.body);
   });
 
   // The user reports what the real cause turned out to be. Optional and explicit. Signals and causes only.

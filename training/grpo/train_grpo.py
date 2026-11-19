@@ -34,7 +34,10 @@ def build_model_and_tokenizer(base_model: str, use_4bit: bool):
     on a single 48-80GB GPU alongside the activations GRPO's multi-sample
     generation needs."""
     import torch
-    from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+    from transformers import AutoTokenizer, BitsAndBytesConfig
+    import os, sys
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from model_loading import load_language_model
     from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
     tokenizer = AutoTokenizer.from_pretrained(base_model)
@@ -48,7 +51,7 @@ def build_model_and_tokenizer(base_model: str, use_4bit: bool):
         bnb_4bit_use_double_quant=True,
     ) if use_4bit else None
 
-    model = AutoModelForCausalLM.from_pretrained(
+    model = load_language_model(
         base_model,
         quantization_config=quant_config,
         torch_dtype=torch.bfloat16,
