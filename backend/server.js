@@ -96,6 +96,10 @@ app.use(express.static(FRONTEND_DIR));
 const { createProductRouter } = require('./product/productApi.js');
 app.use('/api/product', createProductRouter({ prisma, anthropic }));
 
+// Real-case collection for validating SI-SEM before training. Own keys, separate from the Lab and the product.
+const { createCollectRouter } = require('./collect/collectApi.js');
+app.use('/api/collect', createCollectRouter({ prisma }));
+
 
 const GENERATED_DIR = path.join(__dirname, 'generated');
 if (!fs.existsSync(GENERATED_DIR)) fs.mkdirSync(GENERATED_DIR, { recursive: true });
