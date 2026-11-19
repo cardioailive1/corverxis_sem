@@ -29,7 +29,7 @@ test('auth: missing, wrong and valid keys', async () => {
   assert.equal((await fetch(base + '/domains', { headers: { 'x-api-key': 'nope' } })).status, 401);
   const ok = await fetch(base + '/domains', { headers: { authorization: 'Bearer k2' } });
   assert.equal(ok.status, 200);
-  const d = await ok.json(); assert.equal(d.length, 32);
+  const d = await ok.json(); assert.equal(d.length, 40);
   assert.ok(d.every(x => x.options.length >= 12 && x.options.length <= 15 && x.signals.length >= 13 && !x.profiles));
   srv.close();
 });
@@ -119,7 +119,7 @@ test('print domain prompts for the cross-language parity check', () => {
     out[slug] = list;
   }
   if (process.env.PARITY_OUT) require('fs').writeFileSync(process.env.PARITY_OUT, JSON.stringify(out));
-  assert.equal(Object.keys(out).length, 32);
+  assert.equal(Object.keys(out).length, 40);
 });
 
 // ── chat ──────────────────────────────────────────────────────────────────
