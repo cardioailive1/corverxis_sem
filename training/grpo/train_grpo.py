@@ -19,7 +19,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from dataset import build_hf_dataset
+from dataset import build_hf_dataset, DOMAIN_INSTRUCTIONS
 from reward_functions import sem_reward
 
 BASE_MODEL = "Qwen/Qwen3.8-27B"
@@ -165,8 +165,8 @@ def main():
 
     from trl import GRPOConfig, GRPOTrainer
 
-    total_examples = args.n_per_domain * 6
-    print(f"Building training dataset — {args.n_per_domain} scenarios × 6 domains = {total_examples} total examples")
+    total_examples = args.n_per_domain * len(DOMAIN_INSTRUCTIONS)
+    print(f"Building training dataset — {args.n_per_domain} scenarios × {len(DOMAIN_INSTRUCTIONS)} domains = {total_examples} total examples")
     train_dataset = build_hf_dataset(n_per_domain=args.n_per_domain, seed=args.seed)
     # Record which observation patterns were trained on, so eval_sem.py can run its memorisation probe.
     import json as _json

@@ -29,8 +29,8 @@ test('auth: missing, wrong and valid keys', async () => {
   assert.equal((await fetch(base + '/domains', { headers: { 'x-api-key': 'nope' } })).status, 401);
   const ok = await fetch(base + '/domains', { headers: { authorization: 'Bearer k2' } });
   assert.equal(ok.status, 200);
-  const d = await ok.json(); assert.equal(d.length, 6);
-  assert.ok(d.every(x => x.options.length >= 4 && x.signals.length >= 5 && !x.profiles));
+  const d = await ok.json(); assert.equal(d.length, 10);
+  assert.ok(d.every(x => x.options.length >= 12 && x.options.length <= 15 && x.signals.length >= 13 && !x.profiles));
   srv.close();
 });
 
@@ -108,19 +108,18 @@ test('hf and runpod response shapes are parsed', async () => {
   srv.close();
 });
 
-test('print every domain prompt for cross-language parity check', () => {
-  // consumed by training/grpo parity test; also asserts shape
+test('print domain prompts for the cross-language parity check', () => {
+  // The signal space is now up to 2^18, so sample: empty, full, every single signal, and 300 seeded random subsets per domain.
   const out = {};
+  let seed = 12345; const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
   for (const slug of Object.keys(P.DOMAIN_META)) {
-    const d = P.domainInfo(slug), n = d.signals.length, list = [];
-    for (let mask = 0; mask < (1 << n); mask++) {
-      const present = d.signals.filter((_, i) => mask & (1 << i));
-      list.push({ present, prompt: P.buildPrompt(slug, present) });
-    }
+    const d = P.domainInfo(slug), list = [], sets = [[], d.signals.slice(), ...d.signals.map(s => [s])];
+    for (let i = 0; i < 300; i++) sets.push(d.signals.filter(() => rnd() < 0.3));
+    for (const present of sets) list.push({ present, prompt: P.buildPrompt(slug, present) });
     out[slug] = list;
   }
   if (process.env.PARITY_OUT) require('fs').writeFileSync(process.env.PARITY_OUT, JSON.stringify(out));
-  assert.equal(Object.keys(out).length, 6);
+  assert.equal(Object.keys(out).length, 10);
 });
 
 // ── chat ──────────────────────────────────────────────────────────────────

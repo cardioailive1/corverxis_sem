@@ -12,33 +12,16 @@
 const crypto = require('crypto');
 const express = require('express');
 
-const sim = {
-  'industrial-fault-diagnosis': require('../simulators/industrialFaultSimulator.js'),
-  'medical-diagnostics': require('../simulators/medicalDiagnosticsSimulator.js'),
-  'security-incident-investigation': require('../simulators/securityIncidentSimulator.js'),
-  'financial-fraud-investigation': require('../simulators/financialFraudSimulator.js'),
-  'scientific-discovery': require('../simulators/scientificDiscoverySimulator.js'),
-  'production-incident-rootcause': require('../simulators/productionIncidentSimulator.js'),
-};
-
-// label and key MUST match training/grpo/dataset.py DOMAIN_INSTRUCTIONS exactly.
-const DOMAIN_META = {
-  'industrial-fault-diagnosis':     { name: 'Industrial Fault Diagnosis',          label: 'industrial fault diagnosis',      key: 'failed_component', options: s => s.COMPONENTS,     def: 0.05, caution: null },
-  'medical-diagnostics':            { name: 'Medical Diagnostics',                 label: 'medical diagnostics',             key: 'condition',        options: s => s.CONDITIONS,     def: 0.03, caution: 'Decision support only. This is not a medical diagnosis. Consult a qualified clinician.' },
-  'security-incident-investigation':{ name: 'Security Incident Investigation',     label: 'security incident investigation', key: 'attack_vector',    options: s => s.ATTACK_VECTORS, def: 0.03, caution: null },
-  'financial-fraud-investigation':  { name: 'Financial Fraud Investigation',       label: 'financial fraud investigation',   key: 'cause',            options: s => s.CAUSES,         def: 0.02, caution: null },
-  'scientific-discovery':           { name: 'Scientific Discovery',                label: 'scientific discovery',            key: 'mechanism',        options: s => s.MECHANISMS,     def: 0.05, caution: null },
-  'production-incident-rootcause':  { name: 'Production Incident Root-Causing',    label: 'production incident root-causing',key: 'root_cause',       options: s => s.ROOT_CAUSES,    def: 0.03, caution: null },
-};
+// Domains come from the shared spec (simulators/domains_spec.json), the same file the training code reads,
+// so the product always offers exactly the domains, causes and signals SI-SEM was trained on.
+// label and key must match training/grpo/dataset.py DOMAIN_INSTRUCTIONS, which reads the same spec.
+const { SPEC } = require('../simulators/specSimulator.js');
+const DOMAIN_META = Object.fromEntries(Object.values(SPEC).map(d => [d.slug, { name: d.name, label: d.label, key: d.key, def: d.default_p, caution: d.caution }]));
 
 function domainInfo(slug) {
-  const m = DOMAIN_META[slug], s = sim[slug];
-  return {
-    slug, name: m.name, label: m.label, key: m.key, caution: m.caution, defaultP: m.def,
-    options: m.options(s),
-    signals: s.ALL_SYMPTOMS || s.ALL_SIGNALS,
-    profiles: s.SYMPTOM_PROFILES || s.SIGNAL_PROFILES,
-  };
+  const d = SPEC[slug], m = DOMAIN_META[slug];
+  return { slug, name: m.name, label: m.label, key: m.key, caution: m.caution, defaultP: m.def,
+    options: d.causes, signals: d.signals, profiles: d.profiles };
 }
 
 // Byte-for-byte the same text as dataset.py build_prompt. Signals are emitted in the

@@ -43,11 +43,8 @@ from reward_functions import parse_completion_to_structure
 SUITES = ["iid", "reordered", "paraphrase", "noisy"]
 NOISE_EPS = 0.10
 DEFAULT_EVAL_SEED = 99991
-DEFAULT_P = {  # per-simulator fallback probability for signals missing from a profile
-    "industrial-fault-diagnosis": 0.05, "medical-diagnostics": 0.03,
-    "security-incident-investigation": 0.03, "financial-fraud-investigation": 0.02,
-    "scientific-discovery": 0.05, "production-incident-rootcause": 0.03,
-}
+import spec_sim
+DEFAULT_P = {slug: d["default_p"] for slug, d in spec_sim.spec().items()}   # per-domain fallback probability
 PARAPHRASES = [
     "Task: {label}. Candidate causes: {opts}. Signals that were observed: {sig}. "
     "Which single cause is most likely? Reply with ONLY a JSON object like {{\"{key}\": \"<answer>\"}} and nothing else.",
@@ -62,10 +59,8 @@ def sha(s): return hashlib.sha1(s.encode()).hexdigest()[:16]
 
 
 def profile_of(domain):
-    m = DOMAIN_MODULES[domain]
-    prof = getattr(m, "SYMPTOM_PROFILES", None) or getattr(m, "SIGNAL_PROFILES")
-    sigs = getattr(m, "ALL_SYMPTOMS", None) or getattr(m, "ALL_SIGNALS")
-    return prof, sigs
+    d = spec_sim.spec()[domain]
+    return d["profiles"], d["signals"]
 
 
 def bayes_predict(domain, observations, eps=0.0):

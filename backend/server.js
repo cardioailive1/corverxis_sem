@@ -128,6 +128,18 @@ const USE_CASES = [
   { slug: 'production-incident-rootcause', name: 'Production Incident Root-Causing', kind: 'sem_only',
     description: 'What actually broke and why, for a software outage, checked against replay/simulation rather than a first hypothesis.',
     simulatorSpec: 'production_incident_simulator.py' },
+  { slug: 'cardiology-ecg-review', name: 'Cardiology & ECG Review', kind: 'sem_only',
+    description: 'Most likely cardiac condition behind a set of clinical signs and ECG findings, from a simulator with illustrative (not clinically validated) probabilities.',
+    simulatorSpec: 'cardiology_ecg_simulator.py' },
+  { slug: 'network-infrastructure-outage', name: 'Network & Infrastructure Outage', kind: 'sem_only',
+    description: 'The failure point behind a network or infrastructure outage, from alarms and telemetry rather than a first hunch.',
+    simulatorSpec: 'network_outage_simulator.py' },
+  { slug: 'supply-chain-disruption', name: 'Supply Chain & Logistics', kind: 'sem_only',
+    description: 'The real cause of a supply chain disruption (supplier, port, customs, demand, carrier, regulation) from the signals that show up first.',
+    simulatorSpec: 'supply_chain_simulator.py' },
+  { slug: 'safety-incident-analysis', name: 'Energy, Mining & Aviation Safety', kind: 'sem_only',
+    description: 'The likely cause behind a safety incident in energy, mining or aviation operations, from alarms, procedures and operating conditions.',
+    simulatorSpec: 'safety_incident_simulator.py' },
 
   // Compiler use cases — one demonstration becomes a reusable, executable skill
   { slug: 'industrial-maintenance', name: 'Industrial Maintenance/Repair', kind: 'compiler',
@@ -202,6 +214,10 @@ const JS_SIMULATORS = {
   'financial-fraud-investigation': require('./simulators/financialFraudSimulator.js'),
   'scientific-discovery': require('./simulators/scientificDiscoverySimulator.js'),
   'production-incident-rootcause': require('./simulators/productionIncidentSimulator.js'),
+  'cardiology-ecg-review': require('./simulators/cardiologyEcgSimulator.js'),
+  'network-infrastructure-outage': require('./simulators/networkOutageSimulator.js'),
+  'supply-chain-disruption': require('./simulators/supplyChainSimulator.js'),
+  'safety-incident-analysis': require('./simulators/safetyIncidentSimulator.js'),
 };
 
 app.post('/api/scenarios/generate', authenticate, async (req, res) => {

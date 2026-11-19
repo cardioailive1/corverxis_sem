@@ -13,7 +13,7 @@ Being direct about this, same as everywhere else in this project:
   simulators, confirmed to produce a valid HuggingFace `Dataset` with the
   correct `prompt` column trl requires. Run directly: `python3 dataset.py`
 - `reward_functions.py` — the actual reward function GRPOTrainer would
-  call, confirmed against all 6 domains with three real cases each
+  call, confirmed against all 10 domains with three real cases each
   (correct JSON, malformed garbage, JSON wrapped in extra text). Run
   directly: `python3 reward_functions.py`
 - **A real bug was caught and fixed while building this**: HuggingFace's
@@ -59,10 +59,15 @@ python3 train_grpo.py \
   --backend-url https://your-sem-osc-backend.onrender.com
 ```
 
-`--n-per-domain 200` means 1,200 total training examples (200 × 6
-domains) — a real starting scale, not the toy `--n_scenarios 15` used to
-validate the mechanism earlier. Expect to tune this upward based on how
-training actually progresses.
+There are now 10 domains with 13 to 14 possible causes each (defined once in
+`training/simulators/domains_spec.json`, authored in `build_spec.py`). With that many causes, use
+`--n-per-domain 500` as the starting scale: 5,000 total examples (500 x 10 domains). The earlier
+`200` figure was sized for 4 to 5 causes per domain. Expect to tune this upward based on how training
+actually progresses.
+
+To change a domain, edit `build_spec.py`, run `python3 build_spec.py` (it rewrites both copies of the
+spec) and then `python3 simulators/test_spec.py`. The probabilities in the spec are hand-set and
+illustrative, not estimated from real data. That matters most for the cardiology and safety domains.
 
 ## Hardware sizing
 
@@ -79,17 +84,17 @@ on top of the base model's footprint, more than plain inference would.
 `train_grpo.py --register-checkpoint` calls the SEM+OSC backend's
 `POST /api/checkpoints` route (added specifically to support this — it
 didn't exist before) to register the result. Note the registered
-`mean_reward` is intentionally left null — it should come from evaluating
-the trained model against a held-out scenario set, not training-set
-reward, and that evaluation harness doesn't exist yet. Treat that as the
-next real piece of work once a checkpoint actually exists to evaluate.
+`mean_reward` is intentionally left null at registration — it comes from the held-out evaluation
+below (`eval_sem.py --register-checkpoint-id`), not from training reward.
 
 ## Evaluating a checkpoint (`eval_sem.py`)
 
 Training reward does not tell you the model improved. These simulators are
-Bernoulli models, so exact accuracy is capped by a Bayes ceiling (about 71% on the
-default item set, not 100%), and there are only a few hundred distinct observation
-patterns per domain, so a plain held-out split overlaps heavily with training. The
+Bernoulli models, so exact accuracy is capped by a Bayes ceiling (about 73% on the iid
+suite with the 10-domain spec, 57% to 76% depending on the domain, and 50% on the noisy suite, not 100%; random
+guessing is about 7%). The signal space is now 2^13 to 2^18 patterns per domain, so overlap with training is
+lower than it used to be (about 67% of eval patterns also appeared in a 5,000-example training set), which
+makes the memorisation probe's unseen subset reasonably large. The
 harness reports results against that ceiling and probes for memorisation.
 
 ```bash

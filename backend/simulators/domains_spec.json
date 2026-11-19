@@ -1,0 +1,1441 @@
+{
+ "version": 2,
+ "domains": [
+  {
+   "slug": "industrial-fault-diagnosis",
+   "name": "Industrial Fault Diagnosis",
+   "label": "industrial fault diagnosis",
+   "key": "failed_component",
+   "default_p": 0.04,
+   "caution": null,
+   "signals": [
+    "vibration_high",
+    "temperature_high",
+    "noise_abnormal",
+    "rpm_unstable",
+    "power_draw_high",
+    "oil_pressure_low",
+    "oil_contamination",
+    "leak_visible",
+    "output_flow_low",
+    "current_imbalance",
+    "intermittent_trips",
+    "burning_smell",
+    "sensor_reading_flatline",
+    "pressure_fluctuation"
+   ],
+   "causes": [
+    "bearing",
+    "belt",
+    "motor",
+    "sensor_calibration",
+    "gearbox_wear",
+    "shaft_misalignment",
+    "lubrication_failure",
+    "pump_cavitation",
+    "seal_leak",
+    "cooling_failure",
+    "power_supply_fault",
+    "controller_fault",
+    "overload",
+    "valve_stuck"
+   ],
+   "profiles": {
+    "bearing": {
+     "vibration_high": 0.9,
+     "temperature_high": 0.6,
+     "noise_abnormal": 0.8,
+     "rpm_unstable": 0.3,
+     "oil_contamination": 0.25
+    },
+    "belt": {
+     "vibration_high": 0.4,
+     "rpm_unstable": 0.85,
+     "noise_abnormal": 0.5,
+     "temperature_high": 0.1,
+     "output_flow_low": 0.25
+    },
+    "motor": {
+     "temperature_high": 0.9,
+     "rpm_unstable": 0.5,
+     "power_draw_high": 0.85,
+     "vibration_high": 0.2,
+     "burning_smell": 0.35,
+     "current_imbalance": 0.4
+    },
+    "sensor_calibration": {
+     "rpm_unstable": 0.2,
+     "power_draw_high": 0.1,
+     "vibration_high": 0.1,
+     "temperature_high": 0.15,
+     "sensor_reading_flatline": 0.45
+    },
+    "gearbox_wear": {
+     "noise_abnormal": 0.85,
+     "vibration_high": 0.6,
+     "oil_contamination": 0.6,
+     "temperature_high": 0.4,
+     "oil_pressure_low": 0.2
+    },
+    "shaft_misalignment": {
+     "vibration_high": 0.85,
+     "noise_abnormal": 0.4,
+     "temperature_high": 0.35,
+     "power_draw_high": 0.3,
+     "rpm_unstable": 0.15
+    },
+    "lubrication_failure": {
+     "oil_pressure_low": 0.85,
+     "temperature_high": 0.6,
+     "noise_abnormal": 0.45,
+     "vibration_high": 0.35,
+     "oil_contamination": 0.3
+    },
+    "pump_cavitation": {
+     "noise_abnormal": 0.8,
+     "pressure_fluctuation": 0.8,
+     "output_flow_low": 0.65,
+     "vibration_high": 0.5
+    },
+    "seal_leak": {
+     "leak_visible": 0.9,
+     "oil_pressure_low": 0.5,
+     "output_flow_low": 0.4,
+     "pressure_fluctuation": 0.3
+    },
+    "cooling_failure": {
+     "temperature_high": 0.9,
+     "power_draw_high": 0.3,
+     "intermittent_trips": 0.4,
+     "rpm_unstable": 0.1
+    },
+    "power_supply_fault": {
+     "intermittent_trips": 0.8,
+     "current_imbalance": 0.6,
+     "rpm_unstable": 0.4,
+     "power_draw_high": 0.3,
+     "burning_smell": 0.1
+    },
+    "controller_fault": {
+     "intermittent_trips": 0.6,
+     "rpm_unstable": 0.5,
+     "sensor_reading_flatline": 0.3,
+     "pressure_fluctuation": 0.25
+    },
+    "overload": {
+     "power_draw_high": 0.85,
+     "temperature_high": 0.6,
+     "current_imbalance": 0.3,
+     "rpm_unstable": 0.35,
+     "intermittent_trips": 0.3,
+     "vibration_high": 0.2
+    },
+    "valve_stuck": {
+     "pressure_fluctuation": 0.6,
+     "output_flow_low": 0.75,
+     "noise_abnormal": 0.2,
+     "leak_visible": 0.15
+    }
+   }
+  },
+  {
+   "slug": "medical-diagnostics",
+   "name": "Medical Diagnostics",
+   "label": "medical diagnostics",
+   "key": "condition",
+   "default_p": 0.03,
+   "caution": "Decision support only. This is not a medical diagnosis. Consult a qualified clinician.",
+   "signals": [
+    "fever_high",
+    "cough_productive",
+    "cough_dry",
+    "shortness_of_breath",
+    "sore_throat",
+    "body_aches",
+    "sneezing",
+    "loss_of_taste_smell",
+    "fatigue",
+    "chest_pain",
+    "headache",
+    "nausea_vomiting",
+    "diarrhea",
+    "rash",
+    "joint_pain",
+    "wheezing"
+   ],
+   "causes": [
+    "influenza",
+    "bacterial_pneumonia",
+    "covid19",
+    "common_cold",
+    "allergic_rhinitis",
+    "strep_throat",
+    "acute_bronchitis",
+    "sinusitis",
+    "gastroenteritis",
+    "asthma_exacerbation",
+    "migraine",
+    "mononucleosis",
+    "lyme_disease"
+   ],
+   "profiles": {
+    "influenza": {
+     "fever_high": 0.85,
+     "body_aches": 0.9,
+     "fatigue": 0.8,
+     "cough_dry": 0.5,
+     "sore_throat": 0.4,
+     "sneezing": 0.1,
+     "loss_of_taste_smell": 0.05,
+     "shortness_of_breath": 0.15,
+     "headache": 0.5,
+     "joint_pain": 0.3
+    },
+    "bacterial_pneumonia": {
+     "fever_high": 0.9,
+     "cough_productive": 0.85,
+     "shortness_of_breath": 0.7,
+     "fatigue": 0.6,
+     "body_aches": 0.3,
+     "sore_throat": 0.1,
+     "sneezing": 0.05,
+     "loss_of_taste_smell": 0.05,
+     "chest_pain": 0.4
+    },
+    "covid19": {
+     "fever_high": 0.6,
+     "fatigue": 0.75,
+     "body_aches": 0.5,
+     "loss_of_taste_smell": 0.55,
+     "cough_dry": 0.5,
+     "shortness_of_breath": 0.35,
+     "sore_throat": 0.3,
+     "sneezing": 0.1,
+     "headache": 0.4,
+     "joint_pain": 0.2
+    },
+    "common_cold": {
+     "sneezing": 0.85,
+     "sore_throat": 0.6,
+     "cough_dry": 0.4,
+     "fatigue": 0.3,
+     "fever_high": 0.1,
+     "body_aches": 0.15,
+     "shortness_of_breath": 0.02,
+     "loss_of_taste_smell": 0.02,
+     "headache": 0.15
+    },
+    "allergic_rhinitis": {
+     "sneezing": 0.9,
+     "sore_throat": 0.15,
+     "fatigue": 0.2,
+     "fever_high": 0.01,
+     "cough_dry": 0.2,
+     "body_aches": 0.02,
+     "shortness_of_breath": 0.1,
+     "loss_of_taste_smell": 0.02,
+     "wheezing": 0.15
+    },
+    "strep_throat": {
+     "sore_throat": 0.9,
+     "fever_high": 0.6,
+     "headache": 0.3,
+     "nausea_vomiting": 0.2,
+     "body_aches": 0.3,
+     "cough_dry": 0.05,
+     "sneezing": 0.03
+    },
+    "acute_bronchitis": {
+     "cough_productive": 0.7,
+     "cough_dry": 0.5,
+     "wheezing": 0.35,
+     "fatigue": 0.4,
+     "fever_high": 0.2,
+     "shortness_of_breath": 0.25,
+     "sore_throat": 0.25,
+     "chest_pain": 0.2
+    },
+    "sinusitis": {
+     "headache": 0.65,
+     "sneezing": 0.35,
+     "sore_throat": 0.3,
+     "fever_high": 0.25,
+     "cough_productive": 0.3,
+     "fatigue": 0.3
+    },
+    "gastroenteritis": {
+     "nausea_vomiting": 0.85,
+     "diarrhea": 0.85,
+     "fever_high": 0.35,
+     "fatigue": 0.5,
+     "body_aches": 0.3,
+     "headache": 0.2
+    },
+    "asthma_exacerbation": {
+     "wheezing": 0.9,
+     "shortness_of_breath": 0.85,
+     "cough_dry": 0.6,
+     "chest_pain": 0.3,
+     "fatigue": 0.3
+    },
+    "migraine": {
+     "headache": 0.95,
+     "nausea_vomiting": 0.6,
+     "fatigue": 0.25
+    },
+    "mononucleosis": {
+     "fatigue": 0.9,
+     "sore_throat": 0.75,
+     "fever_high": 0.6,
+     "body_aches": 0.4,
+     "rash": 0.15,
+     "headache": 0.3
+    },
+    "lyme_disease": {
+     "rash": 0.7,
+     "joint_pain": 0.6,
+     "fatigue": 0.6,
+     "fever_high": 0.4,
+     "headache": 0.45,
+     "body_aches": 0.45
+    }
+   }
+  },
+  {
+   "slug": "security-incident-investigation",
+   "name": "Security Incident Investigation",
+   "label": "security incident investigation",
+   "key": "attack_vector",
+   "default_p": 0.03,
+   "caution": null,
+   "signals": [
+    "unusual_login_location",
+    "privilege_escalation_event",
+    "outbound_data_transfer_spike",
+    "known_malware_signature",
+    "after_hours_access",
+    "multiple_failed_logins",
+    "new_admin_account_created",
+    "dns_tunneling_pattern",
+    "ransomware_activity",
+    "unusual_process_execution",
+    "lateral_movement_detected",
+    "mfa_fatigue_prompts",
+    "suspicious_attachment_opened",
+    "web_app_error_spike",
+    "cloud_storage_public_exposure"
+   ],
+   "causes": [
+    "phishing_credential_theft",
+    "unpatched_cve_exploit",
+    "insider_threat",
+    "supply_chain_compromise",
+    "brute_force_login",
+    "ransomware_deployment",
+    "sql_injection",
+    "credential_stuffing",
+    "mfa_fatigue_attack",
+    "dns_tunneling_exfiltration",
+    "misconfigured_cloud_storage",
+    "malicious_macro_phishing",
+    "zero_day_exploit"
+   ],
+   "profiles": {
+    "phishing_credential_theft": {
+     "unusual_login_location": 0.8,
+     "after_hours_access": 0.5,
+     "multiple_failed_logins": 0.15,
+     "privilege_escalation_event": 0.3,
+     "new_admin_account_created": 0.1,
+     "outbound_data_transfer_spike": 0.35,
+     "known_malware_signature": 0.05,
+     "suspicious_attachment_opened": 0.3,
+     "mfa_fatigue_prompts": 0.1
+    },
+    "unpatched_cve_exploit": {
+     "known_malware_signature": 0.7,
+     "privilege_escalation_event": 0.75,
+     "outbound_data_transfer_spike": 0.4,
+     "unusual_login_location": 0.2,
+     "after_hours_access": 0.3,
+     "multiple_failed_logins": 0.05,
+     "new_admin_account_created": 0.2,
+     "web_app_error_spike": 0.2,
+     "lateral_movement_detected": 0.4,
+     "unusual_process_execution": 0.4
+    },
+    "insider_threat": {
+     "outbound_data_transfer_spike": 0.75,
+     "after_hours_access": 0.7,
+     "unusual_login_location": 0.1,
+     "privilege_escalation_event": 0.2,
+     "new_admin_account_created": 0.1,
+     "multiple_failed_logins": 0.02,
+     "known_malware_signature": 0.02,
+     "cloud_storage_public_exposure": 0.1
+    },
+    "supply_chain_compromise": {
+     "known_malware_signature": 0.6,
+     "new_admin_account_created": 0.45,
+     "privilege_escalation_event": 0.55,
+     "outbound_data_transfer_spike": 0.5,
+     "unusual_login_location": 0.15,
+     "after_hours_access": 0.2,
+     "multiple_failed_logins": 0.03,
+     "unusual_process_execution": 0.5,
+     "lateral_movement_detected": 0.35,
+     "dns_tunneling_pattern": 0.2
+    },
+    "brute_force_login": {
+     "multiple_failed_logins": 0.9,
+     "unusual_login_location": 0.5,
+     "after_hours_access": 0.4,
+     "privilege_escalation_event": 0.1,
+     "outbound_data_transfer_spike": 0.1,
+     "new_admin_account_created": 0.05,
+     "known_malware_signature": 0.02,
+     "web_app_error_spike": 0.1,
+     "mfa_fatigue_prompts": 0.1
+    },
+    "ransomware_deployment": {
+     "ransomware_activity": 0.9,
+     "unusual_process_execution": 0.7,
+     "lateral_movement_detected": 0.6,
+     "known_malware_signature": 0.6,
+     "privilege_escalation_event": 0.5,
+     "after_hours_access": 0.4,
+     "new_admin_account_created": 0.3
+    },
+    "sql_injection": {
+     "web_app_error_spike": 0.8,
+     "outbound_data_transfer_spike": 0.5,
+     "unusual_process_execution": 0.15,
+     "known_malware_signature": 0.1,
+     "multiple_failed_logins": 0.05
+    },
+    "credential_stuffing": {
+     "multiple_failed_logins": 0.85,
+     "unusual_login_location": 0.6,
+     "after_hours_access": 0.3,
+     "web_app_error_spike": 0.2
+    },
+    "mfa_fatigue_attack": {
+     "mfa_fatigue_prompts": 0.9,
+     "unusual_login_location": 0.55,
+     "after_hours_access": 0.5,
+     "privilege_escalation_event": 0.2,
+     "multiple_failed_logins": 0.2
+    },
+    "dns_tunneling_exfiltration": {
+     "dns_tunneling_pattern": 0.9,
+     "outbound_data_transfer_spike": 0.6,
+     "unusual_process_execution": 0.4,
+     "known_malware_signature": 0.3
+    },
+    "misconfigured_cloud_storage": {
+     "cloud_storage_public_exposure": 0.9,
+     "outbound_data_transfer_spike": 0.4,
+     "unusual_login_location": 0.15
+    },
+    "malicious_macro_phishing": {
+     "suspicious_attachment_opened": 0.9,
+     "unusual_process_execution": 0.7,
+     "known_malware_signature": 0.45,
+     "lateral_movement_detected": 0.25,
+     "privilege_escalation_event": 0.25
+    },
+    "zero_day_exploit": {
+     "unusual_process_execution": 0.6,
+     "privilege_escalation_event": 0.65,
+     "lateral_movement_detected": 0.45,
+     "known_malware_signature": 0.1,
+     "outbound_data_transfer_spike": 0.35
+    }
+   }
+  },
+  {
+   "slug": "financial-fraud-investigation",
+   "name": "Financial Fraud Investigation",
+   "label": "financial fraud investigation",
+   "key": "cause",
+   "default_p": 0.02,
+   "caution": null,
+   "signals": [
+    "rapid_small_transactions",
+    "new_shipping_address",
+    "device_fingerprint_mismatch",
+    "velocity_spike",
+    "high_risk_merchant_category",
+    "geo_mismatch",
+    "unusual_hours_activity",
+    "refund_abuse_pattern",
+    "round_amount_transactions",
+    "multiple_accounts_same_device",
+    "chargeback_history",
+    "atm_withdrawals_abroad",
+    "password_reset_before_transaction",
+    "split_payments_below_threshold"
+   ],
+   "causes": [
+    "stolen_card_testing",
+    "account_takeover",
+    "synthetic_identity",
+    "merchant_collusion",
+    "legitimate_unusual_purchase",
+    "friendly_fraud_chargeback",
+    "money_mule_activity",
+    "structuring_smurfing",
+    "refund_abuse",
+    "carding_bin_attack",
+    "sim_swap_takeover",
+    "insider_fraud",
+    "card_skimming_abroad"
+   ],
+   "profiles": {
+    "stolen_card_testing": {
+     "rapid_small_transactions": 0.9,
+     "velocity_spike": 0.85,
+     "new_shipping_address": 0.2,
+     "device_fingerprint_mismatch": 0.3,
+     "high_risk_merchant_category": 0.4,
+     "geo_mismatch": 0.3,
+     "unusual_hours_activity": 0.35
+    },
+    "account_takeover": {
+     "device_fingerprint_mismatch": 0.85,
+     "geo_mismatch": 0.7,
+     "new_shipping_address": 0.6,
+     "velocity_spike": 0.4,
+     "rapid_small_transactions": 0.15,
+     "high_risk_merchant_category": 0.2,
+     "password_reset_before_transaction": 0.5,
+     "unusual_hours_activity": 0.3
+    },
+    "synthetic_identity": {
+     "new_shipping_address": 0.7,
+     "high_risk_merchant_category": 0.3,
+     "velocity_spike": 0.25,
+     "device_fingerprint_mismatch": 0.2,
+     "rapid_small_transactions": 0.1,
+     "geo_mismatch": 0.15,
+     "multiple_accounts_same_device": 0.4,
+     "round_amount_transactions": 0.15
+    },
+    "merchant_collusion": {
+     "high_risk_merchant_category": 0.8,
+     "rapid_small_transactions": 0.3,
+     "velocity_spike": 0.3,
+     "new_shipping_address": 0.05,
+     "device_fingerprint_mismatch": 0.1,
+     "geo_mismatch": 0.1,
+     "round_amount_transactions": 0.35,
+     "refund_abuse_pattern": 0.3
+    },
+    "legitimate_unusual_purchase": {
+     "new_shipping_address": 0.25,
+     "geo_mismatch": 0.2,
+     "velocity_spike": 0.1,
+     "high_risk_merchant_category": 0.1,
+     "rapid_small_transactions": 0.03,
+     "device_fingerprint_mismatch": 0.05,
+     "round_amount_transactions": 0.1
+    },
+    "friendly_fraud_chargeback": {
+     "chargeback_history": 0.8,
+     "high_risk_merchant_category": 0.1,
+     "new_shipping_address": 0.1,
+     "device_fingerprint_mismatch": 0.05
+    },
+    "money_mule_activity": {
+     "multiple_accounts_same_device": 0.55,
+     "round_amount_transactions": 0.5,
+     "velocity_spike": 0.45,
+     "rapid_small_transactions": 0.4,
+     "atm_withdrawals_abroad": 0.2,
+     "new_shipping_address": 0.1
+    },
+    "structuring_smurfing": {
+     "split_payments_below_threshold": 0.9,
+     "round_amount_transactions": 0.6,
+     "rapid_small_transactions": 0.4,
+     "velocity_spike": 0.35
+    },
+    "refund_abuse": {
+     "refund_abuse_pattern": 0.9,
+     "chargeback_history": 0.3,
+     "new_shipping_address": 0.3,
+     "velocity_spike": 0.1
+    },
+    "carding_bin_attack": {
+     "rapid_small_transactions": 0.8,
+     "velocity_spike": 0.75,
+     "unusual_hours_activity": 0.5,
+     "device_fingerprint_mismatch": 0.4,
+     "high_risk_merchant_category": 0.3
+    },
+    "sim_swap_takeover": {
+     "password_reset_before_transaction": 0.8,
+     "device_fingerprint_mismatch": 0.7,
+     "geo_mismatch": 0.45,
+     "new_shipping_address": 0.4,
+     "unusual_hours_activity": 0.35
+    },
+    "insider_fraud": {
+     "unusual_hours_activity": 0.6,
+     "round_amount_transactions": 0.4,
+     "split_payments_below_threshold": 0.35,
+     "multiple_accounts_same_device": 0.3
+    },
+    "card_skimming_abroad": {
+     "atm_withdrawals_abroad": 0.8,
+     "geo_mismatch": 0.75,
+     "rapid_small_transactions": 0.25,
+     "device_fingerprint_mismatch": 0.1
+    }
+   }
+  },
+  {
+   "slug": "scientific-discovery",
+   "name": "Scientific Discovery",
+   "label": "scientific discovery",
+   "key": "mechanism",
+   "default_p": 0.05,
+   "caution": null,
+   "signals": [
+    "result_reproducible",
+    "correlates_with_control_variable",
+    "effect_size_large",
+    "dose_response_relationship",
+    "instrument_calibration_drift",
+    "replicates_in_independent_lab",
+    "small_sample_size",
+    "outliers_drive_result",
+    "batch_effect_pattern",
+    "effect_shrinks_with_larger_sample",
+    "time_trend_in_data",
+    "reagent_lot_change",
+    "selective_reporting_signs"
+   ],
+   "causes": [
+    "catalyst_effect",
+    "confounding_variable",
+    "measurement_artifact",
+    "genuine_novel_effect",
+    "temperature_dependency",
+    "p_hacking",
+    "batch_effect",
+    "small_sample_noise",
+    "regression_to_the_mean",
+    "outlier_driven_artifact",
+    "reagent_contamination",
+    "selection_bias",
+    "seasonal_or_time_drift"
+   ],
+   "profiles": {
+    "catalyst_effect": {
+     "dose_response_relationship": 0.85,
+     "result_reproducible": 0.8,
+     "effect_size_large": 0.6,
+     "correlates_with_control_variable": 0.1,
+     "instrument_calibration_drift": 0.05,
+     "replicates_in_independent_lab": 0.6
+    },
+    "confounding_variable": {
+     "correlates_with_control_variable": 0.9,
+     "result_reproducible": 0.6,
+     "dose_response_relationship": 0.3,
+     "effect_size_large": 0.4,
+     "instrument_calibration_drift": 0.1,
+     "replicates_in_independent_lab": 0.3
+    },
+    "measurement_artifact": {
+     "instrument_calibration_drift": 0.85,
+     "result_reproducible": 0.2,
+     "correlates_with_control_variable": 0.15,
+     "dose_response_relationship": 0.1,
+     "effect_size_large": 0.3,
+     "replicates_in_independent_lab": 0.1,
+     "time_trend_in_data": 0.3
+    },
+    "genuine_novel_effect": {
+     "result_reproducible": 0.9,
+     "dose_response_relationship": 0.7,
+     "effect_size_large": 0.55,
+     "correlates_with_control_variable": 0.05,
+     "instrument_calibration_drift": 0.03,
+     "replicates_in_independent_lab": 0.8
+    },
+    "temperature_dependency": {
+     "dose_response_relationship": 0.5,
+     "result_reproducible": 0.75,
+     "correlates_with_control_variable": 0.4,
+     "effect_size_large": 0.35,
+     "instrument_calibration_drift": 0.1,
+     "time_trend_in_data": 0.3
+    },
+    "p_hacking": {
+     "selective_reporting_signs": 0.9,
+     "effect_shrinks_with_larger_sample": 0.5,
+     "replicates_in_independent_lab": 0.05,
+     "result_reproducible": 0.15,
+     "effect_size_large": 0.4,
+     "small_sample_size": 0.4
+    },
+    "batch_effect": {
+     "batch_effect_pattern": 0.9,
+     "reagent_lot_change": 0.5,
+     "result_reproducible": 0.3,
+     "replicates_in_independent_lab": 0.15,
+     "time_trend_in_data": 0.3
+    },
+    "small_sample_noise": {
+     "small_sample_size": 0.9,
+     "effect_shrinks_with_larger_sample": 0.7,
+     "result_reproducible": 0.15,
+     "effect_size_large": 0.5,
+     "outliers_drive_result": 0.3
+    },
+    "regression_to_the_mean": {
+     "effect_shrinks_with_larger_sample": 0.6,
+     "result_reproducible": 0.25,
+     "effect_size_large": 0.35,
+     "time_trend_in_data": 0.4,
+     "selective_reporting_signs": 0.2
+    },
+    "outlier_driven_artifact": {
+     "outliers_drive_result": 0.9,
+     "small_sample_size": 0.4,
+     "result_reproducible": 0.2,
+     "effect_size_large": 0.5,
+     "dose_response_relationship": 0.1
+    },
+    "reagent_contamination": {
+     "reagent_lot_change": 0.8,
+     "batch_effect_pattern": 0.45,
+     "result_reproducible": 0.25,
+     "instrument_calibration_drift": 0.15
+    },
+    "selection_bias": {
+     "correlates_with_control_variable": 0.55,
+     "selective_reporting_signs": 0.4,
+     "replicates_in_independent_lab": 0.1,
+     "result_reproducible": 0.35,
+     "effect_size_large": 0.4
+    },
+    "seasonal_or_time_drift": {
+     "time_trend_in_data": 0.9,
+     "correlates_with_control_variable": 0.3,
+     "result_reproducible": 0.35,
+     "instrument_calibration_drift": 0.3,
+     "batch_effect_pattern": 0.2
+    }
+   }
+  },
+  {
+   "slug": "production-incident-rootcause",
+   "name": "Production Incident Root-Causing",
+   "label": "production incident root-causing",
+   "key": "root_cause",
+   "default_p": 0.03,
+   "caution": null,
+   "signals": [
+    "error_rate_spike",
+    "latency_increase",
+    "deploy_within_last_hour",
+    "database_timeout_errors",
+    "cpu_usage_high",
+    "memory_usage_climbing",
+    "upstream_5xx_errors",
+    "disk_usage_high",
+    "certificate_expiry_warning",
+    "dns_resolution_failures",
+    "config_change_recent",
+    "queue_backlog_growing",
+    "cache_hit_rate_drop",
+    "thread_pool_saturation",
+    "region_specific_errors"
+   ],
+   "causes": [
+    "bad_deploy",
+    "database_connection_pool_exhaustion",
+    "third_party_api_outage",
+    "traffic_spike_ddos",
+    "memory_leak",
+    "disk_full",
+    "expired_certificate",
+    "dns_failure",
+    "bad_config_push",
+    "message_queue_backlog",
+    "cache_stampede",
+    "thread_pool_exhaustion",
+    "regional_cloud_outage",
+    "dependency_version_conflict"
+   ],
+   "profiles": {
+    "bad_deploy": {
+     "deploy_within_last_hour": 0.9,
+     "error_rate_spike": 0.75,
+     "latency_increase": 0.4,
+     "upstream_5xx_errors": 0.3,
+     "database_timeout_errors": 0.15,
+     "cpu_usage_high": 0.2,
+     "memory_usage_climbing": 0.1
+    },
+    "database_connection_pool_exhaustion": {
+     "database_timeout_errors": 0.9,
+     "latency_increase": 0.7,
+     "error_rate_spike": 0.5,
+     "deploy_within_last_hour": 0.1,
+     "cpu_usage_high": 0.2,
+     "memory_usage_climbing": 0.15,
+     "upstream_5xx_errors": 0.1,
+     "thread_pool_saturation": 0.4
+    },
+    "third_party_api_outage": {
+     "upstream_5xx_errors": 0.85,
+     "latency_increase": 0.6,
+     "error_rate_spike": 0.55,
+     "deploy_within_last_hour": 0.05,
+     "database_timeout_errors": 0.1,
+     "cpu_usage_high": 0.1,
+     "memory_usage_climbing": 0.05,
+     "queue_backlog_growing": 0.2
+    },
+    "traffic_spike_ddos": {
+     "cpu_usage_high": 0.85,
+     "latency_increase": 0.75,
+     "error_rate_spike": 0.6,
+     "database_timeout_errors": 0.3,
+     "memory_usage_climbing": 0.2,
+     "deploy_within_last_hour": 0.05,
+     "upstream_5xx_errors": 0.15,
+     "thread_pool_saturation": 0.4
+    },
+    "memory_leak": {
+     "memory_usage_climbing": 0.9,
+     "latency_increase": 0.5,
+     "error_rate_spike": 0.35,
+     "cpu_usage_high": 0.25,
+     "deploy_within_last_hour": 0.1,
+     "database_timeout_errors": 0.1,
+     "upstream_5xx_errors": 0.05
+    },
+    "disk_full": {
+     "disk_usage_high": 0.95,
+     "error_rate_spike": 0.55,
+     "database_timeout_errors": 0.3,
+     "latency_increase": 0.3,
+     "queue_backlog_growing": 0.2
+    },
+    "expired_certificate": {
+     "certificate_expiry_warning": 0.85,
+     "error_rate_spike": 0.7,
+     "upstream_5xx_errors": 0.4,
+     "latency_increase": 0.1
+    },
+    "dns_failure": {
+     "dns_resolution_failures": 0.9,
+     "error_rate_spike": 0.6,
+     "upstream_5xx_errors": 0.5,
+     "latency_increase": 0.4,
+     "region_specific_errors": 0.2
+    },
+    "bad_config_push": {
+     "config_change_recent": 0.9,
+     "error_rate_spike": 0.6,
+     "latency_increase": 0.3,
+     "deploy_within_last_hour": 0.25,
+     "upstream_5xx_errors": 0.2
+    },
+    "message_queue_backlog": {
+     "queue_backlog_growing": 0.9,
+     "latency_increase": 0.5,
+     "memory_usage_climbing": 0.3,
+     "error_rate_spike": 0.2,
+     "cpu_usage_high": 0.2
+    },
+    "cache_stampede": {
+     "cache_hit_rate_drop": 0.9,
+     "database_timeout_errors": 0.6,
+     "latency_increase": 0.65,
+     "cpu_usage_high": 0.4,
+     "error_rate_spike": 0.35
+    },
+    "thread_pool_exhaustion": {
+     "thread_pool_saturation": 0.9,
+     "latency_increase": 0.7,
+     "error_rate_spike": 0.4,
+     "cpu_usage_high": 0.3,
+     "database_timeout_errors": 0.2
+    },
+    "regional_cloud_outage": {
+     "region_specific_errors": 0.9,
+     "upstream_5xx_errors": 0.5,
+     "error_rate_spike": 0.55,
+     "latency_increase": 0.5,
+     "dns_resolution_failures": 0.2
+    },
+    "dependency_version_conflict": {
+     "deploy_within_last_hour": 0.6,
+     "error_rate_spike": 0.5,
+     "memory_usage_climbing": 0.2,
+     "config_change_recent": 0.2,
+     "cache_hit_rate_drop": 0.1
+    }
+   }
+  },
+  {
+   "slug": "cardiology-ecg-review",
+   "name": "Cardiology & ECG Review",
+   "label": "cardiology and ECG review",
+   "key": "cardiac_condition",
+   "default_p": 0.03,
+   "caution": "Illustrative simulator only. Not clinically validated and not a diagnosis. Chest pain, fainting or a fast or irregular heartbeat can be emergencies: seek urgent medical care.",
+   "signals": [
+    "chest_pain_exertional",
+    "chest_pain_at_rest",
+    "chest_pain_positional",
+    "shortness_of_breath",
+    "palpitations",
+    "syncope",
+    "leg_swelling",
+    "diaphoresis",
+    "st_elevation",
+    "st_depression",
+    "t_wave_inversion",
+    "irregular_rr_intervals",
+    "absent_p_waves",
+    "wide_qrs",
+    "prolonged_qt",
+    "elevated_troponin",
+    "tachycardia",
+    "bradycardia"
+   ],
+   "causes": [
+    "stemi",
+    "nstemi",
+    "unstable_angina",
+    "stable_angina",
+    "atrial_fibrillation",
+    "ventricular_tachycardia",
+    "supraventricular_tachycardia",
+    "complete_heart_block",
+    "long_qt_syndrome",
+    "heart_failure_decompensation",
+    "pericarditis",
+    "pulmonary_embolism",
+    "aortic_stenosis",
+    "vasovagal_syncope"
+   ],
+   "profiles": {
+    "stemi": {
+     "chest_pain_at_rest": 0.85,
+     "st_elevation": 0.95,
+     "elevated_troponin": 0.9,
+     "diaphoresis": 0.6,
+     "shortness_of_breath": 0.4,
+     "tachycardia": 0.3,
+     "bradycardia": 0.15,
+     "t_wave_inversion": 0.2,
+     "syncope": 0.1
+    },
+    "nstemi": {
+     "chest_pain_at_rest": 0.7,
+     "st_depression": 0.6,
+     "t_wave_inversion": 0.5,
+     "elevated_troponin": 0.9,
+     "diaphoresis": 0.4,
+     "shortness_of_breath": 0.4,
+     "tachycardia": 0.25
+    },
+    "unstable_angina": {
+     "chest_pain_at_rest": 0.75,
+     "st_depression": 0.5,
+     "t_wave_inversion": 0.4,
+     "elevated_troponin": 0.05,
+     "diaphoresis": 0.25,
+     "shortness_of_breath": 0.3
+    },
+    "stable_angina": {
+     "chest_pain_exertional": 0.9,
+     "st_depression": 0.3,
+     "shortness_of_breath": 0.3,
+     "elevated_troponin": 0.02,
+     "diaphoresis": 0.1
+    },
+    "atrial_fibrillation": {
+     "irregular_rr_intervals": 0.95,
+     "absent_p_waves": 0.9,
+     "palpitations": 0.7,
+     "tachycardia": 0.55,
+     "shortness_of_breath": 0.35,
+     "syncope": 0.1,
+     "leg_swelling": 0.1
+    },
+    "ventricular_tachycardia": {
+     "wide_qrs": 0.9,
+     "tachycardia": 0.95,
+     "palpitations": 0.6,
+     "syncope": 0.5,
+     "shortness_of_breath": 0.4,
+     "chest_pain_at_rest": 0.2,
+     "elevated_troponin": 0.15
+    },
+    "supraventricular_tachycardia": {
+     "tachycardia": 0.95,
+     "palpitations": 0.85,
+     "shortness_of_breath": 0.2,
+     "syncope": 0.1,
+     "chest_pain_at_rest": 0.15
+    },
+    "complete_heart_block": {
+     "bradycardia": 0.9,
+     "syncope": 0.6,
+     "wide_qrs": 0.4,
+     "shortness_of_breath": 0.3,
+     "diaphoresis": 0.1
+    },
+    "long_qt_syndrome": {
+     "prolonged_qt": 0.9,
+     "syncope": 0.55,
+     "palpitations": 0.45,
+     "tachycardia": 0.2
+    },
+    "heart_failure_decompensation": {
+     "shortness_of_breath": 0.9,
+     "leg_swelling": 0.8,
+     "tachycardia": 0.45,
+     "irregular_rr_intervals": 0.25,
+     "absent_p_waves": 0.2,
+     "wide_qrs": 0.3,
+     "elevated_troponin": 0.25,
+     "t_wave_inversion": 0.2
+    },
+    "pericarditis": {
+     "chest_pain_positional": 0.85,
+     "chest_pain_at_rest": 0.5,
+     "st_elevation": 0.6,
+     "tachycardia": 0.3,
+     "shortness_of_breath": 0.2,
+     "elevated_troponin": 0.2,
+     "t_wave_inversion": 0.3
+    },
+    "pulmonary_embolism": {
+     "shortness_of_breath": 0.85,
+     "tachycardia": 0.7,
+     "chest_pain_positional": 0.45,
+     "leg_swelling": 0.35,
+     "elevated_troponin": 0.3,
+     "t_wave_inversion": 0.25,
+     "syncope": 0.2,
+     "st_depression": 0.1
+    },
+    "aortic_stenosis": {
+     "shortness_of_breath": 0.55,
+     "chest_pain_exertional": 0.45,
+     "syncope": 0.4,
+     "leg_swelling": 0.1,
+     "palpitations": 0.1
+    },
+    "vasovagal_syncope": {
+     "syncope": 0.9,
+     "diaphoresis": 0.5,
+     "bradycardia": 0.4,
+     "palpitations": 0.1
+    }
+   }
+  },
+  {
+   "slug": "network-infrastructure-outage",
+   "name": "Network & Infrastructure Outage",
+   "label": "network and infrastructure outage diagnosis",
+   "key": "failure_point",
+   "default_p": 0.03,
+   "caution": null,
+   "signals": [
+    "packet_loss_high",
+    "latency_spike",
+    "dns_resolution_failures",
+    "bgp_route_flaps",
+    "interface_crc_errors",
+    "link_down_alarm",
+    "router_cpu_high",
+    "connection_resets",
+    "certificate_errors",
+    "dhcp_exhaustion_alerts",
+    "radius_auth_failures",
+    "throughput_saturated",
+    "single_site_affected",
+    "intermittent_connectivity",
+    "firewall_deny_spike",
+    "power_alarm_at_site"
+   ],
+   "causes": [
+    "fiber_cut",
+    "bgp_misconfiguration",
+    "dns_server_failure",
+    "ddos_volumetric",
+    "failing_switch_hardware",
+    "bad_cable_or_duplex_mismatch",
+    "dhcp_pool_exhaustion",
+    "expired_tls_certificate",
+    "firewall_rule_misconfiguration",
+    "link_saturation",
+    "spanning_tree_loop",
+    "radius_auth_outage",
+    "power_failure_at_site",
+    "router_cpu_overload"
+   ],
+   "profiles": {
+    "fiber_cut": {
+     "link_down_alarm": 0.9,
+     "packet_loss_high": 0.6,
+     "single_site_affected": 0.6,
+     "bgp_route_flaps": 0.35,
+     "intermittent_connectivity": 0.1
+    },
+    "bgp_misconfiguration": {
+     "bgp_route_flaps": 0.8,
+     "packet_loss_high": 0.5,
+     "latency_spike": 0.4,
+     "router_cpu_high": 0.3,
+     "connection_resets": 0.3
+    },
+    "dns_server_failure": {
+     "dns_resolution_failures": 0.95,
+     "connection_resets": 0.3,
+     "latency_spike": 0.25,
+     "certificate_errors": 0.1
+    },
+    "ddos_volumetric": {
+     "throughput_saturated": 0.9,
+     "packet_loss_high": 0.7,
+     "latency_spike": 0.7,
+     "router_cpu_high": 0.5,
+     "firewall_deny_spike": 0.6
+    },
+    "failing_switch_hardware": {
+     "interface_crc_errors": 0.6,
+     "intermittent_connectivity": 0.7,
+     "packet_loss_high": 0.45,
+     "single_site_affected": 0.3,
+     "link_down_alarm": 0.3
+    },
+    "bad_cable_or_duplex_mismatch": {
+     "interface_crc_errors": 0.85,
+     "packet_loss_high": 0.4,
+     "latency_spike": 0.3,
+     "intermittent_connectivity": 0.4,
+     "throughput_saturated": 0.1
+    },
+    "dhcp_pool_exhaustion": {
+     "dhcp_exhaustion_alerts": 0.9,
+     "intermittent_connectivity": 0.3,
+     "single_site_affected": 0.45,
+     "dns_resolution_failures": 0.05
+    },
+    "expired_tls_certificate": {
+     "certificate_errors": 0.95,
+     "connection_resets": 0.5,
+     "latency_spike": 0.05
+    },
+    "firewall_rule_misconfiguration": {
+     "firewall_deny_spike": 0.8,
+     "connection_resets": 0.6,
+     "packet_loss_high": 0.1,
+     "single_site_affected": 0.25,
+     "intermittent_connectivity": 0.15
+    },
+    "link_saturation": {
+     "throughput_saturated": 0.9,
+     "latency_spike": 0.7,
+     "packet_loss_high": 0.5,
+     "router_cpu_high": 0.2
+    },
+    "spanning_tree_loop": {
+     "packet_loss_high": 0.7,
+     "router_cpu_high": 0.6,
+     "throughput_saturated": 0.5,
+     "intermittent_connectivity": 0.5,
+     "interface_crc_errors": 0.15,
+     "single_site_affected": 0.4
+    },
+    "radius_auth_outage": {
+     "radius_auth_failures": 0.95,
+     "connection_resets": 0.2,
+     "single_site_affected": 0.2
+    },
+    "power_failure_at_site": {
+     "power_alarm_at_site": 0.9,
+     "link_down_alarm": 0.7,
+     "single_site_affected": 0.85,
+     "packet_loss_high": 0.3
+    },
+    "router_cpu_overload": {
+     "router_cpu_high": 0.9,
+     "latency_spike": 0.6,
+     "packet_loss_high": 0.4,
+     "bgp_route_flaps": 0.35,
+     "connection_resets": 0.2
+    }
+   }
+  },
+  {
+   "slug": "supply-chain-disruption",
+   "name": "Supply Chain & Logistics",
+   "label": "supply chain disruption analysis",
+   "key": "disruption_cause",
+   "default_p": 0.03,
+   "caution": null,
+   "signals": [
+    "supplier_lead_time_increase",
+    "stockout_alerts",
+    "port_congestion_reports",
+    "customs_hold_notices",
+    "demand_spike_vs_forecast",
+    "supplier_quality_rejects",
+    "single_supplier_dependency",
+    "freight_rate_surge",
+    "weather_alert_on_route",
+    "labor_strike_notice",
+    "inventory_record_mismatch",
+    "supplier_order_cancellations",
+    "currency_swing",
+    "regulatory_change_notice",
+    "carrier_capacity_shortage",
+    "input_price_spike"
+   ],
+   "causes": [
+    "supplier_insolvency",
+    "port_congestion",
+    "customs_delay",
+    "demand_shock",
+    "supplier_quality_failure",
+    "natural_disaster_on_route",
+    "labor_strike",
+    "carrier_capacity_crunch",
+    "forecasting_error",
+    "inventory_record_error",
+    "regulatory_change",
+    "currency_shock",
+    "raw_material_shortage"
+   ],
+   "profiles": {
+    "supplier_insolvency": {
+     "supplier_order_cancellations": 0.75,
+     "supplier_lead_time_increase": 0.6,
+     "single_supplier_dependency": 0.5,
+     "stockout_alerts": 0.5,
+     "supplier_quality_rejects": 0.2
+    },
+    "port_congestion": {
+     "port_congestion_reports": 0.9,
+     "supplier_lead_time_increase": 0.6,
+     "freight_rate_surge": 0.55,
+     "stockout_alerts": 0.35,
+     "carrier_capacity_shortage": 0.3
+    },
+    "customs_delay": {
+     "customs_hold_notices": 0.9,
+     "supplier_lead_time_increase": 0.5,
+     "regulatory_change_notice": 0.3,
+     "stockout_alerts": 0.3
+    },
+    "demand_shock": {
+     "demand_spike_vs_forecast": 0.9,
+     "stockout_alerts": 0.75,
+     "supplier_lead_time_increase": 0.3,
+     "freight_rate_surge": 0.25,
+     "input_price_spike": 0.2
+    },
+    "supplier_quality_failure": {
+     "supplier_quality_rejects": 0.9,
+     "stockout_alerts": 0.4,
+     "supplier_lead_time_increase": 0.3,
+     "supplier_order_cancellations": 0.15
+    },
+    "natural_disaster_on_route": {
+     "weather_alert_on_route": 0.9,
+     "supplier_lead_time_increase": 0.6,
+     "carrier_capacity_shortage": 0.35,
+     "freight_rate_surge": 0.4,
+     "port_congestion_reports": 0.2
+    },
+    "labor_strike": {
+     "labor_strike_notice": 0.9,
+     "port_congestion_reports": 0.4,
+     "supplier_lead_time_increase": 0.55,
+     "carrier_capacity_shortage": 0.3
+    },
+    "carrier_capacity_crunch": {
+     "carrier_capacity_shortage": 0.9,
+     "freight_rate_surge": 0.8,
+     "supplier_lead_time_increase": 0.3,
+     "stockout_alerts": 0.2
+    },
+    "forecasting_error": {
+     "demand_spike_vs_forecast": 0.55,
+     "stockout_alerts": 0.6,
+     "inventory_record_mismatch": 0.25,
+     "supplier_lead_time_increase": 0.05
+    },
+    "inventory_record_error": {
+     "inventory_record_mismatch": 0.9,
+     "stockout_alerts": 0.5,
+     "demand_spike_vs_forecast": 0.05
+    },
+    "regulatory_change": {
+     "regulatory_change_notice": 0.9,
+     "customs_hold_notices": 0.5,
+     "supplier_lead_time_increase": 0.3,
+     "supplier_order_cancellations": 0.15
+    },
+    "currency_shock": {
+     "currency_swing": 0.9,
+     "input_price_spike": 0.5,
+     "supplier_order_cancellations": 0.2,
+     "freight_rate_surge": 0.15
+    },
+    "raw_material_shortage": {
+     "input_price_spike": 0.85,
+     "supplier_lead_time_increase": 0.6,
+     "stockout_alerts": 0.45,
+     "supplier_order_cancellations": 0.3,
+     "single_supplier_dependency": 0.3
+    }
+   }
+  },
+  {
+   "slug": "safety-incident-analysis",
+   "name": "Energy, Mining & Aviation Safety",
+   "label": "energy, mining and aviation safety incident analysis",
+   "key": "incident_cause",
+   "default_p": 0.03,
+   "caution": "Illustrative simulator only. Not a substitute for a qualified investigation or the applicable safety regulations.",
+   "signals": [
+    "gas_detector_alarm",
+    "pressure_exceedance",
+    "equipment_vibration_anomaly",
+    "operator_fatigue_reported",
+    "procedure_not_followed",
+    "maintenance_overdue",
+    "ground_movement_detected",
+    "visibility_poor",
+    "loss_of_communication",
+    "fire_or_smoke_alarm",
+    "electrical_arcing_or_trip",
+    "load_or_fuel_imbalance",
+    "alarm_silenced_or_ignored",
+    "recent_shift_change",
+    "noise_before_failure",
+    "sensor_disagreement"
+   ],
+   "causes": [
+    "methane_accumulation",
+    "roof_or_slope_failure",
+    "equipment_mechanical_failure",
+    "human_fatigue_error",
+    "procedure_violation",
+    "maintenance_lapse",
+    "electrical_fault_ignition",
+    "pressure_vessel_overpressure",
+    "communication_breakdown",
+    "weather_visibility_event",
+    "fuel_or_load_management_error",
+    "misleading_sensor_failure",
+    "alarm_fatigue_normalisation",
+    "ventilation_failure"
+   ],
+   "profiles": {
+    "methane_accumulation": {
+     "gas_detector_alarm": 0.9,
+     "fire_or_smoke_alarm": 0.3,
+     "alarm_silenced_or_ignored": 0.3,
+     "electrical_arcing_or_trip": 0.2,
+     "sensor_disagreement": 0.2
+    },
+    "roof_or_slope_failure": {
+     "ground_movement_detected": 0.9,
+     "noise_before_failure": 0.5,
+     "loss_of_communication": 0.15,
+     "equipment_vibration_anomaly": 0.2
+    },
+    "equipment_mechanical_failure": {
+     "equipment_vibration_anomaly": 0.75,
+     "noise_before_failure": 0.7,
+     "maintenance_overdue": 0.55,
+     "pressure_exceedance": 0.2,
+     "fire_or_smoke_alarm": 0.15
+    },
+    "human_fatigue_error": {
+     "operator_fatigue_reported": 0.85,
+     "recent_shift_change": 0.5,
+     "procedure_not_followed": 0.5,
+     "alarm_silenced_or_ignored": 0.35
+    },
+    "procedure_violation": {
+     "procedure_not_followed": 0.9,
+     "alarm_silenced_or_ignored": 0.4,
+     "operator_fatigue_reported": 0.2,
+     "recent_shift_change": 0.2
+    },
+    "maintenance_lapse": {
+     "maintenance_overdue": 0.9,
+     "equipment_vibration_anomaly": 0.4,
+     "noise_before_failure": 0.35,
+     "sensor_disagreement": 0.2
+    },
+    "electrical_fault_ignition": {
+     "electrical_arcing_or_trip": 0.85,
+     "fire_or_smoke_alarm": 0.7,
+     "gas_detector_alarm": 0.2,
+     "maintenance_overdue": 0.25
+    },
+    "pressure_vessel_overpressure": {
+     "pressure_exceedance": 0.9,
+     "sensor_disagreement": 0.3,
+     "alarm_silenced_or_ignored": 0.3,
+     "noise_before_failure": 0.25,
+     "maintenance_overdue": 0.2
+    },
+    "communication_breakdown": {
+     "loss_of_communication": 0.9,
+     "recent_shift_change": 0.4,
+     "procedure_not_followed": 0.3,
+     "visibility_poor": 0.1
+    },
+    "weather_visibility_event": {
+     "visibility_poor": 0.9,
+     "loss_of_communication": 0.2,
+     "load_or_fuel_imbalance": 0.1
+    },
+    "fuel_or_load_management_error": {
+     "load_or_fuel_imbalance": 0.9,
+     "operator_fatigue_reported": 0.2,
+     "sensor_disagreement": 0.25,
+     "procedure_not_followed": 0.2
+    },
+    "misleading_sensor_failure": {
+     "sensor_disagreement": 0.9,
+     "alarm_silenced_or_ignored": 0.3,
+     "maintenance_overdue": 0.3,
+     "pressure_exceedance": 0.1
+    },
+    "alarm_fatigue_normalisation": {
+     "alarm_silenced_or_ignored": 0.9,
+     "operator_fatigue_reported": 0.4,
+     "procedure_not_followed": 0.35,
+     "gas_detector_alarm": 0.15,
+     "pressure_exceedance": 0.15
+    },
+    "ventilation_failure": {
+     "gas_detector_alarm": 0.55,
+     "equipment_vibration_anomaly": 0.3,
+     "operator_fatigue_reported": 0.3,
+     "pressure_exceedance": 0.2,
+     "electrical_arcing_or_trip": 0.2
+    }
+   }
+  }
+ ]
+}
