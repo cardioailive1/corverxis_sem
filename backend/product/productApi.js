@@ -243,6 +243,24 @@ function createProductRouter({ prisma, anthropic, env = process.env }) {
     res.status(r.status).json(r.body);
   });
 
+  // One step: read the photo or video, then run the SI-SEM diagnosis on what was read and name the cause.
+  // It refuses to diagnose when the image gives too little to go on, rather than guessing.
+  router.post('/diagnose-media', auth, async (req, res) => {
+    const b = req.body || {};
+    const v = await vision.analyze({ domain: b.domain || null, media: b.media, note: b.note, source: b.source });
+    if (v.status !== 200) return res.status(v.status).json(v.body);
+    const read = v.body, names = read.signals.map(x => x.name);
+    let reason = null;
+    if (read.image_quality === 'unusable') reason = 'The image is too unclear to read. Try a closer, brighter photo.';
+    else if (!read.domain) reason = 'I could not tell which area this belongs to. Choose one and try again, or describe the problem.';
+    else if (!names.length) reason = 'I could not see any of the signs I look for in this image. Add what you can observe and diagnose from the list.';
+    if (reason) return res.json({ read, diagnosis: null, reason });
+    const r = await runDiagnosis(read.domain, names);
+    if (r.status !== 200) return res.status(r.status).json(r.body);
+    const thin = names.length < 3;
+    res.json({ read, diagnosis: { ...r.body, basis: 'image', basis_note: `Based on ${names.length} sign${names.length === 1 ? '' : 's'} read from the ${read.source === 'video' ? 'video' : 'photo'}${thin ? ', which is little to go on. Add anything else you can observe to firm it up' : ''}. Check that the signs I read are right.` }, reason: null });
+  });
+
   // The user reports what the real cause turned out to be. Optional and explicit. Signals and causes only.
   router.post('/feedback', auth, async (req, res) => {
     const b = req.body || {};

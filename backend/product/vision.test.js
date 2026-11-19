@@ -72,3 +72,28 @@ test('route /analyze-media: needs a key, validates, and /model reports vision_co
   assert.equal((await (await fetch(base + '/model', { headers: { 'x-api-key': 'k1' } })).json()).vision_configured, true);
   srv.close();
 });
+
+test('/diagnose-media: reads the image, then names the cause; refuses when the image gives too little', async () => {
+  let visionAnswer = GOOD;
+  const anthropic = { messages: { create: async req => {
+    if (Array.isArray(req.messages[0].content)) return { content: [{ text: visionAnswer }] };                    // the vision call
+    return { content: [{ text: '{"stress_cause": "fungal_leaf_spot"}' }] }; } } };                              // the SI-SEM fallback diagnosis
+  const app = express(); app.use(express.json({ limit: '5mb' }));
+  app.use('/api/product', P.createProductRouter({ prisma: { semCheckpoint: { findFirst: async () => null } }, anthropic, env: { SEM_PRODUCT_API_KEYS: 'k1' } }));
+  const srv = await new Promise(r => { const s = app.listen(0, () => r(s)); }), base = `http://127.0.0.1:${srv.address().port}/api/product`;
+  const post = (body, key = 'k1') => fetch(base + '/diagnose-media', { method: 'POST', headers: { 'content-type': 'application/json', 'x-api-key': key }, body: JSON.stringify(body) });
+  assert.equal((await post({ media: [JPG] }, 'bad')).status, 401);
+  const ok = await (await post({ media: [JPG, PNG], source: 'photo' })).json();
+  assert.equal(ok.diagnosis.answer, 'fungal_leaf_spot'); assert.equal(ok.diagnosis.domain, 'agriculture-crop-health');
+  assert.deepEqual(ok.diagnosis.signals, ['leaf_yellowing', 'leaf_spots'].sort((a, b) => ok.diagnosis.signals.indexOf(a) - ok.diagnosis.signals.indexOf(b)));
+  assert.equal(ok.diagnosis.basis, 'image'); assert.match(ok.diagnosis.basis_note, /little to go on/);          // only 2 signs
+  assert.ok(ok.diagnosis.actions && ok.diagnosis.reference_probabilities.length > 0); assert.equal(ok.read.signals.length, 2);
+  visionAnswer = answer({ domain: 'agriculture-crop-health', signals: [], description: 'A blurry picture.', image_quality: 'unusable' });
+  const bad = await (await post({ media: [JPG] })).json(); assert.equal(bad.diagnosis, null); assert.match(bad.reason, /too unclear/);
+  visionAnswer = answer({ domain: 'agriculture-crop-health', signals: [{ name: 'not_a_signal' }], description: 'A leaf.', image_quality: 'good' });
+  const none = await (await post({ media: [JPG] })).json(); assert.equal(none.diagnosis, null); assert.match(none.reason, /could not see any/);
+  visionAnswer = answer({ domain: null, signals: [], description: 'A car.', image_quality: 'good' });
+  assert.match((await (await post({ media: [JPG] })).json()).reason, /could not tell which area/);
+  assert.equal((await post({ media: [] })).status, 400);
+  srv.close();
+});

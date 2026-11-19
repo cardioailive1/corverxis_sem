@@ -248,19 +248,18 @@ function loadFiles(files){var M=S.media;M.err=M.msg=null;M.res=null;M.busy=true;
   var p;if(vid){if(vid.size>300*1024*1024){p=Promise.reject(new Error('That video is too large. Use one under 300 MB.'))}else{M.source='video';p=videoFrames(vid)}}
   else{list=list.filter(function(f){return /^image\//.test(f.type)}).slice(0,8);if(!list.length){p=Promise.reject(new Error('Choose a photo or a video.'))}else{M.source='photo';p=Promise.all(list.map(imageFrame))}}
   p.then(function(fr){M.frames=fr;M.busy=false;render(true)}).catch(function(e){M.busy=false;M.err=e.message;render(true)})}
-function readMedia(){var M=S.media;M.busy=true;M.err=M.msg=null;render(true);
-  call('/analyze-media',{body:{domain:S.domain||undefined,media:M.frames,source:M.source}}).then(function(r){M.busy=false;M.res=r;
-    if(r.image_quality==='unusable'){M.err='The image is too unclear to read. Try a closer, brighter photo.'}
-    else if(!r.domain){M.msg='I could not tell which area this belongs to. Choose one below and try again, or describe it in the chat.'}
-    else{S.domain=r.domain;S.signals={};r.signals.forEach(function(x){S.signals[x.name]=true});S.result=null;S.error=null;
-      M.msg=r.signals.length?'I can see '+r.signals.length+' possible observation'+(r.signals.length>1?'s':'')+'. They are selected below. Check them, add anything the photo cannot show, then diagnose.':'I could not see any of the listed signs. Pick what you observe below.'}
+function readMedia(){var M=S.media;M.busy=true;M.err=M.msg=null;M.res=null;S.result=null;render(true);
+  call('/diagnose-media',{body:{domain:S.domain||undefined,media:M.frames,source:M.source}}).then(function(x){M.busy=false;M.res=x.read;
+    if(x.read.domain){S.domain=x.read.domain;S.signals={};x.read.signals.forEach(function(y){S.signals[y.name]=true})}
+    if(x.diagnosis){S.result=x.diagnosis;S.error=null;M.msg=x.diagnosis.basis_note;S.history.unshift({domain:x.read.domain_name,answer:x.diagnosis.answer,by:x.diagnosis.served_by==='sem-checkpoint'?'SI-SEM':'fallback'});S.history=S.history.slice(0,5)}
+    else M.err=x.reason;
     render(true)}).catch(function(e){M.busy=false;M.err=e.message;render(true)})}
 function renderMedia(){var M=S.media,box=el('div',{class:'card'});
   box.append(el('p',{class:'hint',style:'margin:0 0 10px',text:'Take or choose a photo of the problem, or a short video. I read what is visible and propose observations for you to confirm. Nothing is stored. Please avoid faces and personal information.'}));
   var inp=el('input',{type:'file',accept:'image/*,video/*',multiple:true,'aria-label':'Photo or video',onchange:function(e){if(e.target.files.length)loadFiles(e.target.files)}});box.append(inp);
   if(M.busy)box.append(el('div',{class:'hint',style:'margin-top:10px',role:'status'},[el('span',{class:'spin'}),'Working...']));
   if(M.frames.length){box.append(el('div',{style:'display:flex;gap:6px;flex-wrap:wrap;margin-top:10px'},M.frames.map(function(f,i){return el('img',{src:f,alt:(M.source==='video'?'Video frame ':'Photo ')+(i+1),style:'height:64px;border-radius:6px;border:1px solid var(--line)'})})));
-    box.append(el('div',{class:'row'},[el('button',{class:'btn',type:'button',disabled:M.busy,text:M.source==='video'?'Read the video':'Read the photo',onclick:readMedia}),el('span',{class:'hint',text:M.frames.length+(M.source==='video'?' frames sampled from the video':' photo'+(M.frames.length>1?'s':''))})]))}
+    box.append(el('div',{class:'row'},[el('button',{class:'btn',type:'button',disabled:M.busy,text:M.source==='video'?'Read the video and diagnose':'Read the photo and diagnose',onclick:readMedia}),el('span',{class:'hint',text:M.frames.length+(M.source==='video'?' frames sampled from the video':' photo'+(M.frames.length>1?'s':''))})]))}
   if(M.err)box.append(el('div',{class:'err',role:'alert',text:M.err}));
   if(M.res&&M.res.description)box.append(el('div',{class:'hint',style:'margin-top:10px',text:'What I see: '+M.res.description}));
   if(M.res&&M.res.signals&&M.res.signals.length)box.append(el('ul',{style:'margin:8px 0 0;padding-left:20px;font-size:14px'},M.res.signals.map(function(x){return el('li',{text:human(x.name)+(x.evidence?' ('+x.evidence+')':'')})})));

@@ -48,10 +48,12 @@ Either describe the problem in plain language (chat) or use the manual form belo
 
 ## Photos and videos
 
-The page can read a photo or a short video: the user attaches it, and a vision-language model reports which of the
-domain's signals are visibly present, plus a short description of what it sees. Those become pre-selected observations
-that the user confirms or edits before diagnosing. The vision model never names the cause. SI-SEM does that, from the
-confirmed signals, exactly as before.
+The page can read a photo or a short video and name the likely cause in one step (`POST /api/product/diagnose-media`).
+A vision-language model reports which of the domain's signals are visibly present, then SI-SEM diagnoses from those
+signals. The vision model never names the cause. SI-SEM does. The signals it read stay selected on the page, so the user
+can correct them or add what a photo cannot show, and diagnose again. It refuses to diagnose, with a reason, when the
+image is unusable, no listed sign is visible, or the area cannot be identified. When only a few signs were read, the answer
+says it rests on little. (`POST /analyze-media` still returns just the proposed signals.)
 
 - Photos: up to 8, resized in the browser to JPEG (1024 px longest side).
 - Video: 6 frames are sampled evenly across the clip in the browser, so the model sees the frames, not the motion or sound.
