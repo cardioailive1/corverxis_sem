@@ -4071,6 +4071,919 @@
    },
    "category": "Finance & Markets",
    "description": "The likely root cause of an audit finding, from control-testing and environment signals. Decision support, not an audit opinion."
+  },
+  {
+   "slug": "research-development-programs",
+   "name": "Research & Development",
+   "label": "R&D project stall diagnosis",
+   "key": "stall_cause",
+   "default_p": 0.03,
+   "caution": "Decision support for R&D leaders. Not a substitute for scientific review.",
+   "signals": [
+    "experiments_not_reproducible",
+    "milestones_slipping",
+    "results_contradict_hypothesis",
+    "long_cycle_between_experiments",
+    "key_expert_left_team",
+    "equipment_downtime_frequent",
+    "budget_overrun_on_materials",
+    "unclear_success_criteria",
+    "scope_keeps_expanding",
+    "data_scattered_across_tools",
+    "stakeholder_priorities_shifted",
+    "prototype_fails_in_scale_up",
+    "literature_review_outdated",
+    "team_waiting_on_approvals",
+    "ip_or_regulatory_uncertainty"
+   ],
+   "causes": [
+    "irreproducible_methods",
+    "wrong_hypothesis",
+    "slow_experiment_cycle",
+    "key_person_dependency",
+    "equipment_constraints",
+    "budget_pressure",
+    "unclear_goals",
+    "scope_creep",
+    "knowledge_fragmentation",
+    "strategic_shift",
+    "scale_up_gap",
+    "approval_bottleneck",
+    "regulatory_or_ip_block",
+    "prior_art_blind_spot"
+   ],
+   "profiles": {
+    "irreproducible_methods": {
+     "experiments_not_reproducible": 0.9,
+     "results_contradict_hypothesis": 0.4,
+     "data_scattered_across_tools": 0.3
+    },
+    "wrong_hypothesis": {
+     "results_contradict_hypothesis": 0.85,
+     "milestones_slipping": 0.35,
+     "literature_review_outdated": 0.3
+    },
+    "slow_experiment_cycle": {
+     "long_cycle_between_experiments": 0.85,
+     "milestones_slipping": 0.6,
+     "equipment_downtime_frequent": 0.3
+    },
+    "key_person_dependency": {
+     "key_expert_left_team": 0.9,
+     "milestones_slipping": 0.5,
+     "experiments_not_reproducible": 0.3
+    },
+    "equipment_constraints": {
+     "equipment_downtime_frequent": 0.9,
+     "long_cycle_between_experiments": 0.5,
+     "milestones_slipping": 0.45
+    },
+    "budget_pressure": {
+     "budget_overrun_on_materials": 0.85,
+     "milestones_slipping": 0.4,
+     "scope_keeps_expanding": 0.2
+    },
+    "unclear_goals": {
+     "unclear_success_criteria": 0.9,
+     "scope_keeps_expanding": 0.5,
+     "stakeholder_priorities_shifted": 0.4
+    },
+    "scope_creep": {
+     "scope_keeps_expanding": 0.9,
+     "milestones_slipping": 0.55,
+     "budget_overrun_on_materials": 0.35
+    },
+    "knowledge_fragmentation": {
+     "data_scattered_across_tools": 0.85,
+     "experiments_not_reproducible": 0.4,
+     "literature_review_outdated": 0.3
+    },
+    "strategic_shift": {
+     "stakeholder_priorities_shifted": 0.85,
+     "unclear_success_criteria": 0.4,
+     "milestones_slipping": 0.35
+    },
+    "scale_up_gap": {
+     "prototype_fails_in_scale_up": 0.9,
+     "milestones_slipping": 0.4,
+     "results_contradict_hypothesis": 0.25
+    },
+    "approval_bottleneck": {
+     "team_waiting_on_approvals": 0.85,
+     "milestones_slipping": 0.55,
+     "long_cycle_between_experiments": 0.3
+    },
+    "regulatory_or_ip_block": {
+     "ip_or_regulatory_uncertainty": 0.85,
+     "team_waiting_on_approvals": 0.45,
+     "stakeholder_priorities_shifted": 0.3
+    },
+    "prior_art_blind_spot": {
+     "literature_review_outdated": 0.7,
+     "results_contradict_hypothesis": 0.3,
+     "ip_or_regulatory_uncertainty": 0.4,
+     "unclear_success_criteria": 0.15
+    }
+   },
+   "category": "Science & Education",
+   "description": "Why an R&D programme is stalling or slipping, from experiment, team, budget and approval signals."
+  },
+  {
+   "slug": "defense-systems-maintenance",
+   "name": "Defense Systems (Readiness)",
+   "label": "defense equipment readiness diagnosis",
+   "key": "readiness_issue",
+   "default_p": 0.03,
+   "caution": "Illustrative simulator for equipment readiness, maintenance and logistics only. It does not cover weapons design, targeting or operations.",
+   "signals": [
+    "mission_capable_rate_falling",
+    "spare_parts_backorders",
+    "radar_or_sensor_false_alarms",
+    "comms_link_degraded",
+    "built_in_test_failures_recurring",
+    "maintenance_hours_per_flight_hour_rising",
+    "corrosion_findings_increasing",
+    "cannibalization_of_parts_rising",
+    "software_patch_recently_applied",
+    "power_system_faults",
+    "technician_shortage_reported",
+    "depot_turnaround_time_long",
+    "environmental_exposure_high",
+    "configuration_mismatch_between_units"
+   ],
+   "causes": [
+    "parts_supply_shortfall",
+    "aging_airframe_or_hull",
+    "sensor_calibration_drift",
+    "comms_hardware_degradation",
+    "software_regression",
+    "power_system_degradation",
+    "maintainer_shortage",
+    "depot_capacity_bottleneck",
+    "harsh_environment_wear",
+    "configuration_control_gap",
+    "fault_isolation_weakness",
+    "high_operational_tempo",
+    "training_gap"
+   ],
+   "profiles": {
+    "parts_supply_shortfall": {
+     "spare_parts_backorders": 0.9,
+     "mission_capable_rate_falling": 0.6,
+     "cannibalization_of_parts_rising": 0.6,
+     "depot_turnaround_time_long": 0.3
+    },
+    "aging_airframe_or_hull": {
+     "corrosion_findings_increasing": 0.6,
+     "maintenance_hours_per_flight_hour_rising": 0.65,
+     "mission_capable_rate_falling": 0.4
+    },
+    "sensor_calibration_drift": {
+     "radar_or_sensor_false_alarms": 0.85,
+     "built_in_test_failures_recurring": 0.5
+    },
+    "comms_hardware_degradation": {
+     "comms_link_degraded": 0.9,
+     "built_in_test_failures_recurring": 0.4,
+     "environmental_exposure_high": 0.2
+    },
+    "software_regression": {
+     "software_patch_recently_applied": 0.85,
+     "built_in_test_failures_recurring": 0.55,
+     "radar_or_sensor_false_alarms": 0.3,
+     "configuration_mismatch_between_units": 0.3
+    },
+    "power_system_degradation": {
+     "power_system_faults": 0.9,
+     "built_in_test_failures_recurring": 0.4,
+     "mission_capable_rate_falling": 0.3
+    },
+    "maintainer_shortage": {
+     "technician_shortage_reported": 0.9,
+     "depot_turnaround_time_long": 0.5,
+     "maintenance_hours_per_flight_hour_rising": 0.3
+    },
+    "depot_capacity_bottleneck": {
+     "depot_turnaround_time_long": 0.85,
+     "mission_capable_rate_falling": 0.45,
+     "spare_parts_backorders": 0.3
+    },
+    "harsh_environment_wear": {
+     "environmental_exposure_high": 0.85,
+     "corrosion_findings_increasing": 0.6,
+     "comms_link_degraded": 0.3
+    },
+    "configuration_control_gap": {
+     "configuration_mismatch_between_units": 0.9,
+     "built_in_test_failures_recurring": 0.4,
+     "spare_parts_backorders": 0.2
+    },
+    "fault_isolation_weakness": {
+     "built_in_test_failures_recurring": 0.6,
+     "maintenance_hours_per_flight_hour_rising": 0.5,
+     "radar_or_sensor_false_alarms": 0.35
+    },
+    "high_operational_tempo": {
+     "mission_capable_rate_falling": 0.6,
+     "maintenance_hours_per_flight_hour_rising": 0.5,
+     "power_system_faults": 0.25,
+     "technician_shortage_reported": 0.3,
+     "cannibalization_of_parts_rising": 0.3
+    },
+    "training_gap": {
+     "technician_shortage_reported": 0.35,
+     "maintenance_hours_per_flight_hour_rising": 0.4,
+     "built_in_test_failures_recurring": 0.3,
+     "configuration_mismatch_between_units": 0.25
+    }
+   },
+   "category": "Industry & Operations",
+   "description": "Why defence equipment readiness is falling (parts, maintenance, configuration, environment). Readiness and logistics only, not weapons or operations."
+  },
+  {
+   "slug": "data-center-operations",
+   "name": "Data Centers",
+   "label": "data center incident diagnosis",
+   "key": "incident_cause",
+   "default_p": 0.03,
+   "caution": null,
+   "signals": [
+    "rack_inlet_temp_high",
+    "cooling_unit_alarm",
+    "ups_on_battery",
+    "pdu_overload_warning",
+    "power_usage_effectiveness_worsening",
+    "server_fan_speeds_high",
+    "intermittent_network_packet_loss",
+    "storage_latency_spike",
+    "hot_spots_in_aisle",
+    "humidity_out_of_range",
+    "generator_start_failed",
+    "breaker_tripped",
+    "fiber_link_flapping",
+    "monitoring_gaps",
+    "firmware_update_recent"
+   ],
+   "causes": [
+    "crac_or_chiller_failure",
+    "airflow_containment_breach",
+    "utility_power_loss",
+    "generator_start_failure",
+    "circuit_overload",
+    "ups_battery_degradation",
+    "humidity_control_fault",
+    "fiber_or_optic_fault",
+    "switch_firmware_bug",
+    "storage_array_issue",
+    "capacity_overcommit",
+    "monitoring_blind_spot",
+    "sensor_miscalibration"
+   ],
+   "profiles": {
+    "crac_or_chiller_failure": {
+     "cooling_unit_alarm": 0.9,
+     "rack_inlet_temp_high": 0.7,
+     "hot_spots_in_aisle": 0.5,
+     "server_fan_speeds_high": 0.5,
+     "power_usage_effectiveness_worsening": 0.3
+    },
+    "airflow_containment_breach": {
+     "hot_spots_in_aisle": 0.85,
+     "rack_inlet_temp_high": 0.5,
+     "server_fan_speeds_high": 0.4,
+     "power_usage_effectiveness_worsening": 0.3
+    },
+    "utility_power_loss": {
+     "ups_on_battery": 0.9,
+     "generator_start_failed": 0.2,
+     "monitoring_gaps": 0.2
+    },
+    "generator_start_failure": {
+     "generator_start_failed": 0.85,
+     "ups_on_battery": 0.7
+    },
+    "circuit_overload": {
+     "pdu_overload_warning": 0.85,
+     "breaker_tripped": 0.5
+    },
+    "ups_battery_degradation": {
+     "ups_on_battery": 0.5,
+     "breaker_tripped": 0.2,
+     "pdu_overload_warning": 0.2,
+     "monitoring_gaps": 0.2
+    },
+    "humidity_control_fault": {
+     "humidity_out_of_range": 0.9,
+     "cooling_unit_alarm": 0.3
+    },
+    "fiber_or_optic_fault": {
+     "fiber_link_flapping": 0.85,
+     "intermittent_network_packet_loss": 0.7
+    },
+    "switch_firmware_bug": {
+     "firmware_update_recent": 0.8,
+     "intermittent_network_packet_loss": 0.5,
+     "fiber_link_flapping": 0.25
+    },
+    "storage_array_issue": {
+     "storage_latency_spike": 0.9,
+     "monitoring_gaps": 0.2,
+     "firmware_update_recent": 0.2
+    },
+    "capacity_overcommit": {
+     "pdu_overload_warning": 0.5,
+     "power_usage_effectiveness_worsening": 0.5,
+     "server_fan_speeds_high": 0.4,
+     "rack_inlet_temp_high": 0.35,
+     "storage_latency_spike": 0.3
+    },
+    "monitoring_blind_spot": {
+     "monitoring_gaps": 0.9,
+     "hot_spots_in_aisle": 0.2
+    },
+    "sensor_miscalibration": {
+     "power_usage_effectiveness_worsening": 0.4,
+     "humidity_out_of_range": 0.25,
+     "rack_inlet_temp_high": 0.2,
+     "monitoring_gaps": 0.3
+    }
+   },
+   "category": "Technology & Security",
+   "description": "The likely cause of a data centre incident, from cooling, power, network and storage signals."
+  },
+  {
+   "slug": "software-engineering-delivery",
+   "name": "Software Engineering",
+   "label": "software delivery problem diagnosis",
+   "key": "delivery_issue",
+   "default_p": 0.03,
+   "caution": null,
+   "signals": [
+    "deploy_frequency_dropping",
+    "lead_time_rising",
+    "change_failure_rate_high",
+    "flaky_tests_common",
+    "long_code_review_wait",
+    "large_pull_requests",
+    "merge_conflicts_frequent",
+    "build_times_long",
+    "incidents_after_releases",
+    "tech_debt_complaints",
+    "onboarding_slow",
+    "requirements_change_midsprint",
+    "unclear_ownership_of_services",
+    "velocity_unstable",
+    "on_call_burnout_signs"
+   ],
+   "causes": [
+    "slow_code_review",
+    "oversized_changes",
+    "weak_test_suite",
+    "slow_ci_pipeline",
+    "accumulated_tech_debt",
+    "unstable_requirements",
+    "unclear_ownership",
+    "team_burnout",
+    "poor_onboarding_docs",
+    "risky_release_process",
+    "branching_strategy_problems",
+    "understaffing",
+    "missing_deploy_automation"
+   ],
+   "profiles": {
+    "slow_code_review": {
+     "long_code_review_wait": 0.9,
+     "lead_time_rising": 0.6,
+     "large_pull_requests": 0.4,
+     "deploy_frequency_dropping": 0.3
+    },
+    "oversized_changes": {
+     "large_pull_requests": 0.9,
+     "merge_conflicts_frequent": 0.5,
+     "change_failure_rate_high": 0.4,
+     "long_code_review_wait": 0.4
+    },
+    "weak_test_suite": {
+     "flaky_tests_common": 0.85,
+     "change_failure_rate_high": 0.6,
+     "incidents_after_releases": 0.5
+    },
+    "slow_ci_pipeline": {
+     "build_times_long": 0.9,
+     "lead_time_rising": 0.5,
+     "deploy_frequency_dropping": 0.4,
+     "flaky_tests_common": 0.3
+    },
+    "accumulated_tech_debt": {
+     "tech_debt_complaints": 0.85,
+     "lead_time_rising": 0.5,
+     "velocity_unstable": 0.4,
+     "change_failure_rate_high": 0.35
+    },
+    "unstable_requirements": {
+     "requirements_change_midsprint": 0.9,
+     "velocity_unstable": 0.6,
+     "merge_conflicts_frequent": 0.2
+    },
+    "unclear_ownership": {
+     "unclear_ownership_of_services": 0.9,
+     "incidents_after_releases": 0.4,
+     "long_code_review_wait": 0.3,
+     "on_call_burnout_signs": 0.3
+    },
+    "team_burnout": {
+     "on_call_burnout_signs": 0.85,
+     "velocity_unstable": 0.4,
+     "incidents_after_releases": 0.3,
+     "onboarding_slow": 0.2
+    },
+    "poor_onboarding_docs": {
+     "onboarding_slow": 0.9,
+     "tech_debt_complaints": 0.3,
+     "lead_time_rising": 0.2
+    },
+    "risky_release_process": {
+     "incidents_after_releases": 0.8,
+     "change_failure_rate_high": 0.7,
+     "deploy_frequency_dropping": 0.3
+    },
+    "branching_strategy_problems": {
+     "merge_conflicts_frequent": 0.8,
+     "lead_time_rising": 0.4,
+     "deploy_frequency_dropping": 0.3,
+     "large_pull_requests": 0.3
+    },
+    "understaffing": {
+     "velocity_unstable": 0.5,
+     "on_call_burnout_signs": 0.4,
+     "long_code_review_wait": 0.4,
+     "deploy_frequency_dropping": 0.4,
+     "onboarding_slow": 0.2
+    },
+    "missing_deploy_automation": {
+     "deploy_frequency_dropping": 0.7,
+     "lead_time_rising": 0.5,
+     "change_failure_rate_high": 0.4,
+     "incidents_after_releases": 0.3
+    }
+   },
+   "category": "Technology & Security",
+   "description": "Why software delivery is slow or unreliable, from review, CI, release and team signals."
+  },
+  {
+   "slug": "coding-bug-diagnosis",
+   "name": "Coding & Debugging",
+   "label": "code bug diagnosis",
+   "key": "bug_cause",
+   "default_p": 0.03,
+   "caution": null,
+   "signals": [
+    "fails_only_in_production",
+    "passes_locally_fails_in_ci",
+    "intermittent_failure",
+    "nondeterministic_output",
+    "null_or_undefined_error",
+    "off_by_one_symptoms",
+    "memory_grows_over_time",
+    "cpu_spike_on_certain_inputs",
+    "fails_after_dependency_upgrade",
+    "fails_with_concurrent_requests",
+    "wrong_results_for_edge_inputs",
+    "timezone_or_locale_sensitive",
+    "stack_trace_in_third_party_code",
+    "timeouts_under_load",
+    "data_corrupted_after_write"
+   ],
+   "causes": [
+    "race_condition",
+    "null_handling_bug",
+    "off_by_one_error",
+    "memory_leak",
+    "algorithmic_complexity",
+    "dependency_breaking_change",
+    "environment_config_difference",
+    "timezone_or_locale_bug",
+    "unseeded_randomness",
+    "transaction_or_write_bug",
+    "resource_exhaustion",
+    "third_party_api_change",
+    "input_validation_gap",
+    "test_order_dependence"
+   ],
+   "profiles": {
+    "race_condition": {
+     "fails_with_concurrent_requests": 0.85,
+     "intermittent_failure": 0.8,
+     "nondeterministic_output": 0.5,
+     "data_corrupted_after_write": 0.3
+    },
+    "null_handling_bug": {
+     "null_or_undefined_error": 0.9,
+     "wrong_results_for_edge_inputs": 0.4,
+     "fails_only_in_production": 0.3
+    },
+    "off_by_one_error": {
+     "off_by_one_symptoms": 0.9,
+     "wrong_results_for_edge_inputs": 0.65
+    },
+    "memory_leak": {
+     "memory_grows_over_time": 0.9,
+     "timeouts_under_load": 0.4,
+     "fails_only_in_production": 0.3
+    },
+    "algorithmic_complexity": {
+     "cpu_spike_on_certain_inputs": 0.85,
+     "timeouts_under_load": 0.6
+    },
+    "dependency_breaking_change": {
+     "fails_after_dependency_upgrade": 0.9,
+     "stack_trace_in_third_party_code": 0.6,
+     "passes_locally_fails_in_ci": 0.3
+    },
+    "environment_config_difference": {
+     "fails_only_in_production": 0.75,
+     "passes_locally_fails_in_ci": 0.7,
+     "timezone_or_locale_sensitive": 0.2
+    },
+    "timezone_or_locale_bug": {
+     "timezone_or_locale_sensitive": 0.9,
+     "wrong_results_for_edge_inputs": 0.4,
+     "intermittent_failure": 0.2
+    },
+    "unseeded_randomness": {
+     "nondeterministic_output": 0.85,
+     "intermittent_failure": 0.55,
+     "passes_locally_fails_in_ci": 0.3
+    },
+    "transaction_or_write_bug": {
+     "data_corrupted_after_write": 0.85,
+     "fails_with_concurrent_requests": 0.3,
+     "wrong_results_for_edge_inputs": 0.25
+    },
+    "resource_exhaustion": {
+     "timeouts_under_load": 0.8,
+     "memory_grows_over_time": 0.35,
+     "fails_only_in_production": 0.4,
+     "intermittent_failure": 0.3
+    },
+    "third_party_api_change": {
+     "stack_trace_in_third_party_code": 0.75,
+     "fails_only_in_production": 0.4,
+     "fails_after_dependency_upgrade": 0.35,
+     "null_or_undefined_error": 0.3
+    },
+    "input_validation_gap": {
+     "wrong_results_for_edge_inputs": 0.8,
+     "null_or_undefined_error": 0.4,
+     "cpu_spike_on_certain_inputs": 0.2,
+     "data_corrupted_after_write": 0.2
+    },
+    "test_order_dependence": {
+     "passes_locally_fails_in_ci": 0.55,
+     "intermittent_failure": 0.5,
+     "nondeterministic_output": 0.4
+    }
+   },
+   "category": "Technology & Security",
+   "description": "The likely cause of a software bug, from how and when it fails."
+  },
+  {
+   "slug": "product-development",
+   "name": "Product Development",
+   "label": "product development problem diagnosis",
+   "key": "product_issue",
+   "default_p": 0.03,
+   "caution": null,
+   "signals": [
+    "launch_date_slipping",
+    "low_beta_adoption",
+    "high_churn_after_signup",
+    "feature_usage_low",
+    "customer_complaints_about_usability",
+    "requirements_unclear",
+    "cross_team_dependencies_blocking",
+    "quality_defects_at_launch",
+    "cost_per_unit_above_target",
+    "competitor_launched_similar_product",
+    "positive_surveys_but_low_sales",
+    "design_changes_late",
+    "supplier_lead_times_long",
+    "testing_findings_late",
+    "pricing_pushback_in_sales_calls"
+   ],
+   "causes": [
+    "poor_product_market_fit",
+    "usability_problems",
+    "unclear_requirements",
+    "dependency_bottleneck",
+    "late_testing",
+    "cost_overrun_design",
+    "supply_chain_delay",
+    "competitive_pressure",
+    "pricing_mismatch",
+    "weak_value_proposition",
+    "quality_process_gap",
+    "onboarding_friction",
+    "scope_overload"
+   ],
+   "profiles": {
+    "poor_product_market_fit": {
+     "low_beta_adoption": 0.75,
+     "high_churn_after_signup": 0.6,
+     "positive_surveys_but_low_sales": 0.4,
+     "feature_usage_low": 0.5
+    },
+    "usability_problems": {
+     "customer_complaints_about_usability": 0.9,
+     "high_churn_after_signup": 0.5,
+     "feature_usage_low": 0.5
+    },
+    "unclear_requirements": {
+     "requirements_unclear": 0.9,
+     "design_changes_late": 0.55,
+     "launch_date_slipping": 0.5
+    },
+    "dependency_bottleneck": {
+     "cross_team_dependencies_blocking": 0.9,
+     "launch_date_slipping": 0.65
+    },
+    "late_testing": {
+     "testing_findings_late": 0.85,
+     "quality_defects_at_launch": 0.6,
+     "launch_date_slipping": 0.45,
+     "design_changes_late": 0.3
+    },
+    "cost_overrun_design": {
+     "cost_per_unit_above_target": 0.85,
+     "supplier_lead_times_long": 0.3,
+     "pricing_pushback_in_sales_calls": 0.3
+    },
+    "supply_chain_delay": {
+     "supplier_lead_times_long": 0.85,
+     "launch_date_slipping": 0.55,
+     "cost_per_unit_above_target": 0.3
+    },
+    "competitive_pressure": {
+     "competitor_launched_similar_product": 0.9,
+     "low_beta_adoption": 0.35,
+     "pricing_pushback_in_sales_calls": 0.4
+    },
+    "pricing_mismatch": {
+     "pricing_pushback_in_sales_calls": 0.85,
+     "positive_surveys_but_low_sales": 0.6,
+     "competitor_launched_similar_product": 0.2
+    },
+    "weak_value_proposition": {
+     "positive_surveys_but_low_sales": 0.5,
+     "feature_usage_low": 0.55,
+     "low_beta_adoption": 0.5,
+     "pricing_pushback_in_sales_calls": 0.35
+    },
+    "quality_process_gap": {
+     "quality_defects_at_launch": 0.85,
+     "customer_complaints_about_usability": 0.3,
+     "testing_findings_late": 0.3
+    },
+    "onboarding_friction": {
+     "high_churn_after_signup": 0.8,
+     "low_beta_adoption": 0.3,
+     "customer_complaints_about_usability": 0.4
+    },
+    "scope_overload": {
+     "design_changes_late": 0.6,
+     "launch_date_slipping": 0.55,
+     "requirements_unclear": 0.3,
+     "quality_defects_at_launch": 0.35,
+     "cross_team_dependencies_blocking": 0.3
+    }
+   },
+   "category": "Industry & Operations",
+   "description": "What is holding back a product (launch delay, adoption, churn, cost), from development and market signals."
+  },
+  {
+   "slug": "ecommerce-operations",
+   "name": "E-commerce",
+   "label": "e-commerce performance diagnosis",
+   "key": "performance_issue",
+   "default_p": 0.03,
+   "caution": null,
+   "signals": [
+    "conversion_rate_dropped",
+    "cart_abandonment_up",
+    "checkout_errors_logged",
+    "site_speed_slower",
+    "traffic_up_but_sales_flat",
+    "paid_traffic_cost_rising",
+    "mobile_conversion_lagging",
+    "payment_declines_up",
+    "stockouts_on_top_products",
+    "shipping_cost_complaints",
+    "high_return_rate",
+    "coupon_code_failures",
+    "bot_traffic_suspected",
+    "email_open_rate_down",
+    "reviews_rating_falling"
+   ],
+   "causes": [
+    "checkout_technical_bug",
+    "slow_site_performance",
+    "traffic_quality_decline",
+    "bot_or_scraper_traffic",
+    "payment_provider_issue",
+    "stockout_problem",
+    "shipping_cost_friction",
+    "mobile_experience_issue",
+    "product_quality_problem",
+    "promo_configuration_error",
+    "ad_channel_saturation",
+    "email_deliverability_decline",
+    "pricing_uncompetitive"
+   ],
+   "profiles": {
+    "checkout_technical_bug": {
+     "checkout_errors_logged": 0.9,
+     "cart_abandonment_up": 0.6,
+     "conversion_rate_dropped": 0.6,
+     "payment_declines_up": 0.3
+    },
+    "slow_site_performance": {
+     "site_speed_slower": 0.9,
+     "conversion_rate_dropped": 0.5,
+     "mobile_conversion_lagging": 0.55,
+     "cart_abandonment_up": 0.4
+    },
+    "traffic_quality_decline": {
+     "traffic_up_but_sales_flat": 0.85,
+     "paid_traffic_cost_rising": 0.5,
+     "conversion_rate_dropped": 0.4,
+     "bot_traffic_suspected": 0.3
+    },
+    "bot_or_scraper_traffic": {
+     "bot_traffic_suspected": 0.9,
+     "traffic_up_but_sales_flat": 0.6,
+     "site_speed_slower": 0.4
+    },
+    "payment_provider_issue": {
+     "payment_declines_up": 0.9,
+     "checkout_errors_logged": 0.4,
+     "cart_abandonment_up": 0.4
+    },
+    "stockout_problem": {
+     "stockouts_on_top_products": 0.9,
+     "conversion_rate_dropped": 0.4,
+     "traffic_up_but_sales_flat": 0.3
+    },
+    "shipping_cost_friction": {
+     "shipping_cost_complaints": 0.85,
+     "cart_abandonment_up": 0.65
+    },
+    "mobile_experience_issue": {
+     "mobile_conversion_lagging": 0.85,
+     "site_speed_slower": 0.3,
+     "cart_abandonment_up": 0.3
+    },
+    "product_quality_problem": {
+     "high_return_rate": 0.8,
+     "reviews_rating_falling": 0.7,
+     "conversion_rate_dropped": 0.3
+    },
+    "promo_configuration_error": {
+     "coupon_code_failures": 0.9,
+     "checkout_errors_logged": 0.35,
+     "cart_abandonment_up": 0.4
+    },
+    "ad_channel_saturation": {
+     "paid_traffic_cost_rising": 0.85,
+     "traffic_up_but_sales_flat": 0.4
+    },
+    "email_deliverability_decline": {
+     "email_open_rate_down": 0.85,
+     "traffic_up_but_sales_flat": 0.2
+    },
+    "pricing_uncompetitive": {
+     "conversion_rate_dropped": 0.5,
+     "cart_abandonment_up": 0.45,
+     "shipping_cost_complaints": 0.3,
+     "reviews_rating_falling": 0.15,
+     "traffic_up_but_sales_flat": 0.4
+    }
+   },
+   "category": "Commerce & Retail",
+   "description": "Why an online store's sales or conversion are off, from funnel, site, payment and traffic signals."
+  },
+  {
+   "slug": "retail-store-operations",
+   "name": "Retail",
+   "label": "retail performance diagnosis",
+   "key": "performance_driver",
+   "default_p": 0.03,
+   "caution": null,
+   "signals": [
+    "sales_below_forecast",
+    "foot_traffic_down",
+    "conversion_rate_in_store_down",
+    "average_basket_size_down",
+    "stockouts_on_shelf",
+    "overstock_markdowns_rising",
+    "shrinkage_rising",
+    "long_checkout_queues",
+    "staff_turnover_high",
+    "promotions_underperforming",
+    "competitor_opened_nearby",
+    "negative_store_reviews",
+    "planogram_not_followed",
+    "seasonal_pattern_shift",
+    "price_gap_vs_competitors"
+   ],
+   "causes": [
+    "store_traffic_decline",
+    "new_local_competitor",
+    "on_shelf_availability_gap",
+    "poor_demand_forecasting",
+    "theft_or_process_loss",
+    "understaffed_checkout",
+    "staff_turnover_effect",
+    "ineffective_promotions",
+    "merchandising_execution_gap",
+    "seasonal_shift",
+    "price_competitiveness_gap",
+    "weak_customer_experience",
+    "shrinking_consumer_spend"
+   ],
+   "profiles": {
+    "store_traffic_decline": {
+     "foot_traffic_down": 0.9,
+     "sales_below_forecast": 0.6,
+     "competitor_opened_nearby": 0.3
+    },
+    "new_local_competitor": {
+     "competitor_opened_nearby": 0.9,
+     "foot_traffic_down": 0.6,
+     "sales_below_forecast": 0.4,
+     "price_gap_vs_competitors": 0.3
+    },
+    "on_shelf_availability_gap": {
+     "stockouts_on_shelf": 0.9,
+     "sales_below_forecast": 0.5,
+     "conversion_rate_in_store_down": 0.4,
+     "negative_store_reviews": 0.3
+    },
+    "poor_demand_forecasting": {
+     "overstock_markdowns_rising": 0.8,
+     "stockouts_on_shelf": 0.5,
+     "sales_below_forecast": 0.4
+    },
+    "theft_or_process_loss": {
+     "shrinkage_rising": 0.9,
+     "overstock_markdowns_rising": 0.1
+    },
+    "understaffed_checkout": {
+     "long_checkout_queues": 0.9,
+     "negative_store_reviews": 0.5,
+     "conversion_rate_in_store_down": 0.35
+    },
+    "staff_turnover_effect": {
+     "staff_turnover_high": 0.85,
+     "negative_store_reviews": 0.4,
+     "planogram_not_followed": 0.4,
+     "conversion_rate_in_store_down": 0.3
+    },
+    "ineffective_promotions": {
+     "promotions_underperforming": 0.85,
+     "average_basket_size_down": 0.4,
+     "sales_below_forecast": 0.4
+    },
+    "merchandising_execution_gap": {
+     "planogram_not_followed": 0.85,
+     "conversion_rate_in_store_down": 0.45,
+     "average_basket_size_down": 0.3
+    },
+    "seasonal_shift": {
+     "seasonal_pattern_shift": 0.85,
+     "sales_below_forecast": 0.55,
+     "overstock_markdowns_rising": 0.4,
+     "foot_traffic_down": 0.3
+    },
+    "price_competitiveness_gap": {
+     "price_gap_vs_competitors": 0.85,
+     "conversion_rate_in_store_down": 0.4,
+     "average_basket_size_down": 0.4
+    },
+    "weak_customer_experience": {
+     "negative_store_reviews": 0.8,
+     "conversion_rate_in_store_down": 0.55,
+     "long_checkout_queues": 0.3,
+     "staff_turnover_high": 0.3
+    },
+    "shrinking_consumer_spend": {
+     "average_basket_size_down": 0.8,
+     "sales_below_forecast": 0.5,
+     "promotions_underperforming": 0.3,
+     "foot_traffic_down": 0.3
+    }
+   },
+   "category": "Commerce & Retail",
+   "description": "Why a store or chain is underperforming, from traffic, stock, staffing and promotion signals."
   }
  ]
 }
