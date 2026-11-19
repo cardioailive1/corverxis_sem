@@ -16,6 +16,7 @@ const express = require('express');
 // so the product always offers exactly the domains, causes and signals SI-SEM was trained on.
 // label and key must match training/grpo/dataset.py DOMAIN_INSTRUCTIONS, which reads the same spec.
 const { SPEC } = require('../simulators/specSimulator.js');
+const { recordUserFeedback } = require('../collect/collectApi.js');
 const DOMAIN_META = Object.fromEntries(Object.values(SPEC).map(d => [d.slug, { name: d.name, label: d.label, key: d.key, def: d.default_p, caution: d.caution }]));
 
 function domainInfo(slug) {
@@ -197,7 +198,7 @@ function createProductRouter({ prisma, anthropic, env = process.env }) {
 
     const answer = parseAnswer(raw, d.key, d.options);
     return { status: 200, body: {
-      domain, answer, valid: answer !== null,
+      domain, signals: present, answer, valid: answer !== null,
       error: answer === null ? 'The model returned an answer outside the allowed list. Try again.' : undefined,
       served_by, checkpoint: served_by === 'sem-checkpoint' ? ckInfo(ck) : null, note,
       reference_probabilities: reference,
@@ -231,6 +232,16 @@ function createProductRouter({ prisma, anthropic, env = process.env }) {
       if (!steps.length) return res.status(502).json({ error: 'No usable suggestions came back. Try again.' });
       res.json({ domain, cause, steps, sensitive, label: 'General guidance written by a language model. It is not validated and not part of the SI-SEM diagnosis.', escalate: ESCALATE[cat] });
     } catch (e) { res.status(502).json({ error: 'Could not get suggestions right now.' }); }
+  });
+
+  // The user reports what the real cause turned out to be. Optional and explicit. Signals and causes only.
+  router.post('/feedback', auth, async (req, res) => {
+    const b = req.body || {};
+    try {
+      const r = await recordUserFeedback(prisma, { domain: b.domain, signals: b.signals, answer: b.answer, outcome: b.outcome, actualCause: b.actual_cause });
+      if (r.error) return res.status(400).json({ error: r.error });
+      res.json({ recorded: !!r.stored });
+    } catch { res.status(503).json({ error: 'Feedback could not be saved right now.' }); }
   });
 
   router.post('/diagnose', auth, async (req, res) => {

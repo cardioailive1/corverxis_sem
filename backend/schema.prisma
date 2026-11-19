@@ -161,8 +161,13 @@ model CaseContributor {
 model RealCase {
   id            String   @id @default(cuid())
   domainSlug    String
-  contributorId String
-  contributor   CaseContributor @relation(fields: [contributorId], references: [id])
+  contributorId String?                           // null for cases pushed by a connected system or reported by a product user
+  contributor   CaseContributor? @relation(fields: [contributorId], references: [id])
+  origin        String   @default("manual")       // manual | ingest | product_feedback
+  ingestSource  String?                           // label of the connected system that pushed it
+  modelAnswer   String?                           // product_feedback only: what SI-SEM answered, to measure live agreement
+  screen        Json?                             // automatic pre-screen result (flags only; never approves)
+  screenedAt    DateTime?
   signals       String[]                          // signals that were present; all others were checked and absent
   trueCause     String                            // one of the domain's causes, or "other_not_listed"
   otherCause    String?                           // free text when trueCause is other_not_listed (not used for calibration)
@@ -171,7 +176,7 @@ model RealCase {
   source        String?                           // organisation or dataset, de-identified
   occurredOn    String?                           // YYYY-MM or YYYY-MM-DD
   caseHash      String   @unique                  // dedupe: same case cannot be entered twice
-  reviewStatus  String   @default("needs_review") // needs_review | approved | rejected | needs_revision
+  reviewStatus  String   @default("needs_review") // needs_review | approved | rejected | needs_revision | unverified (product user reports, never used to calibrate)
   reviewNotes   String?
   reviewedBy    String?                           // contributor id or admin label; never the author
   reviewedAt    DateTime?

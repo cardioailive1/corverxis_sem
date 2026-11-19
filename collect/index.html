@@ -148,10 +148,11 @@ function submitView(){var d=S.domains.filter(function(x){return x.slug===S.domai
     .then(function(){S.msg='Submitted. A second person will review it.';S.signals={};S.domain=d.slug;render()}).catch(function(e){S.err=e.message;btn.disabled=false;var m=f.querySelector('.err');if(m)m.remove();f.append(el('div',{class:'err',role:'alert',text:e.message}))})}});
   f.append(el('div',{class:'row'},btn));box.append(f);return box}
 
-function caseCard(c,actions){return el('div',{class:'case'},[el('div',{},[el('b',{text:human(c.domain)}),' ',el('span',{class:'pill',text:human(c.review_status)})]),
+function caseCard(c,actions){return el('div',{class:'case'},[el('div',{},[el('b',{text:human(c.domain)}),' ',el('span',{class:'pill',text:human(c.review_status)}),' ',c.origin&&c.origin!=='manual'?el('span',{class:'pill',text:c.origin==='ingest'?'pushed by '+(c.ingest_source||'a system'):human(c.origin)}):null]),
   el('div',{class:'hint',text:'Signals: '+(c.signals.length?c.signals.map(human).join(', '):'none')}),
   el('div',{text:'Confirmed cause: '+human(c.true_cause)+(c.other_cause?' ('+c.other_cause+')':'')}),
   el('div',{class:'hint',text:human(c.evidence_kind)+(c.source?' · '+c.source:'')+(c.occurred_on?' · '+c.occurred_on:'')}),el('div',{style:'margin-top:6px;white-space:pre-wrap',text:c.evidence}),
+  c.screen&&c.screen.flagged?el('div',{class:'note',text:'Automatic pre-screen flagged this: '+(c.screen.reasons.length?c.screen.reasons.join(' '):'low consistency')+' A person decides.'}):null,
   c.review_notes?el('div',{class:'note',text:'Reviewer: '+c.review_notes}):null,actions||null])}
 function mineView(){return el('div',{class:'card'},S.mine.length?S.mine.map(function(c){return caseCard(c)}):el('p',{class:'hint',text:'You have not submitted any cases yet.'}))}
 function reviewView(){var box=el('div',{class:'card'});if(!S.queue.length){box.append(el('p',{class:'hint',text:'Nothing is waiting for you. Cases you submitted yourself never appear here.'}));return box}
@@ -159,11 +160,12 @@ function reviewView(){var box=el('div',{class:'card'});if(!S.queue.length){box.a
     function act(dec){S.msg=S.err=null;call('/cases/'+c.id+'/review',{decision:dec,notes:notes.value}).then(function(){S.msg='Saved.';return load()}).then(render).catch(function(e){S.err=e.message;render()})}
     box.append(caseCard(c,el('div',{},[notes,el('div',{class:'row'},[el('button',{class:'btn',type:'button',text:'Approve',onclick:function(){act('approved')}}),el('button',{class:'btn ghost',type:'button',text:'Needs revision',onclick:function(){act('needs_revision')}}),el('button',{class:'btn ghost',type:'button',text:'Reject',onclick:function(){act('rejected')}})])])))});return box}
 
-function progressView(){var rows=S.progress.map(function(p){return el('tr',{},[el('td',{text:p.name}),el('td',{text:p.approved+' / '+p.needed_overall}),el('td',{text:p.causes_present+' / '+p.causes_total}),el('td',{text:String(p.awaiting_review)}),
+function progressView(){var rows=S.progress.map(function(p){return el('tr',{},[el('td',{text:p.name}),el('td',{text:p.approved+' / '+p.needed_overall}),el('td',{text:p.causes_present+' / '+p.causes_total}),el('td',{text:String(p.awaiting_review)}),el('td',{text:p.user_reports?p.user_reports+' ('+Math.round(p.user_report_agreement*100)+'%)':'-'}),
     el('td',{},p.ready_to_calibrate?el('span',{class:'pill good',text:'ready'}):el('span',{class:'pill',text:'collecting'})),
     el('td',{},el('button',{class:'btn ghost',type:'button',style:'min-height:32px;padding:4px 10px',text:'Export CSV',onclick:function(){exportCsv(p.slug)}}))])});
-  return el('div',{class:'card'},[el('p',{class:'hint',style:'margin-top:0',text:'A domain is ready to calibrate when every cause has about 22 approved cases and the total reaches 20 per cause. Then run calibrate.py on the exported CSV.'}),
-    el('div',{class:'scroll'},el('table',{},[el('thead',{},el('tr',{},['Domain','Approved / needed','Causes seen','Awaiting review','Status',''].map(function(h){return el('th',{text:h})}))),el('tbody',{},rows)]))])}
+  var scr=el('button',{class:'btn ghost',type:'button',text:'Run automatic screening now',onclick:function(){scr.disabled=true;S.msg=S.err=null;call('/screen',{}).then(function(r){S.msg='Screened '+r.screened+' cases, '+r.flagged+' flagged.';return load()}).then(render).catch(function(e){S.err=e.message;render()})}});
+  return el('div',{class:'card'},[el('div',{class:'row',style:'margin:0 0 12px'},scr),el('p',{class:'hint',style:'margin-top:0',text:'A domain is ready to calibrate when every cause has about 22 approved cases and the total reaches 20 per cause. Then run calibrate.py on the exported CSV.'}),
+    el('div',{class:'scroll'},el('table',{},[el('thead',{},el('tr',{},['Domain','Approved / needed','Causes seen','Awaiting review','User reports (agree)','Status',''].map(function(h){return el('th',{text:h})}))),el('tbody',{},rows)]))])}
 function exportCsv(slug){fetch(API+'/export/'+slug+'.csv',{headers:{'x-api-key':S.key}}).then(function(r){if(!r.ok)throw new Error('Export failed');return r.blob()}).then(function(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=slug+'-cases.csv';document.body.append(a);a.click();a.remove()}).catch(function(e){S.err=e.message;render()})}
 
 function peopleView(){var name=el('input',{type:'text',placeholder:'Name','aria-label':'Name'}),email=el('input',{type:'email',placeholder:'Email','aria-label':'Email'});

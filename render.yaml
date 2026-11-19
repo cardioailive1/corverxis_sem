@@ -50,6 +50,12 @@ services:
       # collection API refuses to serve in production. Contributor keys are created in the UI.
       - key: SEM_COLLECT_ADMIN_KEYS
         sync: false
+      # Keys for connected systems that push candidate cases to POST /api/collect/ingest, as label=key pairs.
+      - key: SEM_COLLECT_INGEST_KEYS
+        sync: false
+      # Automatic pre-screen of waiting cases every 10 minutes (needs ANTHROPIC_API_KEY). Flags only.
+      - key: SEM_COLLECT_AUTO_SCREEN
+        value: "true"
       # Optional. Without these, demonstration files are stored on local
       # disk only, which does NOT survive a redeploy — every code push
       # wipes previously uploaded files (this is what caused a real ENOENT

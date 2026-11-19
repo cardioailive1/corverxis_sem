@@ -222,6 +222,16 @@ function renderActions(r){
     }).catch(function(e){btn.disabled=false;btn.textContent='Suggest more steps';out.textContent='';out.append(el('div',{class:'err',role:'alert',text:(e&&e.message)||'Could not get suggestions.'}))})}});
   box.append(btn,out);box.append(el('div',{class:'hint',style:'margin-top:8px',text:a.note}));return box}
 
+function renderFeedback(r){
+  var box=el('div',{style:'margin-top:16px'}),sig=r.signals||[];
+  box.append(el('h2',{text:'Did it turn out right?'}),el('p',{class:'hint',style:'margin:0 0 8px',text:'Optional. If you later find out the real cause, tell us. We keep only the signals and the causes, no personal data. It helps check SI-SEM against reality.'}));
+  var out=el('div',{});
+  function send(outcome,actual){call('/feedback',{body:{domain:r.domain,signals:sig,answer:r.answer,outcome:outcome,actual_cause:actual}}).then(function(x){box.textContent='';box.append(el('div',{class:'hint',text:x.recorded?'Thanks. Recorded.':'Thanks.'}))}).catch(function(e){out.textContent='';out.append(el('div',{class:'err',role:'alert',text:e.message}))})}
+  var dom=S.domains.filter(function(x){return x.slug===r.domain})[0];
+  var sel=el('select',{'aria-label':'What was the real cause?',style:'max-width:100%;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)'},[el('option',{value:'',text:'The real cause was...'})].concat(((dom&&dom.options)||[]).map(function(o){return el('option',{value:o,text:human(o)})})));
+  box.append(el('div',{class:'row',style:'margin-top:0'},[el('button',{class:'btn ghost',type:'button',text:'Yes, it was right',onclick:function(){send('correct')}}),sel,el('button',{class:'btn ghost',type:'button',text:'It was a different cause',onclick:function(){if(!sel.value){out.textContent='';out.append(el('div',{class:'err',role:'alert',text:'Pick the real cause first.'}));return}send('incorrect',sel.value)}})]),out);
+  return box}
+
 function renderResult(r){
   var sem=r.served_by==='sem-checkpoint';
   var c=el('div',{class:'card',style:'margin-top:16px'});
@@ -233,6 +243,7 @@ function renderResult(r){
   if(r.caution)c.append(el('div',{class:'note',text:r.caution}));
   c.append(validationNote(r.validation));
   if(r.valid&&r.actions)c.append(renderActions(r));
+  if(r.valid)c.append(renderFeedback(r));
   c.append(el('h2',{text:'Reference probabilities'}),el('p',{class:'hint',style:'margin:0 0 6px',text:'From the simulator the model was trained against, assuming every cause is equally likely beforehand. This is context, not the model’s confidence.'}));
   r.reference_probabilities.forEach(function(p,i){c.append(el('div',{class:'bar'+(i===0?' top':'')},el('span',{text:human(p.cause)}),el('i',{},el('u',{style:'width:'+Math.max(1,p.probability*100)+'%'})),el('em',{text:pct(p.probability)})))});
   return c;

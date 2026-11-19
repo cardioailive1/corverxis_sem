@@ -25,8 +25,29 @@ numbers as a safety net. Duplicate cases are rejected.
    `expert_validated` is only set by hand, after a named expert signs off.
 5. Train after this, so SI-SEM learns the calibrated probabilities and not the illustrative ones.
 
+## Automation
+- **Connected systems push cases.** A ticketing, maintenance or incident system calls `POST /api/collect/ingest` with an
+  ingest key (`SEM_COLLECT_INGEST_KEYS`, as `label=key`). Up to 200 cases per call. The sender attests once for the batch that
+  it is de-identified and that signals not listed were checked and absent. Bad rows are reported per row, duplicates are
+  skipped. Pushed cases still wait for a human reviewer.
+  ```bash
+  curl -X POST $BACKEND/api/collect/ingest -H "x-api-key: $INGEST_KEY" -H "content-type: application/json" -d '{
+    "attest_deidentified": true, "signals_complete": true,
+    "cases": [{"domain":"data-center-operations","signals":["cooling_unit_alarm","rack_inlet_temp_high"],
+               "trueCause":"crac_or_chiller_failure","evidenceKind":"post_mortem",
+               "evidence":"Post-incident review traced the temperature rise to a failed compressor on the cooling unit.",
+               "source":"Ticketing","occurredOn":"2025-06"}]}'
+  ```
+- **Automatic pre-screen.** A language model reads each waiting case and flags weak or inconsistent evidence, so reviewers
+  look at those first. It runs after each ingest, every 10 minutes, and on demand. It only flags. It never approves or rejects.
+- **Product feedback.** After a diagnosis, a product user can say whether it was right and what the real cause was. Only
+  signals and causes are kept. These reports are **unverified**: they never enter review, export or calibration. They give a
+  live agreement rate between SI-SEM and reality, shown in Progress.
+- **Sync to calibration.** `python3 training/simulators/collect_sync.py` pulls every ready domain's approved cases and runs the
+  calibration check (report only; add `--write` to write calibrations). Run it on a schedule.
+
 ## Setup
-1. On `sem-osc-backend` set `SEM_COLLECT_ADMIN_KEYS`. Redeploy so the new tables are created.
+1. On `sem-osc-backend` set `SEM_COLLECT_ADMIN_KEYS` (and `SEM_COLLECT_INGEST_KEYS` for connected systems). Redeploy so the new tables are created.
 2. Deploy `sem-collect-ui` (static, from `./collect`). `collect/config.js` must point at the backend.
 
 ## Limits to keep in mind
