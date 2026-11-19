@@ -200,9 +200,265 @@ domain("safety-incident-analysis", "Energy, Mining & Aviation Safety", "energy, 
   ("ventilation_failure", "gas_detector_alarm:.55 equipment_vibration_anomaly:.3 operator_fatigue_reported:.3 pressure_exceedance:.2 electrical_arcing_or_trip:.2")])
 
 
+# ───────────────────────── education ─────────────────────────
+domain("education-learning-support", "Education & Learning Support", "learning difficulty analysis", "learning_barrier", 0.03,
+ "Decision support for educators. Not a diagnosis of any learning disability. Involve qualified specialists and the family.",
+ "low_quiz_scores strong_oral_but_weak_written struggles_with_prerequisite_topics test_day_underperformance frequent_absences falls_asleep_in_class off_task_behavior reading_fluency_low slow_writing_speed avoids_math_tasks disengaged_from_homework strong_in_some_subjects_only social_withdrawal difficulty_following_instructions finishes_work_early squinting_or_asking_to_repeat",
+ [("prerequisite_knowledge_gap", "struggles_with_prerequisite_topics:.9 low_quiz_scores:.7 avoids_math_tasks:.35 disengaged_from_homework:.3 strong_in_some_subjects_only:.4"),
+  ("test_anxiety", "test_day_underperformance:.9 avoids_math_tasks:.2 strong_oral_but_weak_written:.25 low_quiz_scores:.3 social_withdrawal:.15"),
+  ("attention_difficulty", "off_task_behavior:.85 difficulty_following_instructions:.7 disengaged_from_homework:.5 low_quiz_scores:.4 test_day_underperformance:.2"),
+  ("dyslexia_like_reading_pattern", "reading_fluency_low:.9 strong_oral_but_weak_written:.7 slow_writing_speed:.5 low_quiz_scores:.4 strong_in_some_subjects_only:.5 disengaged_from_homework:.3"),
+  ("math_anxiety", "avoids_math_tasks:.9 test_day_underperformance:.55 low_quiz_scores:.4 strong_in_some_subjects_only:.45 disengaged_from_homework:.25"),
+  ("low_motivation", "disengaged_from_homework:.85 off_task_behavior:.5 frequent_absences:.3 low_quiz_scores:.45 social_withdrawal:.2"),
+  ("sleep_deprivation", "falls_asleep_in_class:.9 off_task_behavior:.4 frequent_absences:.3 low_quiz_scores:.35 difficulty_following_instructions:.3"),
+  ("language_barrier", "difficulty_following_instructions:.7 strong_oral_but_weak_written:.35 reading_fluency_low:.5 low_quiz_scores:.5 social_withdrawal:.35 strong_in_some_subjects_only:.45"),
+  ("ineffective_study_methods", "low_quiz_scores:.65 test_day_underperformance:.4 disengaged_from_homework:.2 struggles_with_prerequisite_topics:.3"),
+  ("social_stress_or_bullying", "social_withdrawal:.8 frequent_absences:.55 falls_asleep_in_class:.2 off_task_behavior:.3 low_quiz_scores:.35 disengaged_from_homework:.4"),
+  ("under_challenged", "finishes_work_early:.85 off_task_behavior:.5 disengaged_from_homework:.5 strong_in_some_subjects_only:.4 low_quiz_scores:.1"),
+  ("pacing_too_fast", "low_quiz_scores:.55 struggles_with_prerequisite_topics:.4 difficulty_following_instructions:.5 disengaged_from_homework:.35 test_day_underperformance:.2"),
+  ("vision_or_hearing_difficulty", "squinting_or_asking_to_repeat:.85 difficulty_following_instructions:.5 reading_fluency_low:.35 off_task_behavior:.3 low_quiz_scores:.35"),
+  ("handwriting_motor_difficulty", "slow_writing_speed:.85 strong_oral_but_weak_written:.55 low_quiz_scores:.3")])
+
+# ───────────────────────── AI & ML ─────────────────────────
+domain("ai-ml-system-failures", "AI & ML Systems", "AI and machine learning failure diagnosis", "failure_cause", 0.03, None,
+ "train_loss_low_val_loss_high train_loss_plateau_high loss_nan_or_exploding accuracy_drop_after_deploy suspiciously_high_eval_score errors_concentrated_in_minority_class performance_varies_by_subgroup input_feature_distribution_shift outputs_unsupported_by_sources retrieval_returns_irrelevant_docs gradient_norm_vanishing latency_regression accuracy_drop_after_quantization output_format_violations sensitive_to_prompt_wording label_disagreement_among_annotators",
+ [("overfitting", "train_loss_low_val_loss_high:.9 accuracy_drop_after_deploy:.4 performance_varies_by_subgroup:.2 sensitive_to_prompt_wording:.2"),
+  ("underfitting_or_low_capacity", "train_loss_plateau_high:.9 gradient_norm_vanishing:.25"),
+  ("learning_rate_instability", "loss_nan_or_exploding:.85 train_loss_plateau_high:.3 gradient_norm_vanishing:.15"),
+  ("data_leakage", "suspiciously_high_eval_score:.9 accuracy_drop_after_deploy:.75 train_loss_low_val_loss_high:.15"),
+  ("covariate_shift", "input_feature_distribution_shift:.9 accuracy_drop_after_deploy:.75 performance_varies_by_subgroup:.3"),
+  ("label_noise", "label_disagreement_among_annotators:.85 train_loss_plateau_high:.4 train_loss_low_val_loss_high:.25"),
+  ("class_imbalance", "errors_concentrated_in_minority_class:.9 performance_varies_by_subgroup:.45"),
+  ("rag_retrieval_failure", "retrieval_returns_irrelevant_docs:.9 outputs_unsupported_by_sources:.75"),
+  ("ungrounded_hallucination", "outputs_unsupported_by_sources:.85 sensitive_to_prompt_wording:.3"),
+  ("vanishing_gradients", "gradient_norm_vanishing:.9 train_loss_plateau_high:.6"),
+  ("quantization_degradation", "accuracy_drop_after_quantization:.9 output_format_violations:.2 accuracy_drop_after_deploy:.3"),
+  ("prompt_brittleness", "sensitive_to_prompt_wording:.9 output_format_violations:.5 performance_varies_by_subgroup:.2"),
+  ("train_serving_skew", "accuracy_drop_after_deploy:.8 input_feature_distribution_shift:.55 latency_regression:.15"),
+  ("biased_training_data", "performance_varies_by_subgroup:.9 errors_concentrated_in_minority_class:.55 label_disagreement_among_annotators:.2"),
+  ("inference_infra_regression", "latency_regression:.9 output_format_violations:.2 accuracy_drop_after_deploy:.15")])
+
+# ───────────────────────── robotics ─────────────────────────
+domain("robotics-fault-diagnosis", "Robots & Robotics", "robot fault diagnosis", "fault_cause", 0.03, None,
+ "joint_torque_spike encoder_drift localization_jump motor_overheat collision_detected gripper_slip path_oscillation battery_voltage_sag lidar_dropout comms_latency_high calibration_offset_in_pick estop_triggered vision_pose_error payload_near_rating wheel_or_foot_slip",
+ [("encoder_fault", "encoder_drift:.85 localization_jump:.35 path_oscillation:.4 joint_torque_spike:.3"),
+  ("motor_overload_or_overheat", "motor_overheat:.9 joint_torque_spike:.5 payload_near_rating:.5 battery_voltage_sag:.25"),
+  ("gripper_wear", "gripper_slip:.85 calibration_offset_in_pick:.35 payload_near_rating:.2"),
+  ("localization_failure", "localization_jump:.9 path_oscillation:.5 lidar_dropout:.45 vision_pose_error:.3 wheel_or_foot_slip:.3"),
+  ("lidar_obstruction_or_failure", "lidar_dropout:.9 localization_jump:.5 collision_detected:.35 estop_triggered:.3"),
+  ("battery_degradation", "battery_voltage_sag:.9 motor_overheat:.2 estop_triggered:.3"),
+  ("comms_network_issue", "comms_latency_high:.9 path_oscillation:.35 estop_triggered:.3 vision_pose_error:.15"),
+  ("calibration_drift", "calibration_offset_in_pick:.9 vision_pose_error:.55 encoder_drift:.3"),
+  ("camera_or_vision_error", "vision_pose_error:.9 calibration_offset_in_pick:.55 gripper_slip:.2 collision_detected:.2"),
+  ("controller_tuning_poor", "path_oscillation:.85 joint_torque_spike:.4 motor_overheat:.2"),
+  ("surface_or_traction_loss", "wheel_or_foot_slip:.9 localization_jump:.35 path_oscillation:.3 collision_detected:.15"),
+  ("payload_overload", "payload_near_rating:.9 joint_torque_spike:.6 motor_overheat:.5 gripper_slip:.35 battery_voltage_sag:.3"),
+  ("unexpected_obstacle_collision", "collision_detected:.9 estop_triggered:.7 joint_torque_spike:.5"),
+  ("safety_scanner_false_trip", "estop_triggered:.8 lidar_dropout:.2 collision_detected:.1")])
+
+# ───────────────────────── process industries ─────────────────────────
+domain("process-plant-operations", "Process Industries", "process plant upset diagnosis", "upset_cause", 0.03,
+ "Decision support only. Follow the plant's operating procedures and involve a qualified process engineer for any safety-relevant action.",
+ "temperature_deviation pressure_deviation flow_rate_low ph_out_of_range composition_off_spec foaming_observed heat_transfer_efficiency_falling valve_position_vs_flow_mismatch cooling_water_temp_high level_oscillation pump_vibration_high analyzer_reading_drift feedstock_quality_variation batch_cycle_time_longer instrument_air_pressure_low",
+ [("heat_exchanger_fouling", "heat_transfer_efficiency_falling:.9 temperature_deviation:.5 pressure_deviation:.35 batch_cycle_time_longer:.4 flow_rate_low:.2"),
+  ("control_valve_stiction", "valve_position_vs_flow_mismatch:.85 level_oscillation:.6 flow_rate_low:.3 temperature_deviation:.2"),
+  ("catalyst_deactivation", "composition_off_spec:.7 batch_cycle_time_longer:.5 temperature_deviation:.4 heat_transfer_efficiency_falling:.1"),
+  ("pump_wear", "pump_vibration_high:.85 flow_rate_low:.6 pressure_deviation:.4"),
+  ("feed_composition_change", "feedstock_quality_variation:.9 composition_off_spec:.6 ph_out_of_range:.3 batch_cycle_time_longer:.3"),
+  ("analyzer_drift", "analyzer_reading_drift:.9 composition_off_spec:.35 ph_out_of_range:.2"),
+  ("cooling_water_loss", "cooling_water_temp_high:.9 temperature_deviation:.7 pressure_deviation:.4"),
+  ("instrument_air_loss", "instrument_air_pressure_low:.9 valve_position_vs_flow_mismatch:.6 flow_rate_low:.3 level_oscillation:.2"),
+  ("level_sensor_fault", "level_oscillation:.6 valve_position_vs_flow_mismatch:.2 pump_vibration_high:.1"),
+  ("poor_controller_tuning", "level_oscillation:.6 temperature_deviation:.45 pressure_deviation:.4 flow_rate_low:.1"),
+  ("line_leak", "pressure_deviation:.7 flow_rate_low:.7 level_oscillation:.2"),
+  ("agitator_failure", "composition_off_spec:.55 temperature_deviation:.35 pump_vibration_high:.25 batch_cycle_time_longer:.55 ph_out_of_range:.3"),
+  ("contamination_event", "ph_out_of_range:.6 composition_off_spec:.7 foaming_observed:.45 feedstock_quality_variation:.3"),
+  ("foaming_event", "foaming_observed:.9 level_oscillation:.4 flow_rate_low:.2 composition_off_spec:.25")])
+
+# ───────────────────────── manufacturing ─────────────────────────
+domain("manufacturing-quality", "Manufacturing & Quality", "manufacturing defect root-cause analysis", "defect_cause", 0.03, None,
+ "dimension_out_of_tolerance surface_scratches_or_burrs cycle_time_increase tool_wear_indicator_high material_lot_changed operator_or_shift_changed ambient_humidity_high machine_vibration_high defects_cluster_in_one_fixture coolant_concentration_off machine_temperature_drift rework_rate_rising defects_cluster_in_one_cavity gauge_readings_inconsistent intermittent_defects",
+ [("tool_wear", "tool_wear_indicator_high:.9 dimension_out_of_tolerance:.7 surface_scratches_or_burrs:.6 cycle_time_increase:.2 machine_vibration_high:.3"),
+  ("fixture_misalignment", "defects_cluster_in_one_fixture:.9 dimension_out_of_tolerance:.6 rework_rate_rising:.4"),
+  ("material_lot_variation", "material_lot_changed:.9 dimension_out_of_tolerance:.4 surface_scratches_or_burrs:.3 rework_rate_rising:.4 intermittent_defects:.3"),
+  ("thermal_drift", "machine_temperature_drift:.9 dimension_out_of_tolerance:.55 ambient_humidity_high:.2 intermittent_defects:.3"),
+  ("operator_error", "operator_or_shift_changed:.8 intermittent_defects:.5 rework_rate_rising:.4 cycle_time_increase:.2"),
+  ("coolant_degradation", "coolant_concentration_off:.9 surface_scratches_or_burrs:.4 tool_wear_indicator_high:.35 machine_temperature_drift:.3"),
+  ("mold_cavity_damage", "defects_cluster_in_one_cavity:.9 surface_scratches_or_burrs:.45 rework_rate_rising:.4"),
+  ("program_or_offset_error", "dimension_out_of_tolerance:.85 operator_or_shift_changed:.2 cycle_time_increase:.15"),
+  ("gauge_calibration_error", "gauge_readings_inconsistent:.9 dimension_out_of_tolerance:.35 rework_rate_rising:.25 intermittent_defects:.3"),
+  ("humidity_effect", "ambient_humidity_high:.9 intermittent_defects:.45 dimension_out_of_tolerance:.25"),
+  ("spindle_bearing_wear", "machine_vibration_high:.85 surface_scratches_or_burrs:.5 dimension_out_of_tolerance:.45 cycle_time_increase:.15 machine_temperature_drift:.35"),
+  ("lubrication_failure", "machine_vibration_high:.4 machine_temperature_drift:.45 cycle_time_increase:.4 tool_wear_indicator_high:.3"),
+  ("supplier_process_change", "material_lot_changed:.6 dimension_out_of_tolerance:.35 rework_rate_rising:.45 intermittent_defects:.35"),
+  ("worn_die_or_press", "surface_scratches_or_burrs:.75 dimension_out_of_tolerance:.5 defects_cluster_in_one_cavity:.2 machine_vibration_high:.3")])
+
+# ───────────────────────── spacecraft ─────────────────────────
+domain("spacecraft-operations", "Spacecraft Operations", "spacecraft anomaly investigation", "anomaly_cause", 0.03,
+ "Illustrative simulator only. Not flight-qualified. Real anomaly response follows the mission's flight rules and engineering review.",
+ "bus_voltage_drop battery_temperature_high attitude_error_growing reaction_wheel_current_high star_tracker_dropout solar_array_power_low thermal_gradient_anomaly comms_link_margin_low telemetry_gaps safe_mode_entry processor_resets propellant_pressure_drop gyro_bias_drift sun_sensor_disagreement radiation_event_flag occurs_at_eclipse_transition",
+ [("solar_array_degradation", "solar_array_power_low:.9 bus_voltage_drop:.45 battery_temperature_high:.1"),
+  ("battery_cell_failure", "battery_temperature_high:.75 bus_voltage_drop:.7 occurs_at_eclipse_transition:.4 safe_mode_entry:.3"),
+  ("reaction_wheel_friction", "reaction_wheel_current_high:.9 attitude_error_growing:.55 safe_mode_entry:.25"),
+  ("star_tracker_blinding", "star_tracker_dropout:.9 attitude_error_growing:.5 sun_sensor_disagreement:.3 safe_mode_entry:.3"),
+  ("gyro_drift", "gyro_bias_drift:.9 attitude_error_growing:.6 star_tracker_dropout:.1"),
+  ("single_event_upset", "radiation_event_flag:.8 processor_resets:.7 safe_mode_entry:.55 telemetry_gaps:.3"),
+  ("thruster_leak", "propellant_pressure_drop:.9 attitude_error_growing:.5 reaction_wheel_current_high:.4"),
+  ("thermal_control_failure", "thermal_gradient_anomaly:.9 battery_temperature_high:.45 safe_mode_entry:.25"),
+  ("antenna_pointing_error", "comms_link_margin_low:.9 telemetry_gaps:.5 attitude_error_growing:.25"),
+  ("power_regulator_fault", "bus_voltage_drop:.85 processor_resets:.4 telemetry_gaps:.3 safe_mode_entry:.4"),
+  ("flight_software_bug", "processor_resets:.7 safe_mode_entry:.6 telemetry_gaps:.3 attitude_error_growing:.15"),
+  ("ground_command_error", "safe_mode_entry:.5 attitude_error_growing:.35 telemetry_gaps:.1 comms_link_margin_low:.1"),
+  ("eclipse_transition_transient", "occurs_at_eclipse_transition:.9 bus_voltage_drop:.5 thermal_gradient_anomaly:.35 solar_array_power_low:.3"),
+  ("debris_or_micrometeoroid_hit", "attitude_error_growing:.5 bus_voltage_drop:.3 telemetry_gaps:.3 sun_sensor_disagreement:.25 propellant_pressure_drop:.2 safe_mode_entry:.45 solar_array_power_low:.25")])
+
+# ───────────────────────── financial markets ─────────────────────────
+domain("financial-markets-analysis", "Financial Markets", "financial market move analysis", "market_driver", 0.03,
+ "Educational analysis of what may explain a market move. Not financial advice and not a trading signal.",
+ "price_gap_at_open volume_spike volatility_index_jump bid_ask_spread_widening sector_wide_move company_specific_headline central_bank_announcement earnings_release_today order_book_thin options_expiry_day index_rebalance_day correlated_assets_selling_off circuit_breaker_triggered currency_move_large credit_spreads_widening",
+ [("earnings_surprise", "earnings_release_today:.9 company_specific_headline:.6 price_gap_at_open:.7 volume_spike:.75"),
+  ("central_bank_surprise", "central_bank_announcement:.9 volatility_index_jump:.6 currency_move_large:.5 sector_wide_move:.4 credit_spreads_widening:.25"),
+  ("macro_data_surprise", "volatility_index_jump:.4 currency_move_large:.35 sector_wide_move:.4 price_gap_at_open:.35 volume_spike:.4"),
+  ("liquidity_crunch", "bid_ask_spread_widening:.85 order_book_thin:.8 volatility_index_jump:.5 correlated_assets_selling_off:.4 credit_spreads_widening:.35"),
+  ("short_squeeze", "volume_spike:.85 price_gap_at_open:.4 company_specific_headline:.25 bid_ask_spread_widening:.3 order_book_thin:.3"),
+  ("algorithmic_flash_crash", "circuit_breaker_triggered:.6 order_book_thin:.6 bid_ask_spread_widening:.6 volume_spike:.6 volatility_index_jump:.4"),
+  ("index_rebalancing_flow", "index_rebalance_day:.9 volume_spike:.6 sector_wide_move:.15"),
+  ("options_expiry_effects", "options_expiry_day:.9 volume_spike:.45 volatility_index_jump:.2"),
+  ("geopolitical_shock", "volatility_index_jump:.75 correlated_assets_selling_off:.6 currency_move_large:.4 sector_wide_move:.5 credit_spreads_widening:.3"),
+  ("sector_rotation", "sector_wide_move:.85 volume_spike:.4 correlated_assets_selling_off:.2"),
+  ("credit_contagion", "credit_spreads_widening:.9 correlated_assets_selling_off:.6 volatility_index_jump:.5 bid_ask_spread_widening:.4 circuit_breaker_triggered:.1"),
+  ("large_block_trade", "volume_spike:.6 price_gap_at_open:.2 order_book_thin:.35 company_specific_headline:.1"),
+  ("rumor_or_leak", "company_specific_headline:.7 price_gap_at_open:.5 volume_spike:.6"),
+  ("currency_driven_move", "currency_move_large:.9 sector_wide_move:.4 price_gap_at_open:.3")])
+
+# ───────────────────────── trading systems ─────────────────────────
+domain("trading-system-diagnostics", "Trading Systems", "trading system diagnostics", "failure_mode", 0.03,
+ "Operational diagnostics for trading systems. Not trading or investment advice.",
+ "slippage_above_model fill_rate_low strategy_pnl_drawdown market_data_gap exchange_latency_spike position_limit_breach order_rejects_spike duplicate_orders_sent backtest_live_divergence correlation_regime_change volatility_regime_change stale_quotes risk_alarms_firing clock_sync_drift unexpected_overnight_position",
+ [("overfitted_strategy", "backtest_live_divergence:.9 strategy_pnl_drawdown:.6 slippage_above_model:.2"),
+  ("market_regime_shift", "volatility_regime_change:.6 correlation_regime_change:.6 strategy_pnl_drawdown:.65 backtest_live_divergence:.35"),
+  ("market_data_feed_fault", "market_data_gap:.85 stale_quotes:.7 slippage_above_model:.3 risk_alarms_firing:.25"),
+  ("exchange_connectivity_latency", "exchange_latency_spike:.9 slippage_above_model:.6 fill_rate_low:.4 order_rejects_spike:.25"),
+  ("execution_model_error", "slippage_above_model:.8 backtest_live_divergence:.45 strategy_pnl_drawdown:.3 fill_rate_low:.3"),
+  ("risk_limit_misconfiguration", "position_limit_breach:.75 risk_alarms_firing:.7 order_rejects_spike:.35"),
+  ("duplicate_order_bug", "duplicate_orders_sent:.9 position_limit_breach:.5 order_rejects_spike:.3 risk_alarms_firing:.4"),
+  ("clock_sync_drift_fault", "clock_sync_drift:.9 stale_quotes:.3 order_rejects_spike:.3 backtest_live_divergence:.2"),
+  ("liquidity_deterioration", "fill_rate_low:.7 slippage_above_model:.7 volatility_regime_change:.3 strategy_pnl_drawdown:.3"),
+  ("parameter_misconfiguration", "strategy_pnl_drawdown:.45 order_rejects_spike:.35 position_limit_breach:.3 unexpected_overnight_position:.2"),
+  ("position_reconciliation_error", "unexpected_overnight_position:.85 position_limit_breach:.35 risk_alarms_firing:.3"),
+  ("crowded_trade_unwind", "correlation_regime_change:.55 strategy_pnl_drawdown:.7 volatility_regime_change:.5 fill_rate_low:.3 slippage_above_model:.3"),
+  ("fat_finger_input", "order_rejects_spike:.35 position_limit_breach:.5 risk_alarms_firing:.6 slippage_above_model:.35 strategy_pnl_drawdown:.25"),
+  ("api_rate_limiting", "order_rejects_spike:.8 fill_rate_low:.4 exchange_latency_spike:.3")])
+
+# ───────────────────────── autonomous driving ─────────────────────────
+domain("autonomous-driving-faults", "Autonomous Vehicles", "autonomous vehicle fault diagnosis", "fault_source", 0.03,
+ "Illustrative simulator only. Not a safety case, validation result or certification tool.",
+ "phantom_braking_events missed_detection_of_object lane_keeping_oscillation localization_drift gnss_dropout camera_glare_or_lens_dirty radar_ghost_targets planner_hesitation hard_stop_at_junction high_inference_latency sensor_time_misalignment map_mismatch disengagement_in_rain_or_fog steering_actuator_lag tracking_id_switches",
+ [("camera_lens_contamination", "camera_glare_or_lens_dirty:.9 missed_detection_of_object:.5 disengagement_in_rain_or_fog:.3 phantom_braking_events:.2"),
+  ("radar_multipath", "radar_ghost_targets:.85 phantom_braking_events:.6 hard_stop_at_junction:.25"),
+  ("gnss_multipath_urban", "gnss_dropout:.7 localization_drift:.7 lane_keeping_oscillation:.3"),
+  ("weather_sensor_degradation", "disengagement_in_rain_or_fog:.9 missed_detection_of_object:.5 camera_glare_or_lens_dirty:.3 radar_ghost_targets:.2"),
+  ("perception_domain_gap", "missed_detection_of_object:.8 tracking_id_switches:.4 phantom_braking_events:.3"),
+  ("sensor_time_sync_fault", "sensor_time_misalignment:.9 tracking_id_switches:.55 localization_drift:.3 lane_keeping_oscillation:.25"),
+  ("outdated_map", "map_mismatch:.9 planner_hesitation:.4 localization_drift:.35 hard_stop_at_junction:.3"),
+  ("planner_over_conservatism", "planner_hesitation:.85 hard_stop_at_junction:.55 phantom_braking_events:.3"),
+  ("steering_actuator_fault", "steering_actuator_lag:.9 lane_keeping_oscillation:.7"),
+  ("compute_overload", "high_inference_latency:.9 missed_detection_of_object:.3 planner_hesitation:.3 tracking_id_switches:.25"),
+  ("tracking_algorithm_bug", "tracking_id_switches:.85 phantom_braking_events:.3 planner_hesitation:.2"),
+  ("extrinsic_calibration_drift", "localization_drift:.45 lane_keeping_oscillation:.45 sensor_time_misalignment:.15 missed_detection_of_object:.25 radar_ghost_targets:.15"),
+  ("lidar_partial_failure", "missed_detection_of_object:.6 localization_drift:.4 high_inference_latency:.1"),
+  ("map_localization_failure", "localization_drift:.85 map_mismatch:.5 lane_keeping_oscillation:.4 hard_stop_at_junction:.3")])
+
+# ───────────────────────── power grid ─────────────────────────
+domain("power-grid-operations", "Power Grid & Utilities", "power grid disturbance diagnosis", "disturbance_cause", 0.03,
+ "Illustrative simulator only. Grid operations follow the operator's procedures and protection engineering.",
+ "frequency_deviation voltage_sag voltage_swell transformer_temperature_high line_loading_above_limit protection_relay_trip harmonic_distortion reactive_power_shortfall renewable_output_drop load_spike sudden_generation_loss scada_comms_loss ground_fault_indication weather_alert_active",
+ [("generator_trip", "sudden_generation_loss:.9 frequency_deviation:.85 protection_relay_trip:.4 voltage_sag:.3"),
+  ("transmission_line_fault", "protection_relay_trip:.85 voltage_sag:.7 ground_fault_indication:.4 line_loading_above_limit:.3"),
+  ("transformer_overload", "transformer_temperature_high:.9 line_loading_above_limit:.6 load_spike:.35"),
+  ("renewable_intermittency", "renewable_output_drop:.9 frequency_deviation:.4 weather_alert_active:.35 voltage_sag:.15"),
+  ("demand_surge", "load_spike:.9 line_loading_above_limit:.55 frequency_deviation:.35 voltage_sag:.3 weather_alert_active:.3"),
+  ("capacitor_bank_failure", "reactive_power_shortfall:.8 voltage_sag:.6 harmonic_distortion:.3"),
+  ("lightning_strike", "weather_alert_active:.75 protection_relay_trip:.7 voltage_swell:.4 ground_fault_indication:.35 scada_comms_loss:.15"),
+  ("ground_fault", "ground_fault_indication:.9 protection_relay_trip:.6 voltage_sag:.3"),
+  ("nonlinear_load_harmonics", "harmonic_distortion:.9 transformer_temperature_high:.3 voltage_swell:.1"),
+  ("scada_comms_failure", "scada_comms_loss:.9 protection_relay_trip:.1"),
+  ("cascading_overload", "line_loading_above_limit:.8 protection_relay_trip:.6 frequency_deviation:.5 voltage_sag:.5 sudden_generation_loss:.3"),
+  ("protection_misoperation", "protection_relay_trip:.8 voltage_sag:.1"),
+  ("vegetation_contact", "protection_relay_trip:.6 ground_fault_indication:.5 weather_alert_active:.4 voltage_sag:.4 line_loading_above_limit:.2")])
+
+# ───────────────────────── agriculture ─────────────────────────
+domain("agriculture-crop-health", "Agriculture & Crop Health", "crop health diagnosis", "stress_cause", 0.03,
+ "Decision support only. Confirm with a local agronomist or a lab test before treating.",
+ "leaf_yellowing leaf_curling wilting_midday leaf_spots stunted_growth uneven_patches_in_field root_discoloration insect_damage_visible white_powdery_coating soil_moisture_low soil_waterlogged recent_heavy_rain recent_frost leaf_tip_burn",
+ [("nitrogen_deficiency", "leaf_yellowing:.85 stunted_growth:.5 uneven_patches_in_field:.4"),
+  ("drought_stress", "wilting_midday:.85 soil_moisture_low:.9 leaf_curling:.5 leaf_tip_burn:.3 stunted_growth:.3"),
+  ("waterlogging_root_rot", "soil_waterlogged:.85 recent_heavy_rain:.6 root_discoloration:.7 wilting_midday:.4 leaf_yellowing:.5 stunted_growth:.4"),
+  ("fungal_leaf_spot", "leaf_spots:.9 recent_heavy_rain:.4 leaf_yellowing:.3"),
+  ("powdery_mildew", "white_powdery_coating:.9 leaf_curling:.3 stunted_growth:.2"),
+  ("aphid_infestation", "insect_damage_visible:.8 leaf_curling:.6 leaf_yellowing:.3 stunted_growth:.2"),
+  ("frost_damage", "recent_frost:.9 leaf_tip_burn:.4 wilting_midday:.3 uneven_patches_in_field:.3"),
+  ("fertilizer_or_salt_burn", "leaf_tip_burn:.85 wilting_midday:.35 soil_moisture_low:.2 stunted_growth:.25"),
+  ("herbicide_drift", "leaf_curling:.7 uneven_patches_in_field:.6 stunted_growth:.4 leaf_yellowing:.3"),
+  ("iron_chlorosis", "leaf_yellowing:.75 uneven_patches_in_field:.35 stunted_growth:.25 soil_waterlogged:.2"),
+  ("viral_infection", "leaf_yellowing:.5 stunted_growth:.6 leaf_curling:.5 insect_damage_visible:.3 uneven_patches_in_field:.45"),
+  ("potassium_deficiency", "leaf_tip_burn:.55 leaf_yellowing:.5 stunted_growth:.3 leaf_spots:.2"),
+  ("soil_compaction", "stunted_growth:.6 wilting_midday:.4 uneven_patches_in_field:.6 root_discoloration:.15 soil_waterlogged:.3"),
+  ("nematode_damage", "root_discoloration:.5 stunted_growth:.65 uneven_patches_in_field:.6 wilting_midday:.45 leaf_yellowing:.35")])
+
+# ───────────────────────── hospital operations ─────────────────────────
+domain("hospital-operations", "Hospital Operations", "hospital operations bottleneck analysis", "bottleneck_cause", 0.03,
+ "Operational analytics only. Not clinical decision support.",
+ "ed_boarding_hours_rising long_door_to_triage_time high_left_without_being_seen inpatient_beds_full discharges_delayed_afternoon or_turnover_time_up lab_turnaround_slow imaging_backlog nurse_staffing_below_target sick_calls_spike high_overtime_hours surge_in_ed_arrivals respiratory_season_flag ambulance_diversion_active discharge_to_snf_delays room_cleaning_turnaround_slow supply_stockouts",
+ [("inpatient_bed_capacity_shortage", "inpatient_beds_full:.9 ed_boarding_hours_rising:.8 high_left_without_being_seen:.45 ambulance_diversion_active:.4"),
+  ("discharge_process_delay", "discharges_delayed_afternoon:.85 inpatient_beds_full:.55 ed_boarding_hours_rising:.5"),
+  ("nurse_staffing_shortage", "nurse_staffing_below_target:.9 high_overtime_hours:.6 sick_calls_spike:.4 ed_boarding_hours_rising:.3 inpatient_beds_full:.3"),
+  ("seasonal_surge", "surge_in_ed_arrivals:.8 respiratory_season_flag:.75 long_door_to_triage_time:.6 high_left_without_being_seen:.5 inpatient_beds_full:.5"),
+  ("lab_bottleneck", "lab_turnaround_slow:.9 ed_boarding_hours_rising:.25 long_door_to_triage_time:.15"),
+  ("imaging_bottleneck", "imaging_backlog:.9 ed_boarding_hours_rising:.3 discharges_delayed_afternoon:.2"),
+  ("or_scheduling_inefficiency", "or_turnover_time_up:.85 inpatient_beds_full:.2"),
+  ("post_acute_placement_delay", "discharge_to_snf_delays:.9 inpatient_beds_full:.55 discharges_delayed_afternoon:.4"),
+  ("triage_process_inefficiency", "long_door_to_triage_time:.8 high_left_without_being_seen:.6"),
+  ("ed_physician_coverage_gap", "high_left_without_being_seen:.5 long_door_to_triage_time:.45 high_overtime_hours:.3"),
+  ("room_cleaning_delay", "room_cleaning_turnaround_slow:.9 inpatient_beds_full:.4 ed_boarding_hours_rising:.3"),
+  ("supply_shortage", "supply_stockouts:.9 or_turnover_time_up:.35 discharges_delayed_afternoon:.1"),
+  ("ambulance_diversion_cascade", "ambulance_diversion_active:.85 surge_in_ed_arrivals:.35 inpatient_beds_full:.5 ed_boarding_hours_rising:.5"),
+  ("staff_illness_wave", "sick_calls_spike:.85 nurse_staffing_below_target:.6 high_overtime_hours:.5 respiratory_season_flag:.35")])
+
+CATEGORY = {
+ "medical-diagnostics": "Healthcare", "cardiology-ecg-review": "Healthcare", "hospital-operations": "Healthcare",
+ "security-incident-investigation": "Technology & Security", "production-incident-rootcause": "Technology & Security",
+ "network-infrastructure-outage": "Technology & Security", "ai-ml-system-failures": "Technology & Security",
+ "industrial-fault-diagnosis": "Industry & Operations", "manufacturing-quality": "Industry & Operations", "process-plant-operations": "Industry & Operations",
+ "supply-chain-disruption": "Industry & Operations", "safety-incident-analysis": "Industry & Operations", "power-grid-operations": "Industry & Operations",
+ "agriculture-crop-health": "Industry & Operations",
+ "robotics-fault-diagnosis": "Robotics, Mobility & Space", "autonomous-driving-faults": "Robotics, Mobility & Space", "spacecraft-operations": "Robotics, Mobility & Space",
+ "financial-fraud-investigation": "Finance & Markets", "financial-markets-analysis": "Finance & Markets", "trading-system-diagnostics": "Finance & Markets",
+ "scientific-discovery": "Science & Education", "education-learning-support": "Science & Education",
+}
+DESCRIPTION = {
+ "education-learning-support": "The most likely barrier behind a learner's struggles, from classroom and assessment signals, to help educators choose where to look first.",
+ "ai-ml-system-failures": "Why a machine learning or LLM system is underperforming (leakage, drift, retrieval, overfitting and more), from training and production signals.",
+ "robotics-fault-diagnosis": "The likely cause of a robot fault or degraded performance, from joint, sensor, power and navigation signals.",
+ "process-plant-operations": "The likely cause of a process plant upset (chemical, food, pharma, refining), from temperatures, pressures, flows and instrument signals.",
+ "manufacturing-quality": "The root cause of a manufacturing defect or quality drift, from machine, material, operator and measurement signals.",
+ "spacecraft-operations": "The likely cause of a spacecraft anomaly, from power, attitude, thermal, communications and fault-protection telemetry.",
+ "financial-markets-analysis": "What may explain a market move (earnings, central bank, liquidity, squeeze, flows), from price, volume and event signals. Educational, not advice.",
+ "trading-system-diagnostics": "Why a trading system is misbehaving (data, latency, execution, risk, regime), from operational and performance signals. Not advice.",
+ "autonomous-driving-faults": "The likely source of an autonomous vehicle fault or odd behaviour, from perception, localization, planning and actuation signals.",
+ "power-grid-operations": "The likely cause of a power grid disturbance, from frequency, voltage, protection and weather signals.",
+ "agriculture-crop-health": "The likely cause of crop stress, from symptoms in the leaves, roots, soil and recent weather.",
+ "hospital-operations": "The operational bottleneck behind ED crowding and delays, from flow, staffing and capacity signals.",
+}
+for _d in D:
+    _d["category"] = CATEGORY[_d["slug"]]
+    if _d["slug"] in DESCRIPTION: _d["description"] = DESCRIPTION[_d["slug"]]
+
+
 def validate(domains):
     slugs = set()
     for d in domains:
+        assert d.get("category"), (d["slug"], "missing category")
         assert d["slug"] not in slugs; slugs.add(d["slug"])
         assert 12 <= len(d["causes"]) <= 15, (d["slug"], len(d["causes"]))
         assert len(set(d["causes"])) == len(d["causes"]) and len(set(d["signals"])) == len(d["signals"])
@@ -217,7 +473,7 @@ if __name__ == "__main__":
     validate(D)
     here = os.path.dirname(os.path.abspath(__file__))
     targets = [os.path.join(here, "domains_spec.json"), os.path.join(here, "..", "..", "backend", "simulators", "domains_spec.json")]
-    text = json.dumps({"version": 2, "domains": D}, indent=1) + "\n"
+    text = json.dumps({"version": 3, "domains": D}, indent=1) + "\n"
     for t in targets:
         open(t, "w").write(text)
     print(f"wrote {len(D)} domains, {sum(len(d['causes']) for d in D)} causes to {len(targets)} files")

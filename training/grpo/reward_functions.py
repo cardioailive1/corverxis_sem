@@ -26,7 +26,10 @@ import cardiology_ecg_simulator, network_outage_simulator, supply_chain_simulato
 _MODS = [industrial_fault_simulator, medical_diagnostics_simulator, security_incident_simulator,
          financial_fraud_simulator, scientific_discovery_simulator, production_incident_simulator,
          cardiology_ecg_simulator, network_outage_simulator, supply_chain_simulator, safety_incident_simulator]
-DOMAIN_MODULES = {m.SLUG: m for m in _MODS}   # slug -> simulator module (10 domains, defined in domains_spec.json)
+DOMAIN_MODULES = {m.SLUG: m for m in _MODS}   # slug -> simulator module
+import spec_sim
+for _slug in spec_sim.slugs():                 # every other domain in domains_spec.json is auto-generated
+    DOMAIN_MODULES.setdefault(_slug, spec_sim.module_for(_slug))
 
 
 def parse_completion_to_structure(completion: str) -> dict | None:

@@ -141,6 +141,8 @@ const USE_CASES = [
     description: 'The likely cause behind a safety incident in energy, mining or aviation operations, from alarms, procedures and operating conditions.',
     simulatorSpec: 'safety_incident_simulator.py' },
 
+  // Further SEM-only domains are generated from domains_spec.json below.
+
   // Compiler use cases — one demonstration becomes a reusable, executable skill
   { slug: 'industrial-maintenance', name: 'Industrial Maintenance/Repair', kind: 'compiler',
     description: 'A retiring expert\'s one demonstration becomes a durable, reusable procedure before that knowledge is lost.',
@@ -161,6 +163,13 @@ const USE_CASES = [
     description: 'Turning "how our best person actually does this correctly" into an auditable, repeatable, verified procedure.',
     outputTargets: ['checklist'] },
 ];
+
+{
+  const { SPEC } = require('./simulators/specSimulator.js');
+  const have = new Set(USE_CASES.map(u => u.slug));
+  for (const d of Object.values(SPEC)) if (!have.has(d.slug) && d.description)
+    USE_CASES.push({ slug: d.slug, name: d.name, kind: 'sem_only', description: d.description, simulatorSpec: 'domains_spec.json' });
+}
 
 async function seedUseCases() {
   for (const uc of USE_CASES) {
@@ -219,6 +228,11 @@ const JS_SIMULATORS = {
   'supply-chain-disruption': require('./simulators/supplyChainSimulator.js'),
   'safety-incident-analysis': require('./simulators/safetyIncidentSimulator.js'),
 };
+// Every other domain in domains_spec.json gets a generated simulator (no per-domain shim file needed).
+{
+  const specSim = require('./simulators/specSimulator.js');
+  for (const slug of specSim.slugs()) if (!JS_SIMULATORS[slug]) JS_SIMULATORS[slug] = specSim.make(slug, 'CAUSES');
+}
 
 app.post('/api/scenarios/generate', authenticate, async (req, res) => {
   const { use_case_id, count } = req.body;

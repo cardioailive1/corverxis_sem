@@ -33,6 +33,11 @@ def install(module, slug, list_name):
         "verify_proposed_structure": verify_proposed_structure,
     })
 
+def module_for(slug):
+    """Auto-generate a simulator module for a domain that has no hand-written shim."""
+    import types
+    m = types.ModuleType("sim_" + slug.replace("-", "_")); install(m, slug, "CAUSES"); return m
+
 def cli(module):
     """`--generate N` prints scenarios as JSON; otherwise a self-test."""
     import sys

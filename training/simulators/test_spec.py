@@ -10,7 +10,7 @@ a = open(os.path.join(HERE, "domains_spec.json")).read()
 b = open(os.path.join(HERE, "..", "..", "backend", "simulators", "domains_spec.json")).read()
 assert a == b, "training and backend domains_spec.json differ; run build_spec.py"
 spec = json.loads(a)["domains"]; build_spec.validate(spec)
-assert json.loads(a) == json.loads(json.dumps({"version": 2, "domains": build_spec.D})), "domains_spec.json is stale vs build_spec.py"
+assert json.loads(a) == json.loads(json.dumps({"version": 3, "domains": build_spec.D})), "domains_spec.json is stale vs build_spec.py"
 print(f"spec ok: {len(spec)} domains, causes {[len(d['causes']) for d in spec]}")
 
 import dataset

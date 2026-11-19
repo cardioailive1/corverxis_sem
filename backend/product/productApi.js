@@ -117,7 +117,8 @@ function createProductRouter({ prisma, anthropic, env = process.env }) {
 
   router.get('/domains', auth, (req, res) => res.json(Object.keys(DOMAIN_META).map(slug => {
     const { slug: sl, name, label, key, caution, options, signals } = domainInfo(slug);
-    return { slug: sl, name, label, key, caution, options, signals };
+    const sp = SPEC[slug];
+    return { slug: sl, name, label, key, caution, options, signals, category: sp.category || 'Other', description: sp.description || '' };
   })));
 
   async function activeCheckpoint() {
