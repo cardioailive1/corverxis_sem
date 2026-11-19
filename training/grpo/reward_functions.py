@@ -19,21 +19,14 @@ import sys
 import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "simulators"))
-import industrial_fault_simulator as industrial_fault_diagnosis
-import medical_diagnostics_simulator as medical_diagnostics
-import security_incident_simulator as security_incident_investigation
-import financial_fraud_simulator as financial_fraud_investigation
-import scientific_discovery_simulator as scientific_discovery
-import production_incident_simulator as production_incident_rootcause
+import industrial_fault_simulator, medical_diagnostics_simulator, security_incident_simulator
+import financial_fraud_simulator, scientific_discovery_simulator, production_incident_simulator
+import cardiology_ecg_simulator, network_outage_simulator, supply_chain_simulator, safety_incident_simulator
 
-DOMAIN_MODULES = {
-    "industrial-fault-diagnosis": industrial_fault_diagnosis,
-    "medical-diagnostics": medical_diagnostics,
-    "security-incident-investigation": security_incident_investigation,
-    "financial-fraud-investigation": financial_fraud_investigation,
-    "scientific-discovery": scientific_discovery,
-    "production-incident-rootcause": production_incident_rootcause,
-}
+_MODS = [industrial_fault_simulator, medical_diagnostics_simulator, security_incident_simulator,
+         financial_fraud_simulator, scientific_discovery_simulator, production_incident_simulator,
+         cardiology_ecg_simulator, network_outage_simulator, supply_chain_simulator, safety_incident_simulator]
+DOMAIN_MODULES = {m.SLUG: m for m in _MODS}   # slug -> simulator module (10 domains, defined in domains_spec.json)
 
 
 def parse_completion_to_structure(completion: str) -> dict | None:
@@ -90,7 +83,7 @@ if __name__ == "__main__":
     import random
     rng = random.Random(7)
 
-    print("Testing sem_reward() against real scenarios from all 6 domains...")
+    print("Testing sem_reward() against real scenarios from all 10 domains...")
     all_passed = True
     for domain, module in DOMAIN_MODULES.items():
         intervention = module.sample_intervention(rng)

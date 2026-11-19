@@ -13,7 +13,7 @@ Either describe the problem in plain language (chat) or use the manual form belo
 - **Form.** The steps below.
 
 1. Sign in with an access key.
-2. Pick a domain (industrial fault, medical, security, fraud, scientific, production incident).
+2. Pick a domain: industrial fault, medical, security, fraud, scientific, production incident, cardiology and ECG, network outage, supply chain, or energy/mining/aviation safety. Each has 13 to 14 possible causes.
 3. Tick the signals they observe and press Diagnose.
 4. See the model's most likely cause, which model answered, and reference probabilities for context.
 
@@ -35,6 +35,7 @@ Either describe the problem in plain language (chat) or use the manual form belo
   the weights being served. Redeploy or swap the adapter on the endpoint to match.
 - Reference probabilities come from the simulators' own model with equal priors. They are context, not the
   model's confidence.
+- Domains, causes and signals are read from the same `domains_spec.json` the training uses. The cardiology and safety domains are illustrative simulators with hand-set probabilities, not clinical or regulatory tools.
 - The task is the narrow one SI-SEM was trained on: choose one cause from a fixed list given observed signals.
   It does not analyse free-form logs or recordings.
 - Chat limits: 1,500 characters per message. Signals or domains the language model invents are discarded. If
@@ -43,4 +44,4 @@ Either describe the problem in plain language (chat) or use the manual form belo
 
 ## Tests
 `node --test product/productApi.test.js` from `backend/`. The prompt text is checked against
-`training/grpo/dataset.py` for all 896 signal combinations across the six domains.
+`training/grpo/dataset.py` for a sample of 3,173 signal combinations across all 10 domains (`python3 training/simulators/test_spec.py parity.json`).

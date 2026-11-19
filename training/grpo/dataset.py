@@ -12,34 +12,14 @@ import json
 import random
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "simulators"))
-import industrial_fault_simulator
-import medical_diagnostics_simulator
-import security_incident_simulator
-import financial_fraud_simulator
-import scientific_discovery_simulator
-import production_incident_simulator
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import spec_sim
+from reward_functions import DOMAIN_MODULES   # slug -> simulator module (single definition of the domain list)
 
-DOMAIN_MODULES = {
-    "industrial-fault-diagnosis": industrial_fault_simulator,
-    "medical-diagnostics": medical_diagnostics_simulator,
-    "security-incident-investigation": security_incident_simulator,
-    "financial-fraud-investigation": financial_fraud_simulator,
-    "scientific-discovery": scientific_discovery_simulator,
-    "production-incident-rootcause": production_incident_simulator,
-}
-
-# One instruction template per domain — genuinely different phrasing per
-# domain rather than a single generic template, since the actual key name
-# the model needs to output differs (e.g. "condition" for medical,
-# "attack_vector" for security) and the model needs to know that.
-DOMAIN_INSTRUCTIONS = {
-    "industrial-fault-diagnosis": ("industrial fault diagnosis", "failed_component", industrial_fault_simulator.COMPONENTS),
-    "medical-diagnostics": ("medical diagnostics", "condition", medical_diagnostics_simulator.CONDITIONS),
-    "security-incident-investigation": ("security incident investigation", "attack_vector", security_incident_simulator.ATTACK_VECTORS),
-    "financial-fraud-investigation": ("financial fraud investigation", "cause", financial_fraud_simulator.CAUSES),
-    "scientific-discovery": ("scientific discovery", "mechanism", scientific_discovery_simulator.MECHANISMS),
-    "production-incident-rootcause": ("production incident root-causing", "root_cause", production_incident_simulator.ROOT_CAUSES),
-}
+# One instruction template per domain: the label and the JSON key the model must output differ per
+# domain (e.g. "condition" for medical, "attack_vector" for security). Read from domains_spec.json.
+DOMAIN_INSTRUCTIONS = {slug: (d["label"], d["key"], d["causes"]) for slug, d in spec_sim.spec().items()}
+assert set(DOMAIN_INSTRUCTIONS) == set(DOMAIN_MODULES), "domains_spec.json and the simulator modules disagree"
 
 
 def build_prompt(domain: str, observations: dict) -> str:
@@ -65,7 +45,7 @@ def pattern_id(domain: str, observations: dict) -> str:
 
 def generate_training_examples(n_per_domain: int, seed: int = None) -> list[dict]:
     """Generates n_per_domain scenarios from EVERY domain, mixed together —
-    training across all 6 simulators in one run, not one domain at a time,
+    training across all simulators in one run, not one domain at a time,
     so the model learns the general skill rather than overfitting to a
     single domain's signal patterns."""
     rng = random.Random(seed)
