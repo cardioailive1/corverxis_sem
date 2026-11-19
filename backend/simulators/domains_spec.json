@@ -1,5 +1,5 @@
 {
- "version": 3,
+ "version": 4,
  "domains": [
   {
    "slug": "industrial-fault-diagnosis",
@@ -137,7 +137,10 @@
      "leak_visible": 0.15
     }
    },
-   "category": "Industry & Operations"
+   "category": "Industry & Operations",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "medical-diagnostics",
@@ -301,7 +304,10 @@
      "body_aches": 0.45
     }
    },
-   "category": "Healthcare"
+   "category": "Healthcare",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "security-incident-investigation",
@@ -454,7 +460,10 @@
      "outbound_data_transfer_spike": 0.35
     }
    },
-   "category": "Technology & Security"
+   "category": "Technology & Security",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "financial-fraud-investigation",
@@ -596,7 +605,10 @@
      "device_fingerprint_mismatch": 0.1
     }
    },
-   "category": "Finance & Markets"
+   "category": "Finance & Markets",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "scientific-discovery",
@@ -734,7 +746,10 @@
      "batch_effect_pattern": 0.2
     }
    },
-   "category": "Science & Education"
+   "category": "Science & Education",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "production-incident-rootcause",
@@ -888,7 +903,10 @@
      "cache_hit_rate_drop": 0.1
     }
    },
-   "category": "Technology & Security"
+   "category": "Technology & Security",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "cardiology-ecg-review",
@@ -1050,7 +1068,10 @@
      "palpitations": 0.1
     }
    },
-   "category": "Healthcare"
+   "category": "Healthcare",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "network-infrastructure-outage",
@@ -1186,7 +1207,10 @@
      "connection_resets": 0.2
     }
    },
-   "category": "Technology & Security"
+   "category": "Technology & Security",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "supply-chain-disruption",
@@ -1312,7 +1336,10 @@
      "single_supplier_dependency": 0.3
     }
    },
-   "category": "Industry & Operations"
+   "category": "Industry & Operations",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "safety-incident-analysis",
@@ -1445,7 +1472,10 @@
      "electrical_arcing_or_trip": 0.2
     }
    },
-   "category": "Industry & Operations"
+   "category": "Industry & Operations",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "education-learning-support",
@@ -1589,7 +1619,10 @@
     }
    },
    "category": "Science & Education",
-   "description": "The most likely barrier behind a learner's struggles, from classroom and assessment signals, to help educators choose where to look first."
+   "description": "The most likely barrier behind a learner's struggles, from classroom and assessment signals, to help educators choose where to look first.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "ai-ml-system-failures",
@@ -1707,7 +1740,10 @@
     }
    },
    "category": "Technology & Security",
-   "description": "Why a machine learning or LLM system is underperforming (leakage, drift, retrieval, overfitting and more), from training and production signals."
+   "description": "Why a machine learning or LLM system is underperforming (leakage, drift, retrieval, overfitting and more), from training and production signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "robotics-fault-diagnosis",
@@ -1832,7 +1868,10 @@
     }
    },
    "category": "Robotics, Mobility & Space",
-   "description": "The likely cause of a robot fault or degraded performance, from joint, sensor, power and navigation signals."
+   "description": "The likely cause of a robot fault or degraded performance, from joint, sensor, power and navigation signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "process-plant-operations",
@@ -1958,7 +1997,10 @@
     }
    },
    "category": "Industry & Operations",
-   "description": "The likely cause of a process plant upset (chemical, food, pharma, refining), from temperatures, pressures, flows and instrument signals."
+   "description": "The likely cause of a process plant upset (chemical, food, pharma, refining), from temperatures, pressures, flows and instrument signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "manufacturing-quality",
@@ -2086,7 +2128,10 @@
     }
    },
    "category": "Industry & Operations",
-   "description": "The root cause of a manufacturing defect or quality drift, from machine, material, operator and measurement signals."
+   "description": "The root cause of a manufacturing defect or quality drift, from machine, material, operator and measurement signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "spacecraft-operations",
@@ -2213,7 +2258,10 @@
     }
    },
    "category": "Robotics, Mobility & Space",
-   "description": "The likely cause of a spacecraft anomaly, from power, attitude, thermal, communications and fault-protection telemetry."
+   "description": "The likely cause of a spacecraft anomaly, from power, attitude, thermal, communications and fault-protection telemetry.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "financial-markets-analysis",
@@ -2344,7 +2392,10 @@
     }
    },
    "category": "Finance & Markets",
-   "description": "What may explain a market move (earnings, central bank, liquidity, squeeze, flows), from price, volume and event signals. Educational, not advice."
+   "description": "What may explain a market move (earnings, central bank, liquidity, squeeze, flows), from price, volume and event signals. Educational, not advice.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "trading-system-diagnostics",
@@ -2471,7 +2522,10 @@
     }
    },
    "category": "Finance & Markets",
-   "description": "Why a trading system is misbehaving (data, latency, execution, risk, regime), from operational and performance signals. Not advice."
+   "description": "Why a trading system is misbehaving (data, latency, execution, risk, regime), from operational and performance signals. Not advice.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "autonomous-driving-faults",
@@ -2593,7 +2647,10 @@
     }
    },
    "category": "Robotics, Mobility & Space",
-   "description": "The likely source of an autonomous vehicle fault or odd behaviour, from perception, localization, planning and actuation signals."
+   "description": "The likely source of an autonomous vehicle fault or odd behaviour, from perception, localization, planning and actuation signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "power-grid-operations",
@@ -2710,7 +2767,10 @@
     }
    },
    "category": "Industry & Operations",
-   "description": "The likely cause of a power grid disturbance, from frequency, voltage, protection and weather signals."
+   "description": "The likely cause of a power grid disturbance, from frequency, voltage, protection and weather signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "agriculture-crop-health",
@@ -2841,7 +2901,10 @@
     }
    },
    "category": "Industry & Operations",
-   "description": "The likely cause of crop stress, from symptoms in the leaves, roots, soil and recent weather."
+   "description": "The likely cause of crop stress, from symptoms in the leaves, roots, soil and recent weather.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "hospital-operations",
@@ -2963,7 +3026,10 @@
     }
    },
    "category": "Healthcare",
-   "description": "The operational bottleneck behind ED crowding and delays, from flow, staffing and capacity signals."
+   "description": "The operational bottleneck behind ED crowding and delays, from flow, staffing and capacity signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "electric-vehicle-diagnostics",
@@ -3074,7 +3140,10 @@
     }
    },
    "category": "Robotics, Mobility & Space",
-   "description": "The likely cause of an electric vehicle problem (range, charging, power, noises), from driver-visible and diagnostic signals."
+   "description": "The likely cause of an electric vehicle problem (range, charging, power, noises), from driver-visible and diagnostic signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "ev-battery-system",
@@ -3189,7 +3258,10 @@
     }
    },
    "category": "Robotics, Mobility & Space",
-   "description": "What is behind an EV battery pack issue (imbalance, cooling, aging, shorts), from cell, thermal and BMS signals."
+   "description": "What is behind an EV battery pack issue (imbalance, cooling, aging, shorts), from cell, thermal and BMS signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "oil-refinery-operations",
@@ -3302,7 +3374,10 @@
     }
    },
    "category": "Energy & Resources",
-   "description": "The likely cause of a refinery unit upset, from furnace, column, catalyst, crude and product-quality signals."
+   "description": "The likely cause of a refinery unit upset, from furnace, column, catalyst, crude and product-quality signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "gold-refinery-operations",
@@ -3411,7 +3486,10 @@
     }
    },
    "category": "Energy & Resources",
-   "description": "The likely cause of a gold refining problem (fineness, recovery, losses), from leach, furnace, electrolysis and assay signals."
+   "description": "The likely cause of a gold refining problem (fineness, recovery, losses), from leach, furnace, electrolysis and assay signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "sensor-technology-diagnostics",
@@ -3527,7 +3605,10 @@
     }
    },
    "category": "Technology & Security",
-   "description": "Why a sensor or measurement chain is misreading (drift, noise, wiring, calibration), from the reading behaviour."
+   "description": "Why a sensor or measurement chain is misreading (drift, noise, wiring, calibration), from the reading behaviour.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "renewable-energy-operations",
@@ -3633,7 +3714,10 @@
     }
    },
    "category": "Energy & Resources",
-   "description": "Why a solar, wind or storage site is under-producing, from output, inverter, turbine and grid signals."
+   "description": "Why a solar, wind or storage site is under-producing, from output, inverter, turbine and grid signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "commodities-trading",
@@ -3745,7 +3829,10 @@
     }
    },
    "category": "Finance & Markets",
-   "description": "What may explain a commodity price move (supply, inventories, weather, positioning), from market signals. Educational, not advice."
+   "description": "What may explain a commodity price move (supply, inventories, weather, positioning), from market signals. Educational, not advice.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "forex-trading",
@@ -3854,7 +3941,10 @@
     }
    },
    "category": "Finance & Markets",
-   "description": "What may explain a currency move (policy, data, risk flows, liquidity), from market signals. Educational, not advice."
+   "description": "What may explain a currency move (policy, data, risk flows, liquidity), from market signals. Educational, not advice.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "accounting-system-diagnostics",
@@ -3958,7 +4048,10 @@
     }
    },
    "category": "Finance & Markets",
-   "description": "The likely cause of a ledger or reconciliation discrepancy, from reconciliation, posting and integration signals."
+   "description": "The likely cause of a ledger or reconciliation discrepancy, from reconciliation, posting and integration signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "audit-findings-analysis",
@@ -4070,7 +4163,10 @@
     }
    },
    "category": "Finance & Markets",
-   "description": "The likely root cause of an audit finding, from control-testing and environment signals. Decision support, not an audit opinion."
+   "description": "The likely root cause of an audit finding, from control-testing and environment signals. Decision support, not an audit opinion.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "research-development-programs",
@@ -4186,7 +4282,10 @@
     }
    },
    "category": "Science & Education",
-   "description": "Why an R&D programme is stalling or slipping, from experiment, team, budget and approval signals."
+   "description": "Why an R&D programme is stalling or slipping, from experiment, team, budget and approval signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "defense-systems-maintenance",
@@ -4298,7 +4397,10 @@
     }
    },
    "category": "Industry & Operations",
-   "description": "Why defence equipment readiness is falling (parts, maintenance, configuration, environment). Readiness and logistics only, not weapons or operations."
+   "description": "Why defence equipment readiness is falling (parts, maintenance, configuration, environment). Readiness and logistics only, not weapons or operations.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "data-center-operations",
@@ -4409,7 +4511,10 @@
     }
    },
    "category": "Technology & Security",
-   "description": "The likely cause of a data centre incident, from cooling, power, network and storage signals."
+   "description": "The likely cause of a data centre incident, from cooling, power, network and storage signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "software-engineering-delivery",
@@ -4528,7 +4633,10 @@
     }
    },
    "category": "Technology & Security",
-   "description": "Why software delivery is slow or unreliable, from review, CI, release and team signals."
+   "description": "Why software delivery is slow or unreliable, from review, CI, release and team signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "coding-bug-diagnosis",
@@ -4645,7 +4753,10 @@
     }
    },
    "category": "Technology & Security",
-   "description": "The likely cause of a software bug, from how and when it fails."
+   "description": "The likely cause of a software bug, from how and when it fails.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "product-development",
@@ -4758,7 +4869,10 @@
     }
    },
    "category": "Industry & Operations",
-   "description": "What is holding back a product (launch delay, adoption, churn, cost), from development and market signals."
+   "description": "What is holding back a product (launch delay, adoption, churn, cost), from development and market signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "ecommerce-operations",
@@ -4869,7 +4983,10 @@
     }
    },
    "category": "Commerce & Retail",
-   "description": "Why an online store's sales or conversion are off, from funnel, site, payment and traffic signals."
+   "description": "Why an online store's sales or conversion are off, from funnel, site, payment and traffic signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   },
   {
    "slug": "retail-store-operations",
@@ -4983,7 +5100,10 @@
     }
    },
    "category": "Commerce & Retail",
-   "description": "Why a store or chain is underperforming, from traffic, stock, staffing and promotion signals."
+   "description": "Why a store or chain is underperforming, from traffic, stock, staffing and promotion signals.",
+   "validation": {
+    "status": "illustrative"
+   }
   }
  ]
 }

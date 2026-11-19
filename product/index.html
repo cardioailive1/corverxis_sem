@@ -139,7 +139,7 @@ function renderMain(){
   cats.forEach(function(c){
     kids.push(el('h3',{class:'cat',text:c}));
     kids.push(el('div',{class:'grid'},S.domains.filter(function(d){return (d.category||'Other')===c}).map(function(d){
-      return el('button',{class:'dom','aria-pressed':String(S.domain===d.slug),title:d.description||'',onclick:function(){S.domain=d.slug;S.signals={};S.result=null;S.error=null;render()}},el('b',{text:d.name}),el('span',{text:d.options.length+' possible causes'}))})));
+      return el('button',{class:'dom','aria-pressed':String(S.domain===d.slug),title:d.description||'',onclick:function(){S.domain=d.slug;S.signals={};S.result=null;S.error=null;render()}},el('b',{text:d.name}),el('span',{text:d.options.length+' possible causes · '+((d.validation&&d.validation.status)||'illustrative').replace('_',' ')}))})));
   });
   if(S.domain){
     var d=S.domains.filter(function(x){return x.slug===S.domain})[0];
@@ -204,6 +204,24 @@ function sendChat(){
   },function(e){S.chatBusy=false;S.chat.push({role:'bot',text:e.message,error:true});S.focusChat=true;render()});
 }
 
+
+var VLABEL={illustrative:'Illustrative: built on example probabilities, not validated on real cases.',calibrated:'Calibrated on real cases and checked on held-out cases. Not expert-signed.',expert_validated:'Validated against real cases and signed off by a named expert.'};
+function validationNote(v){v=v||{status:'illustrative'};var t=VLABEL[v.status]||VLABEL.illustrative;
+  if(v.status==='calibrated'&&v.n_cases)t+=' ('+v.n_cases+' cases, held-out accuracy '+Math.round(v.holdout_accuracy*100)+'%.)';
+  return el('div',{class:'hint',style:'margin-top:10px',text:'Validation status: '+t})}
+function renderActions(r){
+  var a=r.actions,box=el('div',{});box.append(el('h2',{text:'What to do next'}));
+  var items=[].concat(a.confirm,a.separate,a.contradict);
+  if(items.length)box.append(el('ul',{style:'margin:0 0 8px;padding-left:20px;font-size:15px'},items.map(function(i){return el('li',{text:i.text})})));
+  box.append(el('div',{class:'note',text:a.escalate}));
+  var out=el('div',{style:'margin-top:10px'});
+  var btn=el('button',{class:'btn ghost',type:'button',text:'Suggest more steps',onclick:function(){
+    btn.disabled=true;btn.textContent='Thinking...';
+    call('/steps',{body:{domain:r.domain,cause:r.answer}}).then(function(x){
+      out.textContent='';out.append(el('div',{class:'hint',text:x.label}),el('ol',{style:'margin:6px 0;padding-left:20px;font-size:15px'},x.steps.map(function(t){return el('li',{text:t})})));btn.remove();
+    }).catch(function(e){btn.disabled=false;btn.textContent='Suggest more steps';out.textContent='';out.append(el('div',{class:'err',role:'alert',text:(e&&e.message)||'Could not get suggestions.'}))})}});
+  box.append(btn,out);box.append(el('div',{class:'hint',style:'margin-top:8px',text:a.note}));return box}
+
 function renderResult(r){
   var sem=r.served_by==='sem-checkpoint';
   var c=el('div',{class:'card',style:'margin-top:16px'});
@@ -213,6 +231,8 @@ function renderResult(r){
   else c.append(el('div',{class:'err',role:'alert',text:r.error||'No valid answer.'}));
   if(r.note)c.append(el('div',{class:'note',text:r.note}));
   if(r.caution)c.append(el('div',{class:'note',text:r.caution}));
+  c.append(validationNote(r.validation));
+  if(r.valid&&r.actions)c.append(renderActions(r));
   c.append(el('h2',{text:'Reference probabilities'}),el('p',{class:'hint',style:'margin:0 0 6px',text:'From the simulator the model was trained against, assuming every cause is equally likely beforehand. This is context, not the model’s confidence.'}));
   r.reference_probabilities.forEach(function(p,i){c.append(el('div',{class:'bar'+(i===0?' top':'')},el('span',{text:human(p.cause)}),el('i',{},el('u',{style:'width:'+Math.max(1,p.probability*100)+'%'})),el('em',{text:pct(p.probability)})))});
   return c;

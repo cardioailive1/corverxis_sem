@@ -211,3 +211,36 @@ test('chat: SI-SEM unavailable and fallback used is labelled in the diagnosis', 
   const r = await (await chat(base, { message: 'noisy' })).json();
   assert.equal(r.diagnosis.served_by, 'claude-fallback'); assert.equal(r.diagnosis.checkpoint, null); srv.close();
 });
+
+test('diagnose returns grounded next steps and validation status', async () => {
+  const m = await fakeModel(() => '{"cardiac_condition": "stemi"}');
+  const s = await setup({ checkpoint: CK, env: { SEM_INFERENCE_URL: m.url } });
+  const r = await (await jpost(s.base, '/diagnose', { domain: 'cardiology-ecg-review', signals: ['st_elevation'] }, 'k1')).json();
+  assert.equal(r.valid, true);
+  assert.equal(r.validation.status, 'illustrative');
+  assert.ok(r.actions.confirm.length > 0 && r.actions.confirm.length <= 3);
+  // every suggested check is a real, not-yet-observed signal of that domain
+  const sigs = (await (await fetch(s.base + '/domains', { headers: { 'x-api-key': 'k1' } })).json()).find(x => x.slug === 'cardiology-ecg-review').signals;
+  for (const a of [...r.actions.confirm, ...r.actions.separate, ...r.actions.contradict]) assert.ok(sigs.includes(a.signal));
+  assert.ok(!r.actions.confirm.some(a => a.signal === 'st_elevation'));
+  assert.match(r.actions.escalate, /clinician/);
+  const dom = (await (await fetch(s.base + '/domains', { headers: { 'x-api-key': 'k1' } })).json())[0];
+  assert.ok(dom.validation && dom.validation.status && dom.category);
+  s.srv.close(); m.srv.close();
+});
+
+test('steps: validated input, labelled output, sensitive-domain guard in the prompt', async () => {
+  let seen = null;
+  const anthropic = { messages: { create: async req => { seen = req; return { content: [{ text: '{"steps": ["Check the ECG again", "Involve a clinician"]}' }] }; } } };
+  const s = await setup({ anthropic });
+  const bad = await jpost(s.base, '/steps', { domain: 'cardiology-ecg-review', cause: 'made_up' }, 'k1');
+  assert.equal(bad.status, 400);
+  const ok = await jpost(s.base, '/steps', { domain: 'cardiology-ecg-review', cause: 'stemi' }, 'k1');
+  const j = await ok.json(); assert.equal(ok.status, 200);
+  assert.deepEqual(j.steps, ['Check the ECG again', 'Involve a clinician']);
+  assert.equal(j.sensitive, true); assert.match(j.label, /not validated/);
+  assert.match(seen.system, /NO treatment, dosing/);
+  const none = await setup({ anthropic: null });
+  assert.equal((await jpost(none.base, '/steps', { domain: 'cardiology-ecg-review', cause: 'stemi' }, 'k1')).status, 503);
+  s.srv.close(); none.srv.close();
+});
